@@ -44,10 +44,36 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - None currently.
 
+## Active milestone: M4.5 — Project Canonicalization (owner: Sol; target 2026-09-24)
+
+**Goal:** make the repo the only source of truth for the plan, so no agent has to ask "what did ChatGPT intend?". Nothing is implemented in this milestone; it only adds docs.
+
+**Instructions for Sol (from Claude, agreed with the user 2026-09-23):**
+1. **Create under `docs/`:**
+   - `ROADMAP.md`: M1 through the final submission.
+   - One spec per milestone: `milestones/M1_SAFETY_CORE.md`, `M2_SAFETY_SIMULATION.md`, `M3_LONGITUDINAL_ENGINE.md`, `M4_APPLICATION_BACKEND.md`, `M5_AI_COMMUNICATION_LAYER.md`, `M6_PATIENT_APPLICATION.md`, `M7_DEMO_AND_INTEGRATION.md`, `M8_SUBMISSION.md`.
+   - `DECISIONS.md`.
+   - `DEMO_SCRIPT.md` (a stub is fine for now).
+2. **Don't create `docs/HANDOVER.md`.** This root `HANDOVER.md` is the single handover file; `AGENTS.md` and `CLAUDE.md` point to it. Link the new docs from here. Put the document precedence rules (which document wins when two conflict) in `DECISIONS.md`.
+3. **M1–M4 specs must describe what was actually accepted, not a reconstruction of the plan.** Where possible, reuse the original prompt wording and acceptance criteria. The IDs must match the review packets and tests exactly (e.g. A1–A20 in `tests/test_milestone4.py`, L-series in `MILESTONE3_REVIEW.md`). Mark any criterion you can't trace to a test or review as *(reconstructed)*.
+4. **CodeBuddy/WorkBuddy proof starts in M5, not M8.** The brief makes it mandatory for scoring, and no CodeBuddy/WorkBuddy use has happened so far. Put this in `DECISIONS.md` as a standing rule: from M5 onward, some real development happens in CodeBuddy/WorkBuddy and is captured with screenshots as it happens. Also add it to every M5–M8 acceptance list.
+5. **Timebox the schedule in `ROADMAP.md`:**
+   - M4.5: 1 day (by 24 Sep)
+   - M5: by 30 Sep. Keep it small: a few message modes, validation with a deterministic fallback, and prohibited-claim tests.
+   - M6: by 7 Oct. It may start alongside M5, since it mostly uses existing endpoints.
+   - M7: by 12 Oct.
+   - M8: 13–15 Oct, one day before the 16 Oct deadline.
+   - Garmin/real integrations and cloud infrastructure are optional stretch work only.
+6. **Record the three-way split as a rule in `DECISIONS.md`:** Product AI (bounded LLM wording), Simulation Data Agent (dev/eval only), and deterministic engines (authoritative). "Signals propose. Rules dispose. The LLM phrases." The LLM never owns T1–T4, never moves anchors, never declares relapse or diagnoses, never generates T4 emergency policy, and never decides medication changes. M7 must include a test that simulator/agent ground truth never reaches application decisions (M4 already enforces this for fixtures).
+7. **When you're done:** update this file following the instructions at the top (Current state, Next steps, a Log entry), then commit and push.
+
+**Then (Claude):** check the M1–M4 specs against the code, tests, and review packets, report any differences, and fold links to the new docs into this file.
+
 ## Next steps
 
-1. Hackathon submission (**deadline 16 Oct 2026**) needs a demo, architecture diagram, source code, and **mandatory CodeBuddy/WorkBuddy usage proof** (capture it during development).
-2. Known issues from `MILESTONE4_REVIEW.md` §13:
+1. Finish M4.5 (above), then start M5.
+2. Hackathon submission (**deadline 16 Oct 2026**) needs a demo, architecture diagram, source code, and **mandatory CodeBuddy/WorkBuddy usage proof** (capture it during development, from M5 onward).
+3. Known issues from `MILESTONE4_REVIEW.md` §13:
    - The review snapshot's `safety_episode_references` includes routine T0 records with null episode IDs, so it needs filtering.
    - There is no governed exit from the `REESTABLISHING` state.
    - `reviewed_by` is caller-supplied and not authenticated.
@@ -81,6 +107,10 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 ---
 
 ## Log
+
+### 2026-09-23 — Claude — M4.5 instructions for Sol
+- Sol 6 proposed M4.5 (Project Canonicalization) and the M5–M8 sequence; the user asked Claude to pass its adjustments to Sol via this file. See **Active milestone** above.
+- Watch out for: don't duplicate this handover file under `docs/`.
 
 ### 2026-09-23 — Claude — Care Plan Bridge dropped; project named aura-health
 - User decision: drop Care Plan Bridge, and use aura-health as the official project name.
