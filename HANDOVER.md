@@ -44,9 +44,11 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - None currently.
 
-## Active milestone: M4.5 — Project Canonicalization (owner: Sol; target 2026-09-24)
+## Active milestone: M4.5 — Project Canonicalization (owners: ChatGPT Sol 6 + Codex Sol; target 2026-09-24)
 
 **Goal:** make the repo the only source of truth for the plan, so no agent has to ask "what did ChatGPT intend?". Nothing is implemented in this milestone; it only adds docs.
+
+**Who does what:** *ChatGPT Sol 6* writes the content: the roadmap, specs, and decisions. It wrote the framework, has no repo access, and the user passes its output along. *Codex Sol* writes the files into the repo, checks M1–M4 IDs against tests and reviews (item 3), and commits and pushes. "Sol" below means both, split this way.
 
 **Instructions for Sol (from Claude, agreed with the user 2026-09-23):**
 1. **Create under `docs/`:**
