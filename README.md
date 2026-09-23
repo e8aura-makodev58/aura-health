@@ -2,6 +2,7 @@
 
 ## Project planning
 
+- [Agent handover](HANDOVER.md) — current state, next steps, and update instructions for agents working on this repo.
 - [Care Plan Bridge revised framework](PRODUCT_FRAMEWORK_V2.md) — current product direction and narrowed hackathon MVP.
 - [Original framework](PRODUCT_FRAMEWORK.md) and [Claude's critique](FRAMEWORK_CRITIQUE.md) — background and review trail.
 - [Brainstorm checkpoint](PROJECT_NOTES.md) — decisions and reference leads from the discussion.
