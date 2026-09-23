@@ -1,0 +1,43 @@
+{
+  "patient_id": "fixture-patient",
+  "start_at": "2026-09-23T00:00:00+00:00",
+  "resource_version": "fixture-unverified-v1",
+  "initial_state": {},
+  "steps": [
+    {
+      "kind": "DETECTORS_COMPLETE",
+      "episode_id": "episode-1",
+      "proposed_tier": "ELEVATED",
+      "detector_outputs": [
+        {"detector_id": "D1", "proposed_tier": "ELEVATED", "input_id": "structured-1", "source_episode_id": null, "source_sequence": 0}
+      ]
+    },
+    {"kind": "FOLLOWUP_WINDOW_EXPIRED"},
+    {"kind": "DETECTORS_COMPLETE", "proposed_tier": "URGENT"},
+    {"kind": "URGENT_DEESCALATION_APPROVED", "based_on_sequence": "current"},
+    {"type": "advance", "seconds": 3600},
+    {"kind": "RECHECK_PASSED"},
+    {"kind": "EPISODE_CLOSE_APPROVED", "based_on_sequence": "current"},
+    {"kind": "DETECTOR_TIMEOUT"},
+    {"type": "offline_input", "input_id": "held-1", "payload": "fixture input"},
+    {"type": "reconnect"},
+    {"kind": "DETECTORS_COMPLETE", "proposed_tier": "CLARIFY", "episode_id": "episode-2"},
+    {
+      "type": "race",
+      "events": [
+        {"kind": "LATE_DETECTOR_RESULT", "proposed_tier": "IMMEDIATE", "source_episode_id": "episode-1"},
+        {"kind": "CLARIFICATION_CLEARED", "based_on_sequence": 8}
+      ]
+    },
+    {"kind": "FOLLOWUP_WINDOW_EXPIRED"},
+    {"kind": "PATIENT_RETURNED"},
+    {"kind": "DROPOUT_REENTRY", "based_on_sequence": "current"},
+    {"kind": "RECHECK_FAILED"},
+    {"kind": "IMMEDIATE_DEESCALATION_APPROVED", "based_on_sequence": "current"},
+    {"kind": "RECHECK_PASSED"},
+    {"kind": "EPISODE_CLOSE_APPROVED", "based_on_sequence": "current"},
+    {"kind": "EPISODE_ARCHIVE_DUE"},
+    {"type": "advance", "seconds": 604800},
+    {"kind": "FLAG_EXPIRY_DUE", "flag_name": "RECENT_HIGH_TIER_EPISODE"}
+  ]
+}

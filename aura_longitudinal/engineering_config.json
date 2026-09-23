@@ -1,0 +1,13 @@
+{
+  "version": "m3-engineering-v1-not-clinically-validated",
+  "rolling_window_days": 14,
+  "minimum_points": 5,
+  "minimum_window_coverage": 0.5,
+  "minimum_observation_coverage": 0.5,
+  "reestablish_after_days": 14,
+  "deviation_spread_multiplier": 2.0,
+  "persistent_fraction": 0.6,
+  "trend_spread_per_day": 0.1,
+  "relative_spread_floor": 0.05,
+  "communication_cooldown_days": 7
+}

@@ -1,0 +1,16 @@
+{
+  "version": "m3-naive-engineering-v1-not-clinically-validated",
+  "fixed_absolute_delta": {
+    "SLEEP_MIDPOINT": 90.0,
+    "SLEEP_DURATION": 1.0,
+    "ACTIVITY:steps": 1000.0,
+    "RESTING_HEART_RATE": 6.0
+  },
+  "rolling_absolute_floor": {
+    "SLEEP_MIDPOINT": 30.0,
+    "SLEEP_DURATION": 0.4,
+    "ACTIVITY:steps": 300.0,
+    "RESTING_HEART_RATE": 2.0
+  },
+  "rolling_robust_spread_multiplier": 2.0
+}
