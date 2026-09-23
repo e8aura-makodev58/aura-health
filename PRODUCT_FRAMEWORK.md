@@ -1,5 +1,7 @@
 # Care Plan Bridge: product framework for critique
 
+> **Superseded (2026-09-23):** Care Plan Bridge was dropped. The project is **aura-health**; see [`aura_health_framework_v1.0.md`](aura_health_framework_v1.0.md). Kept for background only.
+
 **Status:** concept draft, 19 September 2026. This is a product and prototype design, not a validated clinical protocol or a claim of regulatory approval. All patient stories and thresholds used in a demo will be fictional. Decisions marked **open** need clinical, patient, or operational input.
 
 ## 1. Executive thesis

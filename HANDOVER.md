@@ -30,7 +30,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (as of 2026-09-23)
 
-- **Product being built:** AURA, a longitudinal, wearable-first companion for adults on stable antidepressant maintenance treatment. Spec: `aura_health_framework_v1.0.md`. Safety policy: `aura_deterministic_safety_policy_state_machine_v1.2.md`.
+- **Project name:** officially **aura-health** (user, 2026-09-23). Care Plan Bridge (`PRODUCT_FRAMEWORK*.md`, `FRAMEWORK_CRITIQUE.md`) was dropped; those docs are marked superseded and kept for background only.
+- **Product being built:** a longitudinal, wearable-first companion for adults on stable antidepressant maintenance treatment. Spec: `aura_health_framework_v1.0.md`. Safety policy: `aura_deterministic_safety_policy_state_machine_v1.2.md`.
 - **Milestones 1–4 are complete** and the Milestone 4 engineering stop condition is met. See `MILESTONE3_REVIEW.md` and `MILESTONE4_REVIEW.md`.
   - `aura_safety/`: deterministic safety state machine (no LLM).
   - `aura_longitudinal/`: personal baseline, drift, context, held-for-review, and communication engines.
@@ -41,13 +42,12 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Product direction mismatch:** `README.md` and `PRODUCT_FRAMEWORK_V2.md` describe *Care Plan Bridge* (hypertension). The code implements *AURA* (antidepressant maintenance). The user needs to confirm which one is being submitted, and the README should be updated to match.
+- None currently.
 
 ## Next steps
 
-1. Resolve the product-direction question above.
-2. Hackathon submission (**deadline 16 Oct 2026**) needs a demo, architecture diagram, source code, and **mandatory CodeBuddy/WorkBuddy usage proof** (capture it during development).
-3. Known issues from `MILESTONE4_REVIEW.md` §13:
+1. Hackathon submission (**deadline 16 Oct 2026**) needs a demo, architecture diagram, source code, and **mandatory CodeBuddy/WorkBuddy usage proof** (capture it during development).
+2. Known issues from `MILESTONE4_REVIEW.md` §13:
    - The review snapshot's `safety_episode_references` includes routine T0 records with null episode IDs, so it needs filtering.
    - There is no governed exit from the `REESTABLISHING` state.
    - `reviewed_by` is caller-supplied and not authenticated.
@@ -82,11 +82,16 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 
 ## Log
 
+### 2026-09-23 — Claude — Care Plan Bridge dropped; project named aura-health
+- User decision: drop Care Plan Bridge, and use aura-health as the official project name.
+- Updated the README intro and doc list. Added a "Superseded" banner to `PRODUCT_FRAMEWORK.md`, `PRODUCT_FRAMEWORK_V2.md`, and `FRAMEWORK_CRITIQUE.md` (no other content changed).
+- Watch out for: the frameworks and code still say "AURA" in places. That's the same product, so no renaming is needed unless the user asks.
+
 ### 2026-09-23 — Claude — Status review, first push, handover created
 - Reviewed Milestone 4 and re-ran the tests: 69 pass.
 - Committed all milestone 1–4 work (`527cc13`) and merged the remote's LICENSE-only initial commit (`97aad5b`), with no force-push. Pushed to `origin/main`.
 - Created this `HANDOVER.md`.
-- Watch out for: the product-direction mismatch (see Open decisions).
+- Watch out for: the product-direction mismatch (resolved in the entry above).
 
 ### 2026-09-23 — Sol — Milestones 1–4
 - Built `aura_safety`, `aura_longitudinal`, and `aura_app` along with the tests and review packets (`MILESTONE3_REVIEW.md`, `MILESTONE4_REVIEW.md`). *(Summarized by Claude from the repo; Sol did not write this entry.)*

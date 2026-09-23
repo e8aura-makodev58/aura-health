@@ -2,11 +2,14 @@
 
 ## Project planning
 
+**aura-health** is a wearable-first, patient-controlled companion for adults on stable antidepressant maintenance treatment (hackathon challenge: *AI Healthier Every Day*). It is a synthetic-data research prototype, not a diagnostic or clinical service.
+
 - [Agent handover](HANDOVER.md) — current state, next steps, and update instructions for agents working on this repo.
-- [Care Plan Bridge revised framework](PRODUCT_FRAMEWORK_V2.md) — current product direction and narrowed hackathon MVP.
-- [Original framework](PRODUCT_FRAMEWORK.md) and [Claude's critique](FRAMEWORK_CRITIQUE.md) — background and review trail.
-- [Brainstorm checkpoint](PROJECT_NOTES.md) — decisions and reference leads from the discussion.
-- [Framework critique](FRAMEWORK_CRITIQUE.md) — review of the Care Plan Bridge framework against the brief, the judging rubric, and the submission deadline.
+- [aura-health framework v1.0](aura_health_framework_v1.0.md) — canonical product, safety, and governance framework.
+- [Deterministic safety policy v1.2](aura_deterministic_safety_policy_state_machine_v1.2.md) — safety state machine specification.
+- [Milestone 3 review](MILESTONE3_REVIEW.md) and [Milestone 4 review](MILESTONE4_REVIEW.md) — acceptance evidence.
+- [Brainstorm checkpoint](PROJECT_NOTES.md) — early decisions and reference leads.
+- Superseded: [Care Plan Bridge framework](PRODUCT_FRAMEWORK.md), [revision](PRODUCT_FRAMEWORK_V2.md), and [critique](FRAMEWORK_CRITIQUE.md) — dropped direction, kept for background.
 
 ## Milestone 4 prototype API
 

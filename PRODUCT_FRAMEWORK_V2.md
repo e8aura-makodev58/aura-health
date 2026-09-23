@@ -1,5 +1,7 @@
 # Care Plan Bridge — revised product and hackathon MVP
 
+> **Superseded (2026-09-23):** Care Plan Bridge was dropped. The project is **aura-health**; see [`aura_health_framework_v1.0.md`](aura_health_framework_v1.0.md). Kept for background only.
+
 - **Date:** 19 September 2026
 - **Status:** revised after [Claude's critique](./FRAMEWORK_CRITIQUE.md). This document makes prototype decisions; it does not claim clinical suitability.
 - **Selected challenge:** “AI Healthier Every Day: Intelligent Support for Long-Term Care” in the [hackathon brief](./AI_CAN_DO_IT_Hackathon_Singapore_2026_Brief.pdf).
