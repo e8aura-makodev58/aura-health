@@ -30,7 +30,7 @@ Provide fixed demo seed, fixture reset, one-command backend/frontend starts, hea
 
 Address or explicitly defer routine T0/null snapshot reference filtering, undefined governed REESTABLISHING exit, non-production reviewer authorization, and replay-per-event scaling. Do not invent clinical policy to close these.
 
-Only after stable demo, consider Garmin/other connector, hosted database, partner cloud, or another model provider. Integrations must preserve accepted interfaces.
+Only after stable demo, consider Garmin/other connector, hosted database, partner cloud, or another model provider. Exception to weigh: the brief awards **bonus points for a live URL/demo link**, so a simple hosted demo (synthetic data, deterministic reset) may be worth more than any connector. This is a user decision; see `HANDOVER.md` Open decisions. Integrations must preserve accepted interfaces.
 
 ## Acceptance and stop condition
 

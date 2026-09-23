@@ -16,7 +16,7 @@ Add a deliberately small bounded language-model component that makes determinist
 - **OBSERVATION_EXPLANATION:** explain an already-computed descriptive observation without diagnosis.
 - **REVIEW_SUMMARY_WORDING:** optional concise wording from deterministic structured snapshot; snapshot remains authoritative.
 
-No LLM in T4, degraded/fail-closed, client-offline fail-closed, or other prohibited modes. T3 generation, if attempted, requires deterministic validation and fixed fallback; a static T3 response is acceptable for M5.
+Per safety spec §35: T0 allows ordinary bounded generation; in T1 CLARIFY, only policy-defined question content may be phrased; T2 ELEVATED allows constrained support generation only. No LLM in T4, degraded/fail-closed, client-offline fail-closed, or other prohibited modes. Safety resources are always native/pinned UI, never generated text. T3 generation, if attempted, requires deterministic validation and fixed fallback; a static T3 response is acceptable for M5.
 
 ## Contract and validation
 

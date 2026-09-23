@@ -10,7 +10,7 @@ Explicit current user decisions recorded here or in root `HANDOVER.md` supersede
 
 ## 2. Product identity
 
-Repository/project: `aura-health`; product: AURA. Care Plan Bridge is dropped and superseded.
+Official project name: **aura-health** (user decision, 2026-09-23); this is the submission title. "AURA Health" and "AURA" in prose and code refer to the same product. Care Plan Bridge is dropped and superseded.
 
 ## 3. Intended use
 
@@ -134,7 +134,7 @@ Garmin, Apple Health, production cloud, and external health-system integrations 
 
 ## 32. CodeBuddy/WorkBuddy evidence is mandatory
 
-Beginning M5, perform genuine implementation using CodeBuddy and/or WorkBuddy as required by the hackathon and capture contemporaneous screenshots/evidence. Do not defer proof collection to M8; M5–M8 gates confirm evidence.
+The brief requires the project to be built on CodeBuddy and/or WorkBuddy, and requires **at least 3 screenshots or a screen recording of CodeBuddy/WorkBuddy chat logs** during development. Without proof, the project is not scored. Beginning M5, do genuine implementation in CodeBuddy and/or WorkBuddy and capture evidence as it happens. Store it under `docs/evidence/` with date, milestone, and task. Don't defer proof collection to M8; M5–M8 gates confirm evidence.
 
 ## 33. Demo story
 

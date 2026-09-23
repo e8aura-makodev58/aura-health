@@ -43,7 +43,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- None currently.
+- **Hosted live demo link?** The brief (§8) gives bonus points for an optional live URL/demo link. `ROADMAP.md`/M7 currently treat cloud hosting as stretch work. The user should decide whether a simple hosted synthetic-data demo is in scope for M7.
 
 ## Active milestone: M5 — AI Communication Layer (not started; target 2026-09-30)
 
@@ -88,6 +88,16 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 ---
 
 ## Log
+
+### 2026-09-24 — Claude — Reviewed M4.5 docs; filled submission gaps
+- Verified Codex Sol's M4.5: every P1–P18, L1–L14, and A1–A20 ID and the cited test names exist in `tests/`; M4 safety-first flow matches the code; M5 matches safety spec §35 LLM containment. Only docs changed in `358f5c9`.
+- Fixed:
+  - `M8_SUBMISSION.md` omitted brief-required items: title, <10-word blurb, 16:9 cover image, the four-part description (incl. "how prompts drive AI generation" and quantified value), ≥3 CodeBuddy/WorkBuddy chat screenshots. Also added the optional video/live-link details and the judging rubric.
+  - `DECISIONS.md` §2 now states the user's official name, aura-health. §32 now gives the brief's exact evidence minimum and an evidence location (`docs/evidence/`).
+  - M5 now includes T1/T2 generation limits from spec §35.
+  - M7 and Open decisions now flag the live-link bonus.
+  - README now links `docs/`.
+- Not verifiable from the repo: M1/M2 review chronology (no M1/M2 review packets are committed). Behavior is backed by the cited tests.
 
 ### 2026-09-24 — Codex Sol — M4.5 project canonicalization
 - Created `docs/ROADMAP.md`, `docs/DECISIONS.md`, all eight `docs/milestones/` specs, and `docs/DEMO_SCRIPT.md`; no runtime code changed.
