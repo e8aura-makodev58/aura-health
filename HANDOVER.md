@@ -79,8 +79,9 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 
 ## Live demo hosting
 
-- **Primary host (user decision, 2026-09-24):** this server (`makodev58-thinkcentre-m920`), exposed publicly through **Cloudflare**.
-- `cloudflared` is **not installed yet** (checked 2026-09-24). Setup belongs to M7; record the public URL, service/start commands, and redeploy steps here once done.
+- **Primary host (user decision, 2026-09-24):** this server (`makodev58-thinkcentre-m920`), exposed publicly through **Cloudflare Zero Trust**. The server already hosts several live apps this way.
+- **Existing pattern to follow:** each app runs its own `cloudflare/cloudflared` Docker container (e.g. `ai-quiz-cloudflared-1`, `loci_cloudflared`) with a Zero Trust tunnel token. For M7, add aura-health the same way, likely a Docker Compose app with a `cloudflared` sidecar. The user manages the tunnel/token in the Zero Trust dashboard. Never commit the tunnel token; pass it via an env file that is gitignored.
+- Record the public URL and redeploy steps here once live.
 - A possible Tencent Cloud mirror is pending (see Open decisions). Keep the deployment portable: one-command start, config via environment variables, no host-specific paths.
 
 ## Git & remote
@@ -97,7 +98,7 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 
 ### 2026-09-24 — Claude — Hosting decided: this server via Cloudflare
 - User decision: host the live demo on this server via Cloudflare; decide on a Tencent Cloud mirror near the deadline.
-- Added a **Live demo hosting** section here, and updated `DECISIONS.md` §31 and `M7_DEMO_AND_INTEGRATION.md`.
+- Added a **Live demo hosting** section here (corrected: cloudflared runs as per-app Docker containers, not a host install), and updated `DECISIONS.md` §31 and `M7_DEMO_AND_INTEGRATION.md`.
 
 ### 2026-09-24 — Claude — Live hosted demo decided
 - User decision: aura-health **will have a live hosted demo** (the brief gives bonus points for a live link).
