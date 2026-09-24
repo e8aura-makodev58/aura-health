@@ -40,7 +40,7 @@ The user decided on 2026-09-24 that there will be a live demo; the brief awards 
 - the prototype/limitations notice is visible
 - deterministic fallbacks work if the model is unavailable
 
-Record the URL, host, and redeploy steps in `HANDOVER.md`. Choosing the hosting provider is still open (see `HANDOVER.md`).
+**Hosting (user decision, 2026-09-24):** run on the project's own server, exposed publicly via Cloudflare. Keep it portable (one-command start, env-var config, no host-specific paths) for a possible Tencent Cloud mirror, which the user will decide near the deadline. Record the URL, service setup, and redeploy steps in `HANDOVER.md`.
 
 ## Stretch
 

@@ -43,7 +43,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Hosting provider for the live demo:** not chosen yet. The live demo itself is decided (see Log, 2026-09-24). Tencent Cloud is worth considering since it's the hackathon sponsor *(suggestion, not decided)*. Needed by M7 (target 2026-10-12).
+- **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
 ## Active milestone: M5 — AI Communication Layer (not started; target 2026-09-30)
 
@@ -77,6 +77,12 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 .venv/bin/python -m uvicorn aura_app.api:app --host 127.0.0.1 --port 8000
 ```
 
+## Live demo hosting
+
+- **Primary host (user decision, 2026-09-24):** this server (`makodev58-thinkcentre-m920`), exposed publicly through **Cloudflare**.
+- `cloudflared` is **not installed yet** (checked 2026-09-24). Setup belongs to M7; record the public URL, service/start commands, and redeploy steps here once done.
+- A possible Tencent Cloud mirror is pending (see Open decisions). Keep the deployment portable: one-command start, config via environment variables, no host-specific paths.
+
 ## Git & remote
 
 - `origin` = `git@github.com:e8aura-makodev58/aura-health.git`, branch `main`.
@@ -88,6 +94,10 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 ---
 
 ## Log
+
+### 2026-09-24 — Claude — Hosting decided: this server via Cloudflare
+- User decision: host the live demo on this server via Cloudflare; decide on a Tencent Cloud mirror near the deadline.
+- Added a **Live demo hosting** section here, and updated `DECISIONS.md` §31 and `M7_DEMO_AND_INTEGRATION.md`.
 
 ### 2026-09-24 — Claude — Live hosted demo decided
 - User decision: aura-health **will have a live hosted demo** (the brief gives bonus points for a live link).

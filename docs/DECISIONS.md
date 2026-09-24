@@ -137,7 +137,7 @@ A publicly reachable **live demo** is in scope and required (user decision, 2026
 - deterministic fallbacks if the model service is unavailable
 - the prototype/limitations notice visible on the page
 
-Garmin, Apple Health, production cloud architecture, and external health-system integrations remain optional and must not displace the core demo.
+Hosting (user decision, 2026-09-24): the primary live demo runs on the project's own server, exposed via Cloudflare. A Tencent Cloud mirror will be decided near the deadline, so keep the deployment portable. Garmin, Apple Health, production cloud architecture, and external health-system integrations remain optional and must not displace the core demo.
 
 ## 32. CodeBuddy/WorkBuddy evidence is mandatory
 
