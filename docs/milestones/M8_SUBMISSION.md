@@ -18,7 +18,7 @@ The brief says projects without CodeBuddy/WorkBuddy proof **do not proceed to sc
 | CodeBuddy/WorkBuddy conversation history | Required | **At least 3 screenshots or a screen recording of chat logs** from CodeBuddy/WorkBuddy during development. |
 | Cover image | Required | **16:9**, recommended 380×216 px, for the online showcase. |
 | Demo video | Optional | 5–8 min: project overview, core agent features and usage, and a short reflection on the build approach with CodeBuddy/WorkBuddy tips. |
-| Project link | Optional, **earns bonus points** | Live URL or demo link. See the hosting decision in `HANDOVER.md`. |
+| Project link | Optional, **earns bonus points** | **We will submit one** (user decision, 2026-09-24): the live hosted demo URL from M7. Verify it works and resets on the day of submission. |
 | Challenge-statement items | Per healthcare track | Demo walkthrough (live), architecture + trust-boundary diagram with key design trade-offs, full source on GitHub. |
 
 Before freezing, check the submission against the ten judging dimensions (brief §11, 10 points each): Impact & Relevance, Human-Centered Design, AI Interaction, Technical Execution, Feasibility, Demo & Storytelling, Innovation & Creativity, UX & Accessibility, Responsible AI & Ethics, Overall Quality.

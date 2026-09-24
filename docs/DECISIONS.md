@@ -128,9 +128,16 @@ SQLite is development/demo infrastructure. Repository boundaries permit later pr
 
 The API lacks production authentication; caller-supplied reviewer identity is not sufficient deployed authorization.
 
-## 31. Wearable/cloud integrations are stretch goals
+## 31. Live hosted demo is required; other integrations are stretch goals
 
-Garmin, Apple Health, production cloud, and external health-system integrations are optional and must not displace the core demo.
+A publicly reachable **live demo** is in scope and required (user decision, 2026-09-24; the brief gives bonus points for a live link). It is demo hosting, not production infrastructure:
+- synthetic data only
+- deterministic reset to the fixed demo dataset
+- no real patient data or accounts
+- deterministic fallbacks if the model service is unavailable
+- the prototype/limitations notice visible on the page
+
+Garmin, Apple Health, production cloud architecture, and external health-system integrations remain optional and must not displace the core demo.
 
 ## 32. CodeBuddy/WorkBuddy evidence is mandatory
 

@@ -30,8 +30,22 @@ Provide fixed demo seed, fixture reset, one-command backend/frontend starts, hea
 
 Address or explicitly defer routine T0/null snapshot reference filtering, undefined governed REESTABLISHING exit, non-production reviewer authorization, and replay-per-event scaling. Do not invent clinical policy to close these.
 
-Only after stable demo, consider Garmin/other connector, hosted database, partner cloud, or another model provider. Exception to weigh: the brief awards **bonus points for a live URL/demo link**, so a simple hosted demo (synthetic data, deterministic reset) may be worth more than any connector. This is a user decision; see `HANDOVER.md` Open decisions. Integrations must preserve accepted interfaces.
+## Live hosted demo (required)
+
+The user decided on 2026-09-24 that there will be a live demo; the brief awards bonus points for a live link. Deploy the patient UI and backend to a public URL. Requirements:
+- synthetic data only
+- deterministic reset to the fixed demo dataset
+- no real patient data or sign-up
+- the model API key is held server-side only
+- the prototype/limitations notice is visible
+- deterministic fallbacks work if the model is unavailable
+
+Record the URL, host, and redeploy steps in `HANDOVER.md`. Choosing the hosting provider is still open (see `HANDOVER.md`).
+
+## Stretch
+
+Only after the stable hosted demo, consider Garmin/other connector, hosted production database, or another model provider. Integrations must preserve accepted interfaces.
 
 ## Acceptance and stop condition
 
-Use a nonconflicting test prefix such as `DEMO1` (D1–D6 already names detector interfaces). Require A–F visible end-to-end, hidden-truth isolation, no-live-LLM and invalid-output fallbacks, reset/replay, accurate architecture diagram, no UI policy computation, and genuine CodeBuddy/WorkBuddy M7 evidence. Stop when the system demonstrates from beginning to end without manual database surgery or hidden policy logic.
+Use a nonconflicting test prefix such as `DEMO1` (D1–D6 already names detector interfaces). Require the live hosted demo reachable at its public URL with reset working, A–F visible end-to-end, hidden-truth isolation, no-live-LLM and invalid-output fallbacks, reset/replay, accurate architecture diagram, no UI policy computation, and genuine CodeBuddy/WorkBuddy M7 evidence. Stop when the system demonstrates from beginning to end without manual database surgery or hidden policy logic.

@@ -43,7 +43,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Hosted live demo link?** The brief (§8) gives bonus points for an optional live URL/demo link. `ROADMAP.md`/M7 currently treat cloud hosting as stretch work. The user should decide whether a simple hosted synthetic-data demo is in scope for M7.
+- **Hosting provider for the live demo:** not chosen yet. The live demo itself is decided (see Log, 2026-09-24). Tencent Cloud is worth considering since it's the hackathon sponsor *(suggestion, not decided)*. Needed by M7 (target 2026-10-12).
 
 ## Active milestone: M5 — AI Communication Layer (not started; target 2026-09-30)
 
@@ -88,6 +88,11 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 ---
 
 ## Log
+
+### 2026-09-24 — Claude — Live hosted demo decided
+- User decision: aura-health **will have a live hosted demo** (the brief gives bonus points for a live link).
+- Updated `DECISIONS.md` §31, `ROADMAP.md` (M7 and priorities), `M7_DEMO_AND_INTEGRATION.md` (new required "Live hosted demo" section and gate), and `M8_SUBMISSION.md` (project link will be submitted).
+- Still open: which hosting provider to use.
 
 ### 2026-09-24 — Claude — Reviewed M4.5 docs; filled submission gaps
 - Verified Codex Sol's M4.5: every P1–P18, L1–L14, and A1–A20 ID and the cited test names exist in `tests/`; M4 safety-first flow matches the code; M5 matches safety spec §35 LLM containment. Only docs changed in `358f5c9`.

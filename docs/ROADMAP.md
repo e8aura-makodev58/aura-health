@@ -77,7 +77,7 @@ Target: complete by 2026-10-07. M6 may begin alongside late M5 work once contrac
 
 ## M7 — Demo and Integration
 
-Target: complete by 2026-10-12. Make the system coherent under demo conditions: end-to-end frontend/backend integration; Simulation Data Agent; visible Cases A–F and adversarial scenarios; explicit ground-truth isolation test; trust-boundary diagram; stable reset/replay dataset; failure-mode checks; refined script; genuine CodeBuddy/WorkBuddy evidence. Only after the core demo is stable, a real wearable connector or deployment improvements may be considered stretch work. Garmin and cloud infrastructure are not required for success. See [M7 demo and integration](milestones/M7_DEMO_AND_INTEGRATION.md).
+Target: complete by 2026-10-12. Make the system coherent under demo conditions: end-to-end frontend/backend integration; Simulation Data Agent; visible Cases A–F and adversarial scenarios; explicit ground-truth isolation test; trust-boundary diagram; stable reset/replay dataset; failure-mode checks; refined script; genuine CodeBuddy/WorkBuddy evidence. M7 also delivers the **live hosted demo** (required; user decision 2026-09-24): synthetic data, deterministic reset, public URL. Only after the core demo is stable may a real wearable connector or production-grade infrastructure be considered stretch work. Garmin and production cloud infrastructure are not required for success. See [M7 demo and integration](milestones/M7_DEMO_AND_INTEGRATION.md).
 
 ## M8 — Submission
 
@@ -85,7 +85,7 @@ Target: 2026-10-13 through 2026-10-15. Freeze, document, rehearse, and submit: f
 
 ## Standing implementation priorities
 
-When schedule pressure appears, preserve in order: (1) safety boundaries, (2) deterministic longitudinal behavior, (3) coherent patient experience, (4) reproducible demo, (5) submission completeness, then (6) optional integrations. Do not sacrifice the first four to add wearable brands, cloud services, or extra AI features.
+When schedule pressure appears, preserve in order: (1) safety boundaries, (2) deterministic longitudinal behavior, (3) coherent patient experience, (4) reproducible demo, (5) submission completeness, then (6) optional integrations. Do not sacrifice the first four to add wearable brands, production cloud services, or extra AI features. The simple hosted demo is part of (4), not (6).
 
 ## Known non-blocking open issues
 
