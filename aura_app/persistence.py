@@ -322,7 +322,7 @@ class SQLiteUnitOfWork:
     def append_safety_audit(self, row):
         self.conn.execute("INSERT INTO safety_audit(event_id,patient_id,episode_id,sequence,policy_version,policy_config_version,record_json) VALUES (?,?,?,?,?,?,?)",
                           (row["event_id"], row["patient_id"], row.get("episode_id"), row["sequence"],
-                                   row["policy_version"], row["policy_config_version"], _json(row["record"])))
+                           row["policy_version"], row["policy_config_version"], _json(row["record"])))
 
     def communication_record(self, communication_id):
         row = self._one("SELECT result_json FROM communication_outputs WHERE communication_id=?", (communication_id,))

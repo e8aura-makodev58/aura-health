@@ -36,9 +36,9 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
   - `aura_safety/`: deterministic safety state machine (no LLM).
   - `aura_longitudinal/`: personal baseline, drift, context, held-for-review, and communication engines.
   - `aura_app/`: FastAPI + SQLite application layer. It handles idempotent event ingestion, atomic transactions, safety-first gating, the timeline, and the clinician review snapshot (never shared automatically).
-- **M5 implemented / review pending:** [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). `aura_communication/` supplies bounded wording contracts, validator/fallback, optional HTTP gateway, fixture evaluation, and engineering configuration. `aura_app/communication.py` reads committed decisions/safety references and persists race-checked wording/audit. Accepted domain algorithms remain unchanged.
+- **M5 implemented and reviewed (Claude, 2026-10-02; no blocking findings):** [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). `aura_communication/` supplies bounded wording contracts, validator/fallback, optional HTTP gateway, fixture evaluation, and engineering configuration. `aura_app/communication.py` reads committed decisions/safety references and persists race-checked wording/audit. Accepted domain algorithms remain unchanged.
 - **Tests:** 106 pass (`.venv/bin/python -m unittest discover -s tests -q`), including G1–G16 and all previous gates. The only warning is a Starlette/httpx deprecation, which doesn't affect results. Nine M5 prompt fixtures also pass with the provider disabled.
-- **Canonical plan:** [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/milestones/`](docs/milestones/), and [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md). M6 is next after the M5 contract review.
+- **Canonical plan:** [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/milestones/`](docs/milestones/), and [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md). M6 (patient application) is next.
 - **Not built/configured yet:** patient UI, live model/gateway, real safety detectors, production auth, clinician-sharing workflow. The default provider is disabled; the public safety gate still holds unassessed text. Model configuration cannot bypass it.
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
@@ -48,14 +48,17 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
-## Active milestone: M5 — implementation complete, review pending (2026-10-02; original target 2026-09-30)
+## Active milestone: M5 — complete and reviewed (2026-10-02); M6 next
 
 Scope/gate: [`docs/milestones/M5_AI_COMMUNICATION_LAYER.md`](docs/milestones/M5_AI_COMMUNICATION_LAYER.md); review packet: [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). Do not reopen accepted safety/longitudinal algorithms without an integration contradiction. Initial wording is finite candidate selection, not unconstrained prose. T1 requires reviewed questions (none configured); T3/T4 are static; all content remains development-review-pending.
 
 ## Next steps
 
-1. Claude reviews M5 through `MILESTONE5_REVIEW.md` and the G-series tests; address concrete review findings.
-2. Continue to M6 patient application using the accepted application endpoints and new committed-event communication endpoint. Preserve quietness, patient control, safety precedence, and mobile usability.
+1. Codex starts M6 patient application using the accepted application endpoints and the committed-event communication endpoint. Preserve quietness, patient control, safety precedence, and mobile usability. M6 should handle these M5 review notes (non-blocking):
+   - `EXPLAIN_OBSERVATION` on a non-latest event returns `SUPERSEDED_EVENT` (precedence in `_approve`), so the UI should request explanations against the latest event.
+   - In NORMAL_SUPPORT, patient free text (≤600 chars) is sent to the external gateway when one is configured. Decide and document a privacy/consent stance before enabling a live provider.
+   - `communication.py` imports private `_requires_safety_gate` from `service.py`; consider making it public.
+   - Each render loads the full event list (same scaling issue as replay).
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13; do not invent clinical policy to close them:
    - The review snapshot's `safety_episode_references` includes routine T0 records with null episode IDs, so it needs filtering.
@@ -102,6 +105,12 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 ---
 
 ## Log
+
+### 2026-10-02 — Claude — M5 review: accepted, no blocking findings
+- Read `aura_app/communication.py`, `validation.py`, `provider.py`, API/persistence diffs. Confirmed: provider gets data only; model output must exactly match an approved candidate; state is rechecked in a second transaction and stale output is discarded; T3/T4/degraded/offline/STAY_QUIET make zero provider calls; `BEGIN IMMEDIATE` serializes duplicate requests so only one output commits; provider URL is HTTPS/localhost-only, no redirects, size/time bounded; `aura_safety/` and `aura_longitudinal/` untouched since `110218c`.
+- Verified: 106 tests pass; `aura_communication.evaluation --behavior disabled` all nine fixtures PASS; `git diff --check` clean.
+- Changed: fixed a misindented line in `aura_app/persistence.py` (cosmetic). Non-blocking notes are in **Next steps**.
+- Not verified: live provider (none configured); regex checks are defense-in-depth only, as M5 states.
 
 ### 2026-10-02 — Codex Sol — M5 bounded communication and current user workflow
 - Added wording contracts/catalog/config, deterministic candidate/claim validation, optional HTTP provider, fixed fallbacks, and nine prompt fixtures. Application communication service reads committed gate results/current safety state and rejects stale generated output. New command endpoint and append-oriented output/audit persistence; core domain engines unchanged. See `MILESTONE5_REVIEW.md`.
