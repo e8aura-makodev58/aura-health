@@ -1,6 +1,6 @@
 # M5 — AI Communication Layer
 
-Status: PLANNED. Target: complete by 2026-09-30.
+Status: IMPLEMENTED / REVIEW PENDING (2026-10-02). Original target: 2026-09-30.
 
 ## Goal
 
@@ -44,4 +44,6 @@ Evaluation fixtures should cover stable days, transient physiology, slow change,
 
 ## CodeBuddy/WorkBuddy and stop condition
 
-Perform at least one meaningful M5 task with CodeBuddy and/or WorkBuddy as required by the hackathon. Capture contemporaneous evidence, task/tool/date/path. M5 stops when bounded modes, structured service, deterministic validator/fallback, prohibited-claim tests, safety containment, prompt/model audit, unchanged safety policy, and genuine evidence are in place.
+The user's 2026-10-02 decision supersedes per-milestone CodeBuddy execution: the user controls it after the agreed product is translated into a rebuild SOW. See `docs/DECISIONS.md` §32/§35. Final hackathon evidence remains required.
+
+M5 stops when bounded modes, structured service, deterministic validator/fallback, prohibited-claim tests, safety containment, prompt/model audit, and unchanged safety policy are in place and ready for review. Implementation evidence: `MILESTONE5_REVIEW.md`. Optional review-summary wording and unrestricted paraphrasing are deferred; the initial model selects among authorized wording candidates.

@@ -1,0 +1,10 @@
+{
+  "version": "m5-engineering-v1",
+  "prompt_version": "bounded-choice-v1",
+  "content_version": "development-wording-v1",
+  "max_response_length": 420,
+  "max_context_chars": 600,
+  "max_facts": 2,
+  "provider_timeout_seconds": 5.0,
+  "max_provider_response_bytes": 16384
+}

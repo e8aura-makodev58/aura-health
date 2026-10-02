@@ -113,6 +113,15 @@ CREATE TABLE IF NOT EXISTS safety_audit (
  sequence INTEGER NOT NULL, policy_version TEXT NOT NULL, policy_config_version TEXT NOT NULL,
  record_json TEXT NOT NULL, FOREIGN KEY(event_id) REFERENCES app_events(event_id)
 );
+CREATE TABLE IF NOT EXISTS communication_outputs (
+ communication_id TEXT PRIMARY KEY, patient_id TEXT NOT NULL, event_id TEXT NOT NULL,
+ safety_sequence INTEGER, episode_id TEXT, mode TEXT, prompt_version TEXT NOT NULL,
+ config_version TEXT NOT NULL, model_id TEXT, generation_used INTEGER NOT NULL,
+ created_at TEXT NOT NULL, result_json TEXT NOT NULL,
+ FOREIGN KEY(patient_id) REFERENCES patients(patient_id),
+ FOREIGN KEY(event_id) REFERENCES app_events(event_id)
+);
+CREATE INDEX IF NOT EXISTS communication_patient ON communication_outputs(patient_id, created_at);
 """
 
 
@@ -313,7 +322,22 @@ class SQLiteUnitOfWork:
     def append_safety_audit(self, row):
         self.conn.execute("INSERT INTO safety_audit(event_id,patient_id,episode_id,sequence,policy_version,policy_config_version,record_json) VALUES (?,?,?,?,?,?,?)",
                           (row["event_id"], row["patient_id"], row.get("episode_id"), row["sequence"],
-                           row["policy_version"], row["policy_config_version"], _json(row["record"])))
+                                   row["policy_version"], row["policy_config_version"], _json(row["record"])))
+
+    def communication_record(self, communication_id):
+        row = self._one("SELECT result_json FROM communication_outputs WHERE communication_id=?", (communication_id,))
+        return json.loads(row["result_json"]) if row else None
+
+    def append_communication_record(self, communication_id, row):
+        self.conn.execute("INSERT INTO communication_outputs VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                          (communication_id, row["patient_id"], row["event_id"], row["safety_reference"]["sequence"],
+                           row["safety_reference"]["episode_id"], row["mode"], row["prompt_version"],
+                           row["config_version"], row["model_id"], int(row["generation_used"]),
+                           row["created_at"], _json(row)))
+
+    def communication_records(self, patient_id):
+        rows = self._all("SELECT result_json FROM communication_outputs WHERE patient_id=? ORDER BY rowid", (patient_id,))
+        return [json.loads(row["result_json"]) for row in rows]
 
 
 class SQLiteRepositoryFactory:

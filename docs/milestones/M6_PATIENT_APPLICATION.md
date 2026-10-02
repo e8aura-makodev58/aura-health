@@ -34,4 +34,4 @@ Frontend may collect, display, call APIs, and keep presentation state. It may no
 - **UI12–UI13:** patient can initiate while STAY_QUIET; no relapse/risk percentage.
 - **UI14–UI15:** Cases A–F can be shown and core phone-width flows remain usable.
 
-Perform genuine M6 implementation with CodeBuddy and/or WorkBuddy; capture evidence during work. Stop when core patient flows and Cases A–F work through UI, frontend has no policy, safety wins, mobile demo is usable, and evidence exists.
+The user controls CodeBuddy timing through the later product-first SOW/rebuild workflow (`DECISIONS.md` §32/§35, decision 2026-10-02). Stop when core patient flows and Cases A–F work through UI, frontend has no policy, safety wins, and the mobile demo is usable. Final submission still requires actual CodeBuddy/WorkBuddy evidence.

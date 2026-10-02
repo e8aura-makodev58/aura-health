@@ -1,6 +1,6 @@
 # AURA Health — Project Roadmap
 
-Status date: 2026-09-23.
+Status date: 2026-10-02.
 Hackathon submission deadline: 2026-10-16.
 
 This roadmap is the canonical implementation sequence for AURA Health. AURA is a wearable-first, patient-controlled longitudinal companion for working adults on stable clinician-managed antidepressant maintenance treatment.
@@ -22,7 +22,7 @@ Its core AI/policy principle is:
 AURA divides computation into three roles:
 
 1. **Deterministic engines:** `aura_safety`, `aura_longitudinal`, and application orchestration/governance determine state, permitted actions, and whether communication is allowed.
-2. **Product AI:** a future bounded language-model layer phrases approved interactions and explains already-determined observations. It never owns safety state, baseline state, medication decisions, or clinical conclusions.
+2. **Product AI:** the M5 bounded language-model interface phrases approved interactions and explains already-determined observations using authorized wording choices. The default provider is disabled until explicitly configured. It never owns safety state, baseline state, medication decisions, or clinical conclusions.
 3. **Simulation Data Agent:** a future development/evaluation tool may generate synthetic scenarios and adversarial cases. Hidden scenario truth must never enter production patient-facing decisions.
 
 ## Milestone status
@@ -34,7 +34,7 @@ AURA divides computation into three roles:
 | M3 | Longitudinal context engine | COMPLETE | accepted |
 | M4 | Application backend/orchestration | COMPLETE | accepted |
 | M4.5 | Project canonicalization | COMPLETE | 2026-09-24 |
-| M5 | AI communication layer | NEXT (not started) | by 2026-09-30 |
+| M5 | AI communication layer | IMPLEMENTED / REVIEW PENDING | 2026-10-02 (original target 2026-09-30) |
 | M6 | Patient application | PLANNED | by 2026-10-07 |
 | M7 | Demo + integration hardening | PLANNED | by 2026-10-12 |
 | M8 | Submission + final freeze | PLANNED | 2026-10-13 to 2026-10-15 |
@@ -67,7 +67,7 @@ Remove conversational dependency from the development plan by delivering this ro
 
 ## M5 — AI Communication Layer
 
-Target: complete by 2026-09-30. Introduce generative AI only after deterministic product policy exists. Keep scope small: bounded communication modes, structured request/response contracts, deterministic claim validation and fallbacks, safety-mode containment, prohibited-claim tests, version logging, and the first genuine CodeBuddy/WorkBuddy development evidence.
+Original target: 2026-09-30; implementation ready for review on 2026-10-02. Introduce generative AI only after deterministic product policy exists. Keep scope small: bounded communication modes, structured request/response contracts, deterministic claim validation and fallbacks, safety-mode containment, prohibited-claim tests, and version logging. CodeBuddy timing/evidence is now owned by the user's later SOW/rebuild workflow (2026-10-02 decision).
 
 The LLM may phrase an approved micro-check-in or clarification, explain an already-computed descriptive change, and optionally word structured review data where policy permits. It may not assign/lower T1–T4, move an anchor, declare relapse, diagnose, determine suicide risk, change medication, give taper instructions, independently contact a clinician, generate T4 emergency policy, or operate when fail-closed/offline policy forbids it. See [M5 AI communication](milestones/M5_AI_COMMUNICATION_LAYER.md).
 
@@ -77,7 +77,7 @@ Target: complete by 2026-10-07. M6 may begin alongside late M5 work once contrac
 
 ## M7 — Demo and Integration
 
-Target: complete by 2026-10-12. Make the system coherent under demo conditions: end-to-end frontend/backend integration; Simulation Data Agent; visible Cases A–F and adversarial scenarios; explicit ground-truth isolation test; trust-boundary diagram; stable reset/replay dataset; failure-mode checks; refined script; genuine CodeBuddy/WorkBuddy evidence. M7 also delivers the **live hosted demo** (required; user decision 2026-09-24): synthetic data, deterministic reset, public URL. Only after the core demo is stable may a real wearable connector or production-grade infrastructure be considered stretch work. Garmin and production cloud infrastructure are not required for success. See [M7 demo and integration](milestones/M7_DEMO_AND_INTEGRATION.md).
+Target: complete by 2026-10-12. Make the system coherent under demo conditions: end-to-end frontend/backend integration; Simulation Data Agent; visible Cases A–F and adversarial scenarios; explicit ground-truth isolation test; trust-boundary diagram; stable reset/replay dataset; failure-mode checks; refined script. CodeBuddy timing follows the user-controlled SOW/rebuild workflow. M7 also delivers the **live hosted demo** (required; user decision 2026-09-24): synthetic data, deterministic reset, public URL. Only after the core demo is stable may a real wearable connector or production-grade infrastructure be considered stretch work. Garmin and production cloud infrastructure are not required for success. See [M7 demo and integration](milestones/M7_DEMO_AND_INTEGRATION.md).
 
 ## M8 — Submission
 

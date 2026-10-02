@@ -141,8 +141,18 @@ Hosting (user decision, 2026-09-24): the primary live demo runs on the project's
 
 ## 32. CodeBuddy/WorkBuddy evidence is mandatory
 
-The brief requires the project to be built on CodeBuddy and/or WorkBuddy, and requires **at least 3 screenshots or a screen recording of CodeBuddy/WorkBuddy chat logs** during development. Without proof, the project is not scored. Beginning M5, do genuine implementation in CodeBuddy and/or WorkBuddy and capture evidence as it happens. Store it under `docs/evidence/` with date, milestone, and task. Don't defer proof collection to M8; M5–M8 gates confirm evidence.
+The brief requires the project to be built on CodeBuddy and/or WorkBuddy, and requires **at least 3 screenshots or a screen recording of CodeBuddy/WorkBuddy chat logs** during development. Without proof, the project is not scored. Store actual evidence under `docs/evidence/` with date, milestone, and task; never fabricate retrospective evidence.
+
+**Current user decision, 2026-10-02:** the user decides when/how CodeBuddy is used. Agents must not run it automatically. First complete and review our product, then prepare a detailed SOW for the user to trigger an independent CodeBuddy rebuild from scratch. Capture evidence during that actual rebuild. This supersedes the older instruction to run CodeBuddy during each M5–M7 milestone; it does not waive the final submission evidence requirement. Compare the completed applications, reuse useful reviewed improvements, and submit the stronger implementation (our version if preferred). See §35.
 
 ## 33. Demo story
 
 Not “look at our mental-health chatbot,” but how AURA stays quiet, asks small questions, preserves historical truth, and hands safety to deterministic policy. Cases A–F demonstrate physical illness, slow drift, illness plus independent change, explained persistent change, wearable gap, and safety handoff.
+
+## 34. Implementation ownership
+
+User decision, 2026-10-02: Codex has implementation authority over the project; Claude Sonnet 5.5 acts as reviewer. Use root `HANDOVER.md` for coordination and leave each milestone reviewable with test evidence. Accepted product/safety boundaries still govern.
+
+## 35. Product-first implementation and independent rebuild
+
+User decision, 2026-10-02: build a functioning application and iterate until the user and reviewers agree it is a strong product. Only then translate the agreed product into a detailed SOW for a manually triggered CodeBuddy implementation from scratch. Preserve intended use, interfaces, governance, tests, demo behavior, and trust boundaries in that SOW. Keep the rebuild isolated from the existing implementation; compare the completed applications and adopt useful features after review/regression checks. Final implementation choice is based on product quality; using our version remains allowed. No SOW/rebuild is initiated by the M5 implementation task.

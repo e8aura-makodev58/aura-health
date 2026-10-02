@@ -8,6 +8,8 @@ from uuid import uuid4
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from aura_communication.domain import CommunicationPurpose
+from .communication import PatientCommunicationService
 from .models import AppError, ApplicationEvent, EventType
 from .persistence import SQLiteRepositoryFactory
 from .service import PatientEventService
@@ -58,13 +60,22 @@ class AnchorIn(BaseModel):
     correlation_id: str = Field(default_factory=lambda: str(uuid4()))
 
 
-def create_app(db_path: str | Path | None = None, service: PatientEventService | None = None) -> FastAPI:
+class CommunicationIn(BaseModel):
+    model_config = {"extra": "forbid"}
+    purpose: CommunicationPurpose = CommunicationPurpose.AUTO
+    client_offline: bool = False
+
+
+def create_app(db_path: str | Path | None = None, service: PatientEventService | None = None,
+               communication_service: PatientCommunicationService | None = None) -> FastAPI:
     if service is None:
         factory = SQLiteRepositoryFactory(db_path or os.environ.get("AURA_DEV_DB", "aura-m4-development.sqlite3"))
         factory.initialize()
         service = PatientEventService(factory)
-    app = FastAPI(title="AURA prototype application API", version="milestone-4")
+    communication_service = communication_service or PatientCommunicationService(service)
+    app = FastAPI(title="AURA prototype application API", version="milestone-5")
     app.state.service = service
+    app.state.communication_service = communication_service
 
     @app.exception_handler(AppError)
     async def app_error(_request, exc: AppError):
@@ -95,6 +106,11 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     @app.post("/patients/{patient_id}/events")
     def ingest(patient_id: str, body: EventIn):
         return service.process(envelope(patient_id, body))
+
+    @app.post("/patients/{patient_id}/events/{event_id}/communication")
+    def communicate(patient_id: str, event_id: str, body: CommunicationIn):
+        return communication_service.render(patient_id, event_id, purpose=body.purpose,
+                                            client_offline=body.client_offline)
 
     @app.get("/patients/{patient_id}/timeline")
     def timeline(patient_id: str):
