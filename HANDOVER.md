@@ -37,7 +37,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
   - `aura_longitudinal/`: personal baseline, drift, context, held-for-review, and communication engines.
   - `aura_app/`: FastAPI + SQLite application layer. It handles idempotent event ingestion, atomic transactions, safety-first gating, the timeline, and the clinician review snapshot (never shared automatically).
 - **M5 implemented and reviewed (Claude, 2026-10-02; no blocking findings):** [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). `aura_communication/` supplies bounded wording contracts, validator/fallback, optional HTTP gateway, fixture evaluation, and engineering configuration. `aura_app/communication.py` reads committed decisions/safety references and persists race-checked wording/audit. Accepted domain algorithms remain unchanged.
-- **M6 implemented; review pending:** [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). `aura_ui/` is a responsive, no-build-step patient web app. It uses existing APIs for check-ins, medication records, explicit explanations, review preview, and pinned safety. `PatientViewService` provides read-only latest-event/provenance links. The explicitly synthetic demo factory shows stable + Cases A–F with before/after explanation and gap/return checkpoints. Accepted safety/longitudinal algorithms and DB schema are unchanged.
+- **M6 implemented; reviewed by Claude 2026-10-03, no blocking findings:** [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). `aura_ui/` is a responsive, no-build-step patient web app. It uses existing APIs for check-ins, medication records, explicit explanations, review preview, and pinned safety. `PatientViewService` provides read-only latest-event/provenance links. The explicitly synthetic demo factory shows stable + Cases A–F with before/after explanation and gap/return checkpoints. Accepted safety/longitudinal algorithms and DB schema are unchanged.
 - **Tests:** 124 pass (`.venv/bin/python -m unittest discover -s tests -q`), including all previous gates and 18 M6 checks. Real Chromium: UI1–UI15 + OFFLINE + MANUAL_RETRY, **17 PASS**, no page errors; 320/390/1280 widths checked. The only Python warning is the existing Starlette/httpx deprecation.
 - **Canonical plan:** [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/milestones/`](docs/milestones/), and [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md). M7 follows M6 review; it has not begun.
 - **Not built/configured yet:** live model/gateway, real safety detectors, production auth, clinician-sharing workflow, Simulation Data Agent, hosted demo. Supplied API/demo entry points now explicitly disable models even if gateway environment variables exist, pending informed-consent governance. The public safety gate still holds unassessed text. The demo gate supplies finite labelled synthetic fixtures only.
@@ -49,14 +49,14 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
-## Active milestone: M6 — implemented, awaiting review (2026-10-03)
+## Active milestone: M6 — reviewed, accepted (2026-10-03)
 
-Scope/gate: [`docs/milestones/M6_PATIENT_APPLICATION.md`](docs/milestones/M6_PATIENT_APPLICATION.md); review packet: [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). Run/UI instructions: [`aura_ui/README.md`](aura_ui/README.md). M5 was accepted by Claude. M6 stops here for review; no M7 deployment/Simulation Data Agent work occurred. Do not reopen accepted domain algorithms without a concrete integration contradiction.
+Scope/gate: [`docs/milestones/M6_PATIENT_APPLICATION.md`](docs/milestones/M6_PATIENT_APPLICATION.md); review packet: [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). Run/UI instructions: [`aura_ui/README.md`](aura_ui/README.md). M5 and M6 were accepted by Claude. No M7 deployment/Simulation Data Agent work occurred. Do not reopen accepted domain algorithms without a concrete integration contradiction.
 
 ## Next steps
 
-1. Claude reviews M6 code/packet and UI. Browser runner owns a fresh synthetic DB/server; persistent demo edits are intentionally preserved. Unknown text must remain held, not classified as safe. No CodeBuddy run is authorized automatically.
-2. After M6 review, start M7 integration/demo hardening: trust-boundary diagram, adversarial scenarios/explicit ground-truth isolation, reset/replay tooling, and hosted synthetic demo on this server via Cloudflare. Do not invent clinical policy to make the demo smoother.
+1. M6 accepted. Start M7 (see 2). Browser runner owns a fresh synthetic DB/server; persistent demo edits are intentionally preserved. Unknown text must remain held, not classified as safe. No CodeBuddy run is authorized automatically.
+2. Start M7 integration/demo hardening: trust-boundary diagram, adversarial scenarios/explicit ground-truth isolation, reset/replay tooling, and hosted synthetic demo on this server via Cloudflare. Do not invent clinical policy to make the demo smoother.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
    - Backend `safety_episode_references` still includes routine T0/null records; M6 filters null episode references in presentation only. Future sharing needs governance/filtering.
@@ -113,6 +113,12 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-03 — Claude — M6 review: accepted, no blocking findings
+- Read `aura_app/api.py`, `patient_view.py`, `demo.py`, simulator/communication/service diffs and `aura_ui/app.js`. Confirmed: UI renders server state only (no drift/trust/safety logic in the browser); safety panel is not dismissable by navigation; offline state keeps built-in resources and holds input in memory with same-key retry; demo gate fails closed on unknown text; demo patients are restricted by id; model provider forced to `DisabledProvider`; `aura_safety/` and `aura_longitudinal/` untouched; CSP/no-store headers set.
+- Verified: 124 tests pass (110 s); `git diff --check` clean.
+- Not verified: real Chromium suite (Playwright not installed on this host; run needs `aura_ui/README.md` setup).
+- Non-blocking notes for M7: `/assets` serves the whole `aura_ui/` dir (incl. README); the strict CSP will block FastAPI `/docs` assets (CDN); disable or relax docs on the hosted demo.
 
 ### 2026-10-03 — Codex Sol — M6 patient app ready for review
 - Added responsive patient UI, read-only latest-event/provenance view, explicitly synthetic checkpoint server, and API/browser acceptance tests. Reused accepted commands/engines; no schema or safety/longitudinal algorithm changes. See `MILESTONE6_REVIEW.md` and `aura_ui/README.md`.
