@@ -6,13 +6,17 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from aura_communication.domain import CommunicationPurpose
+from aura_communication.provider import DisabledProvider
 from .communication import PatientCommunicationService
 from .models import AppError, ApplicationEvent, EventType
 from .persistence import SQLiteRepositoryFactory
 from .service import PatientEventService
+from .patient_view import PatientViewService
 
 
 class PatientIn(BaseModel):
@@ -72,10 +76,24 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
         factory = SQLiteRepositoryFactory(db_path or os.environ.get("AURA_DEV_DB", "aura-m4-development.sqlite3"))
         factory.initialize()
         service = PatientEventService(factory)
-    communication_service = communication_service or PatientCommunicationService(service)
-    app = FastAPI(title="AURA prototype application API", version="milestone-5")
+    # M6 patient entry point remains local-only until live-model consent is governed.
+    communication_service = communication_service or PatientCommunicationService(service, provider=DisabledProvider())
+    view_service = PatientViewService(service, wording_provider_id=communication_service.provider.model_id)
+    app = FastAPI(title="AURA prototype application API", version="milestone-6")
     app.state.service = service
     app.state.communication_service = communication_service
+
+    @app.middleware("http")
+    async def presentation_headers(request, call_next):
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self'; "
+            "img-src 'self' data:; connect-src 'self'; object-src 'none'; "
+            "base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+        return response
 
     @app.exception_handler(AppError)
     async def app_error(_request, exc: AppError):
@@ -120,6 +138,10 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def status(patient_id: str):
         return service.status(patient_id)
 
+    @app.get("/patients/{patient_id}/view")
+    def patient_view(patient_id: str):
+        return view_service.get(patient_id)
+
     @app.post("/patients/{patient_id}/context-explanations")
     def explain(patient_id: str, body: ExplanationIn):
         event = ApplicationEvent(body.event_id, patient_id, EventType.CONTEXT_EXPLANATION,
@@ -156,6 +178,13 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     @app.post("/patients/{patient_id}/anchors/reanchor")
     def reanchor(patient_id: str, body: AnchorIn):
         return anchor(patient_id, body, "CLINICAL_REVIEW_REANCHOR")
+
+    ui = Path(__file__).resolve().parent.parent / "aura_ui"
+    app.mount("/assets", StaticFiles(directory=ui), name="patient-assets")
+
+    @app.get("/", include_in_schema=False)
+    def patient_application():
+        return FileResponse(ui / "index.html", headers={"Cache-Control": "no-store"})
 
     return app
 

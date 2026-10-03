@@ -1,6 +1,7 @@
 # M6 — Patient Application
 
-Status: PLANNED. Target: complete by 2026-10-07. May overlap late M5 work once backend/communication contracts stabilize.
+Status: IMPLEMENTED / REVIEW PENDING (2026-10-03). Target: complete by 2026-10-07.
+Review packet: [MILESTONE6_REVIEW.md](../../MILESTONE6_REVIEW.md).
 
 ## Goal and UX
 
@@ -23,7 +24,7 @@ A responsive phone-sized web app is sufficient; native mobile development is not
 
 Frontend may collect, display, call APIs, and keep presentation state. It may not calculate drift, move anchors, assign safety tiers, infer diagnosis, or decide escalation.
 
-## Suggested acceptance tests (future UI-series)
+## Acceptance tests (UI series)
 
 - **UI1:** stable home has no mental-health risk score.
 - **UI2–UI3:** check-in reaches API and optional free text is safety-gated.

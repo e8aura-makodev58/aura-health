@@ -25,7 +25,7 @@ from aura_safety.engine import POLICY_VERSION
 from aura_safety.output import OutputPlan, output_plan
 
 from .models import AppError, EventType
-from .service import PatientEventService, _requires_safety_gate
+from .service import PatientEventService, requires_safety_gate
 
 
 def _hash(value) -> str:
@@ -169,7 +169,7 @@ class PatientCommunicationService:
                                     event["payload"], event["correlation_id"], event["idempotency_key"])
         references = repo.safety_references(patient_id)
         evaluated = next((ref for ref in references if ref["event_id"] == event_id), None)
-        gate_complete = (not _requires_safety_gate(envelope) or
+        gate_complete = (not requires_safety_gate(envelope) or
                          bool(evaluated and not evaluated["state"]["degraded"]
                               and evaluated["outcome"] not in {"DEFER_EVENT", "REJECT_EVENT", "SET_DEGRADED"}))
         input_held = event["longitudinal_deferred"] or not gate_complete

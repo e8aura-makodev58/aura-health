@@ -1,6 +1,6 @@
 # AURA Health — Project Roadmap
 
-Status date: 2026-10-02.
+Status date: 2026-10-03.
 Hackathon submission deadline: 2026-10-16.
 
 This roadmap is the canonical implementation sequence for AURA Health. AURA is a wearable-first, patient-controlled longitudinal companion for working adults on stable clinician-managed antidepressant maintenance treatment.
@@ -34,8 +34,8 @@ AURA divides computation into three roles:
 | M3 | Longitudinal context engine | COMPLETE | accepted |
 | M4 | Application backend/orchestration | COMPLETE | accepted |
 | M4.5 | Project canonicalization | COMPLETE | 2026-09-24 |
-| M5 | AI communication layer | IMPLEMENTED / REVIEW PENDING | 2026-10-02 (original target 2026-09-30) |
-| M6 | Patient application | PLANNED | by 2026-10-07 |
+| M5 | AI communication layer | COMPLETE / REVIEWED | 2026-10-02 (original target 2026-09-30) |
+| M6 | Patient application | IMPLEMENTED / REVIEW PENDING | 2026-10-03 (target 2026-10-07) |
 | M7 | Demo + integration hardening | PLANNED | by 2026-10-12 |
 | M8 | Submission + final freeze | PLANNED | 2026-10-13 to 2026-10-15 |
 
@@ -74,6 +74,12 @@ The LLM may phrase an approved micro-check-in or clarification, explain an alrea
 ## M6 — Patient Application
 
 Target: complete by 2026-10-07. M6 may begin alongside late M5 work once contracts stabilize because most views consume existing endpoints. Build a calm patient-facing application embodying **quiet when stable**, **context before conclusions**, and **patient-initiated help is always available**. Core experiences include home, Good/Okay/Rough check-in, medication routine, why-AURA-asked provenance, longitudinal observations, held-for-review, wearable-unavailable state, review preparation, bounded safety interaction, and patient control. Avoid a psychiatric risk dashboard. See [M6 patient application](milestones/M6_PATIENT_APPLICATION.md).
+
+Implemented for review: no-build-step responsive UI, explicit synthetic A–F checkpoints,
+server-provided provenance, local-only wording, memory-only idempotent offline retry,
+and UI1–UI15 API/browser gates. See [M6 review](../MILESTONE6_REVIEW.md). No accepted
+safety/longitudinal algorithm changed. Live-model consent is a prerequisite before
+enabling a patient-facing external provider.
 
 ## M7 — Demo and Integration
 

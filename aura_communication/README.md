@@ -49,14 +49,16 @@ response field and never enter generation. Their age does not hide them.
 ## Optional provider
 
 The default is `DisabledProvider`, which produces deterministic fallback. An explicit
-model gateway can implement the neutral JSON POST contract in `prompts.py`:
+model gateway can implement the neutral JSON POST contract in `prompts.py`.
 
-```sh
-export AURA_COMMUNICATION_ENDPOINT=https://your-model-gateway.example/generate
-export AURA_COMMUNICATION_MODEL=your-configured-model
-# Set AURA_COMMUNICATION_TOKEN privately if required; never commit it.
-.venv/bin/python -m uvicorn aura_app.api:app --host 127.0.0.1 --port 8000
-```
+**M6 privacy stance:** both supplied patient API/demo entry points explicitly use
+`DisabledProvider`, even if gateway environment variables exist. Live patient-model
+use is deferred until an explicit informed consent workflow is reviewed. The domain
+communication service still supports an explicitly injected provider for synthetic
+developer evaluation; this is not a consent-approved patient deployment. Its standalone
+environment adapter reads `AURA_COMMUNICATION_ENDPOINT`, `AURA_COMMUNICATION_MODEL`,
+and private `AURA_COMMUNICATION_TOKEN`; these no longer automatically enable the
+patient API. No gateway/credential is configured by this milestone.
 
 The gateway receives `contract_version`, `instructions`, `request`, `output_schema`,
 and `model`; it returns exactly `candidate_id`, `message`, `acknowledged_facts`,

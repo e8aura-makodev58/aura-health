@@ -28,7 +28,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ---
 
-## Current state (as of 2026-10-02)
+## Current state (as of 2026-10-03)
 
 - **Project name:** officially **aura-health** (user, 2026-09-23). Care Plan Bridge (`PRODUCT_FRAMEWORK*.md`, `FRAMEWORK_CRITIQUE.md`) was dropped; those docs are marked superseded and kept for background only.
 - **Product being built:** a longitudinal, wearable-first companion for adults on stable antidepressant maintenance treatment. Spec: `aura_health_framework_v1.0.md`. Safety policy: `aura_deterministic_safety_policy_state_machine_v1.2.md`.
@@ -37,9 +37,10 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
   - `aura_longitudinal/`: personal baseline, drift, context, held-for-review, and communication engines.
   - `aura_app/`: FastAPI + SQLite application layer. It handles idempotent event ingestion, atomic transactions, safety-first gating, the timeline, and the clinician review snapshot (never shared automatically).
 - **M5 implemented and reviewed (Claude, 2026-10-02; no blocking findings):** [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). `aura_communication/` supplies bounded wording contracts, validator/fallback, optional HTTP gateway, fixture evaluation, and engineering configuration. `aura_app/communication.py` reads committed decisions/safety references and persists race-checked wording/audit. Accepted domain algorithms remain unchanged.
-- **Tests:** 106 pass (`.venv/bin/python -m unittest discover -s tests -q`), including G1–G16 and all previous gates. The only warning is a Starlette/httpx deprecation, which doesn't affect results. Nine M5 prompt fixtures also pass with the provider disabled.
-- **Canonical plan:** [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/milestones/`](docs/milestones/), and [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md). M6 (patient application) is next.
-- **Not built/configured yet:** patient UI, live model/gateway, real safety detectors, production auth, clinician-sharing workflow. The default provider is disabled; the public safety gate still holds unassessed text. Model configuration cannot bypass it.
+- **M6 implemented; review pending:** [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). `aura_ui/` is a responsive, no-build-step patient web app. It uses existing APIs for check-ins, medication records, explicit explanations, review preview, and pinned safety. `PatientViewService` provides read-only latest-event/provenance links. The explicitly synthetic demo factory shows stable + Cases A–F with before/after explanation and gap/return checkpoints. Accepted safety/longitudinal algorithms and DB schema are unchanged.
+- **Tests:** 124 pass (`.venv/bin/python -m unittest discover -s tests -q`), including all previous gates and 18 M6 checks. Real Chromium: UI1–UI15 + OFFLINE + MANUAL_RETRY, **17 PASS**, no page errors; 320/390/1280 widths checked. The only Python warning is the existing Starlette/httpx deprecation.
+- **Canonical plan:** [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/milestones/`](docs/milestones/), and [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md). M7 follows M6 review; it has not begun.
+- **Not built/configured yet:** live model/gateway, real safety detectors, production auth, clinician-sharing workflow, Simulation Data Agent, hosted demo. Supplied API/demo entry points now explicitly disable models even if gateway environment variables exist, pending informed-consent governance. The public safety gate still holds unassessed text. The demo gate supplies finite labelled synthetic fixtures only.
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
@@ -48,23 +49,24 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
-## Active milestone: M5 — complete and reviewed (2026-10-02); M6 next
+## Active milestone: M6 — implemented, awaiting review (2026-10-03)
 
-Scope/gate: [`docs/milestones/M5_AI_COMMUNICATION_LAYER.md`](docs/milestones/M5_AI_COMMUNICATION_LAYER.md); review packet: [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). Do not reopen accepted safety/longitudinal algorithms without an integration contradiction. Initial wording is finite candidate selection, not unconstrained prose. T1 requires reviewed questions (none configured); T3/T4 are static; all content remains development-review-pending.
+Scope/gate: [`docs/milestones/M6_PATIENT_APPLICATION.md`](docs/milestones/M6_PATIENT_APPLICATION.md); review packet: [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). Run/UI instructions: [`aura_ui/README.md`](aura_ui/README.md). M5 was accepted by Claude. M6 stops here for review; no M7 deployment/Simulation Data Agent work occurred. Do not reopen accepted domain algorithms without a concrete integration contradiction.
 
 ## Next steps
 
-1. Codex starts M6 patient application using the accepted application endpoints and the committed-event communication endpoint. Preserve quietness, patient control, safety precedence, and mobile usability. M6 should handle these M5 review notes (non-blocking):
-   - `EXPLAIN_OBSERVATION` on a non-latest event returns `SUPERSEDED_EVENT` (precedence in `_approve`), so the UI should request explanations against the latest event.
-   - In NORMAL_SUPPORT, patient free text (≤600 chars) is sent to the external gateway when one is configured. Decide and document a privacy/consent stance before enabling a live provider.
-   - `communication.py` imports private `_requires_safety_gate` from `service.py`; consider making it public.
-   - Each render loads the full event list (same scaling issue as replay).
+1. Claude reviews M6 code/packet and UI. Browser runner owns a fresh synthetic DB/server; persistent demo edits are intentionally preserved. Unknown text must remain held, not classified as safe. No CodeBuddy run is authorized automatically.
+2. After M6 review, start M7 integration/demo hardening: trust-boundary diagram, adversarial scenarios/explicit ground-truth isolation, reset/replay tooling, and hosted synthetic demo on this server via Cloudflare. Do not invent clinical policy to make the demo smoother.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
-4. Preserve known issues from `MILESTONE4_REVIEW.md` §13; do not invent clinical policy to close them:
-   - The review snapshot's `safety_episode_references` includes routine T0 records with null episode IDs, so it needs filtering.
+4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
+   - Backend `safety_episode_references` still includes routine T0/null records; M6 filters null episode references in presentation only. Future sharing needs governance/filtering.
    - There is no governed exit from the `REESTABLISHING` state.
    - `reviewed_by` is caller-supplied and not authenticated.
    - Replay-per-event cost grows with the length of the event history.
+   - M5 wording render also loads full history. Public routing helper is now `requires_safety_gate`; latest-event IDs are supplied by the read view.
+   - Live-model informed consent remains future work; supplied patient entry points stay local-only. Explicit developer provider injection is for synthetic evaluation, not consent-approved patient deployment.
+   - Offline pending input is memory-only with same-key retries and an unload warning; no durable encrypted queue/cold-start offline app. Review selections are temporary previews, not saved approval/sharing.
+   - Initial demo seeding is event-atomic, not whole-seed atomic; interrupted partial profiles are skipped on restart. Use a fresh DB path for now; add completion/resume/reset safeguards in M7.
 
 ## Quick reference
 
@@ -85,6 +87,12 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 
 # API
 .venv/bin/python -m uvicorn aura_app.api:app --host 127.0.0.1 --port 8000
+
+# M6 patient app + explicit synthetic demo (initial seed ~30 seconds)
+.venv/bin/python -m aura_app.demo --db aura-m6-demo.sqlite3
+AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:create_demo_app --factory --host 127.0.0.1 --port 8000
+# Open http://127.0.0.1:8000/; Explore demo selects checkpoint.
+# Optional Playwright setup/runner: aura_ui/README.md
 ```
 
 ## Live demo hosting
@@ -105,6 +113,12 @@ UV_CACHE_DIR=/tmp/aura-uv-cache uv pip install --python .venv/bin/python -r requ
 ---
 
 ## Log
+
+### 2026-10-03 — Codex Sol — M6 patient app ready for review
+- Added responsive patient UI, read-only latest-event/provenance view, explicitly synthetic checkpoint server, and API/browser acceptance tests. Reused accepted commands/engines; no schema or safety/longitudinal algorithm changes. See `MILESTONE6_REVIEW.md` and `aura_ui/README.md`.
+- Verified: **124 Python tests PASS**; real Chromium **UI1–UI15 + OFFLINE + MANUAL_RETRY (17 PASS)**, 320/390/1280 widths, no page errors. `git diff --check` clean. Fixed narrow-screen flex overflow and verified medication taps use the existing uppercase transport enum.
+- M5 review notes handled: latest committed event reference supplied; routing helper public; live-provider startup disabled pending consent. History scaling remains. Separate resources persist offline; retry preserves event key. Preview selections are not approval/sharing.
+- Left: Claude/user M6 review. M7 has not started; clinical content/resources, real detectors, governed REESTABLISHING exit, durable offline queue and prod auth remain absent. No CodeBuddy used; later rebuild remains user-controlled.
 
 ### 2026-10-02 — Claude — M5 review: accepted, no blocking findings
 - Read `aura_app/communication.py`, `validation.py`, `provider.py`, API/persistence diffs. Confirmed: provider gets data only; model output must exactly match an approved candidate; state is rechecked in a second transaction and stale output is discarded; T3/T4/degraded/offline/STAY_QUIET make zero provider calls; `BEGIN IMMEDIATE` serializes duplicate requests so only one output commits; provider URL is HTTPS/localhost-only, no redirects, size/time bounded; `aura_safety/` and `aura_longitudinal/` untouched since `110218c`.

@@ -25,7 +25,7 @@ SAFETY_INPUTS = frozenset({
 })
 
 
-def _requires_safety_gate(event: ApplicationEvent) -> bool:
+def requires_safety_gate(event: ApplicationEvent) -> bool:
     return (event.event_type in SAFETY_INPUTS
             or (event.event_type == EventType.CONTEXT_EVENT and bool(event.payload.get("explanation")))
             or (event.event_type == EventType.REVIEW_COMMAND and bool(event.payload.get("question"))))
@@ -257,7 +257,7 @@ class PatientEventService:
 
     def _recover_pending(self, repo: UnitOfWork, current: ApplicationEvent) -> None:
         before = repo.safety_state(current.patient_id)
-        if not before or not before["degraded"] or not _requires_safety_gate(current):
+        if not before or not before["degraded"] or not requires_safety_gate(current):
             return
         pending = [row for row in repo.events(current.patient_id) if row["longitudinal_deferred"]]
         safety_ids = {row["event_id"] for row in repo.safety_references(current.patient_id)}
@@ -292,7 +292,7 @@ class PatientEventService:
 
     def _safety_boundary(self, repo: UnitOfWork, event: ApplicationEvent,
                          safety_time: datetime | None = None) -> dict | None:
-        if not _requires_safety_gate(event):
+        if not requires_safety_gate(event):
             return None
         processed_at = safety_time or event.received_at
         before = state_from_dict(repo.safety_state(event.patient_id) or state_to_dict(SafetyState()))

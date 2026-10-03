@@ -18,13 +18,19 @@ def _at(day: date, hour: int = 12) -> datetime:
     return datetime.combine(day, time(hour, 0), tzinfo=timezone.utc)
 
 
-def run_case(case: str, seed: int, db_path: str | Path) -> dict:
+def run_case(case: str, seed: int, db_path: str | Path, *, through_day: int = 69,
+             patient_id: str | None = None, event_prefix: str | None = None,
+             include_explanation: bool = True) -> dict:
+    """Optional checkpoints are demo tooling, not inputs to either decision engine."""
+    if not 13 <= through_day <= 69:
+        raise ValueError("checkpoint must include the reference period")
     timeline = generate_case(case if case in "ABCDE" else "A", seed)
     factory = SQLiteRepositoryFactory(db_path)
     factory.initialize()
     proposals: dict[str, tuple[tuple[str, str], ...]] = {}
     service = PatientEventService(factory, safety_gate=FixtureSafetyGate(proposals))
-    patient_id = f"synthetic-{case}-{seed}"
+    patient_id = patient_id or f"synthetic-{case}-{seed}"
+    prefix = event_prefix or f"{case}-{seed}"
     service.create_patient(patient_id=patient_id, display_name=f"Synthetic case {case}",
                            age=35, timezone_name="UTC",
                            treatment={"medication_name": "fixture-only; no treatment instruction"},
@@ -40,7 +46,7 @@ def run_case(case: str, seed: int, db_path: str | Path) -> dict:
     def submit(index: int, kind: EventType, payload: dict, suffix: str,
                *, tier: str | None = "NORMAL", hour: int = 12):
         day = date.fromisoformat(timeline["days"][index]["date"])
-        event_id = f"{case}-{seed}-{index}-{suffix}"
+        event_id = f"{prefix}-{index}-{suffix}"
         if tier is not None:
             proposals[event_id] = () if tier == "NORMAL" else (("D2", tier),)
         event = ApplicationEvent(event_id, patient_id, kind, _at(day, hour), _at(day, hour),
@@ -56,6 +62,8 @@ def run_case(case: str, seed: int, db_path: str | Path) -> dict:
 
     for raw in timeline["days"]:
         index = raw["index"]
+        if index > through_day:
+            break
         day = date.fromisoformat(raw["date"])
         for context in contexts_by_day.get(index, []):
             start = date.fromisoformat(timeline["start_date"]) + timedelta(days=context["start_day"])
@@ -89,14 +97,14 @@ def run_case(case: str, seed: int, db_path: str | Path) -> dict:
                 submit(index, EventType.ANCHOR_COMMAND,
                        {**payload, "action": "TRUST_ANCHOR", "reviewed_by": "synthetic-review-event-only"},
                        f"trust-{signal}", tier=None)
-        if case == "D" and index == 30:
-            context_id = f"D-{seed}-30-context-0"
+        if case == "D" and index == 30 and include_explanation:
+            context_id = f"{prefix}-30-context-0"
             submit(index, EventType.CONTEXT_EXPLANATION,
                    {"context_event_id": context_id, "explanation": "new stable work schedule",
                     "affected_signals": ["SLEEP_MIDPOINT", "ACTIVITY"]}, "explanation")
         submit(index, EventType.PATIENT_CHECKIN, {"state": raw["checkin"]}, "checkin")
 
-    if case == "F":
+    if case == "F" and through_day == 69:
         result = submit(69, EventType.PATIENT_FREE_TEXT, {"text": "fixture safety concern"},
                         "safety-text", tier="CLARIFY", hour=18)
         assert result.communication_decision == "SAFETY_REVIEW_REQUIRED"
