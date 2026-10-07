@@ -10,6 +10,7 @@ services:
       - demo-data:/data
     environment:
       AURA_SECURE_COOKIE: ${AURA_SECURE_COOKIE:-true}
+      AURA_HTTP_DEMO_HOSTS: ${AURA_HTTP_DEMO_HOSTS:-}
       AURA_MAX_DEMO_SESSIONS: ${AURA_MAX_DEMO_SESSIONS:-16}
       AURA_DEMO_SESSION_TTL: ${AURA_DEMO_SESSION_TTL:-3600}
     read_only: true

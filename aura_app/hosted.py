@@ -8,11 +8,13 @@ import asyncio
 from dataclasses import replace
 from datetime import datetime
 from http.cookies import SimpleCookie
+from ipaddress import ip_address
 import os
 from pathlib import Path
 import secrets
 import shutil
 from time import monotonic
+from urllib.parse import urlsplit
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -88,10 +90,17 @@ class HostedDemo:
     """One worker; session isolation is demo infrastructure, not authenticated care."""
 
     def __init__(self, root, *, seed=7, secure_cookie=True, max_sessions=16, ttl_seconds=3600,
-                 settings=None):
+                 settings=None, http_demo_hosts=()):
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.seed, self.secure_cookie = seed, secure_cookie
+        # Operator-selected private IP literals only. This is NOT authorization:
+        # it permits an unencrypted synthetic cookie on a specific LAN address,
+        # without disabling Secure cookies for the public HTTPS hostname.
+        self.http_demo_hosts = frozenset(str(ip_address(host)) for host in http_demo_hosts)
+        if any(not (ip_address(host).is_private or ip_address(host).is_loopback)
+               or ip_address(host).is_unspecified for host in self.http_demo_hosts):
+            raise ValueError("HTTP demo hosts must be explicit private or loopback IP addresses")
         self.max_sessions, self.ttl = max_sessions, ttl_seconds
         if max_sessions < 1 or ttl_seconds < 1:
             raise ValueError("invalid engineering session limits")
@@ -154,6 +163,15 @@ class HostedDemo:
         if scope["type"] != "http":
             return
         headers = {key.lower():value for key,value in scope["headers"]}
+        secure_cookie = self.secure_cookie
+        if secure_cookie and scope.get("scheme") == "http":
+            try:
+                authority = urlsplit("//" + headers.get(b"host", b"").decode("latin1"))
+                host = str(ip_address(authority.hostname))
+                if authority.username is None and authority.password is None and host in self.http_demo_hosts:
+                    secure_cookie = False
+            except (ValueError, TypeError):
+                pass  # Malformed/non-IP hosts never weaken the public cookie.
         if scope["path"] == "/health":
             await JSONResponse({"status":"ok", "synthetic_only":True, "seed":self.seed})(scope, receive, send)
             return
@@ -221,7 +239,7 @@ class HostedDemo:
             app = record["app"]
         async def with_cookie(message):
             if fresh and message["type"] == "http.response.start":
-                value = f"aura_demo={session}; Path=/; HttpOnly; SameSite=Strict; Max-Age={self.ttl}" + ("; Secure" if self.secure_cookie else "")
+                value = f"aura_demo={session}; Path=/; HttpOnly; SameSite=Strict; Max-Age={self.ttl}" + ("; Secure" if secure_cookie else "")
                 message = {**message,"headers":[*message.get("headers",[]),(b"set-cookie",value.encode())]}
             await send(message)
         await app(scope, replay_receive, with_cookie)
@@ -231,4 +249,5 @@ def create_hosted_app():
     return HostedDemo(os.environ.get("AURA_DEMO_ROOT", "aura-demo-workspaces"),
                       secure_cookie=os.environ.get("AURA_SECURE_COOKIE", "true") == "true",
                       max_sessions=int(os.environ.get("AURA_MAX_DEMO_SESSIONS", "16")),
-                      ttl_seconds=int(os.environ.get("AURA_DEMO_SESSION_TTL", "3600")))
+                      ttl_seconds=int(os.environ.get("AURA_DEMO_SESSION_TTL", "3600")),
+                      http_demo_hosts=tuple(host.strip() for host in os.environ.get("AURA_HTTP_DEMO_HOSTS", "").split(",") if host.strip()))

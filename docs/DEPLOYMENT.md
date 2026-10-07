@@ -6,7 +6,8 @@ demo infrastructure, not production deployment or authenticated patient care.
 ## Server demo
 
 ```sh
-AURA_SECURE_COOKIE=false docker compose up -d --build app
+# For LAN HTTP too, set AURA_HTTP_DEMO_HOSTS to your private IP in ignored .env.
+docker compose up -d --build app
 docker compose ps
 curl -fsS http://127.0.0.1:8017/health
 ```
@@ -63,8 +64,15 @@ require the bootstrap cookie; rejected/missing cookies return
 `DEMO_SESSION_REQUIRED` without allocating additional workspaces. Capacity returns
 503 with `Retry-After: 60`; existing sessions are not evicted. The shell and its
 local resource fallback still load at capacity, with an explicit retry message.
-For direct LAN HTTP use the explicit `AURA_SECURE_COOKIE=false` command above;
-keep `true` for public HTTPS. A Secure cookie is not usable on ordinary LAN HTTP.
+For simultaneous LAN HTTP and public HTTPS, keep `AURA_SECURE_COOKIE=true` and
+set `AURA_HTTP_DEMO_HOSTS` to the server's explicit private IP address (or a
+comma-separated list of private/loopback IP literals) in ignored `.env`, then
+recreate the app. Only HTTP requests whose Host matches that configured IP omit
+Secure; public hostnames and HTTPS requests retain it. Forwarded headers alone
+cannot enable the exception. This is synthetic demo access, not authentication;
+LAN HTTP remains unencrypted. Protected provider settings still require their
+existing HTTPS/loopback-origin authorization. For an HTTP-only local deployment,
+the older explicit `AURA_SECURE_COOKIE=false` override remains supported.
 
 Restart preserves the verified baseline. Session mappings are in memory; existing
 cookies receive fresh workspaces after restart. Orphaned files from an abrupt restart

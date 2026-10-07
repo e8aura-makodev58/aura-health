@@ -90,3 +90,44 @@ class HostedCapacity(unittest.TestCase):
             self.assertEqual(len(self.host.sessions), 0)
             self.assertEqual(self.client.get("/demo/scenarios").status_code, 200)
         self.assertEqual(self.workspace.call_count, 2)
+
+    def test_cookie7_explicit_lan_ip_retains_session_on_http(self):
+        self.host.secure_cookie = True
+        self.host.http_demo_hosts = frozenset({"192.168.80.193"})
+        with TestClient(self.host, base_url="http://192.168.80.193:8017") as browser:
+            response = browser.get("/demo/scenarios")
+            self.assertNotIn("; Secure", response.headers["set-cookie"])
+            self.assertIn("HttpOnly", response.headers["set-cookie"])
+            self.assertIn("SameSite=Strict", response.headers["set-cookie"])
+            self.assertEqual(browser.get("/patients/fixture/status").status_code, 200)
+        self.workspace.assert_called_once()
+
+    def test_cookie8_public_hostname_keeps_secure_despite_forwarded_headers(self):
+        self.host.secure_cookie = True
+        self.host.http_demo_hosts = frozenset({"192.168.80.193"})
+        with TestClient(self.host, base_url="http://demo.example") as browser:
+            response = browser.get("/demo/scenarios", headers={
+                "X-Forwarded-Host":"192.168.80.193", "X-Forwarded-Proto":"http"})
+            self.assertIn("; Secure", response.headers["set-cookie"])
+            self.assertEqual(browser.get("/patients/fixture/status").status_code, 409)
+
+    def test_cookie9_https_even_on_allowed_ip_keeps_secure(self):
+        self.host.secure_cookie = True
+        self.host.http_demo_hosts = frozenset({"192.168.80.193"})
+        with TestClient(self.host, base_url="https://192.168.80.193") as browser:
+            response = browser.get("/demo/scenarios")
+            self.assertIn("; Secure", response.headers["set-cookie"])
+            self.assertEqual(browser.get("/patients/fixture/status").status_code, 200)
+
+    def test_cookie10_unconfigured_private_ip_keeps_secure(self):
+        self.host.secure_cookie = True
+        self.host.http_demo_hosts = frozenset({"192.168.80.193"})
+        with TestClient(self.host, base_url="http://192.168.80.194") as browser:
+            response = browser.get("/demo/scenarios")
+            self.assertIn("; Secure", response.headers["set-cookie"])
+
+    def test_cookie11_public_wildcard_or_unspecified_configuration_rejected(self):
+        with patch("aura_app.hosted.prepare"):
+            for host in ("8.8.8.8", "demo.example", "*", "0.0.0.0", "::"):
+                with self.subTest(host=host), self.assertRaises(ValueError):
+                    HostedDemo(self.directory.name, http_demo_hosts=(host,))
