@@ -101,7 +101,10 @@ async function refresh() {
 function render() {
   const {view, status} = current;
   setText("patient-label", `${view.patient.display_name} · ${dateLabel(view.latest_occurred_at)}`);
-  setText("home-subtitle", communication?.pinned_resources ? "The safety pathway is active. The separate panel above remains available." : "AURA can stay quiet. You can still check in whenever you want.");
+  $("quiet-card").hidden = Boolean(communication?.message && !communication.pinned_resources);
+  setText("quiet-heading",communication?.pinned_resources ? "The safety pathway is active." : "No question from AURA right now.");
+  setText("home-subtitle", communication?.pinned_resources ? "The policy message and separate resources remain above, on every page." : "You can check in whenever it feels useful.");
+  $("talk").disabled = busy;
   setText("communication-message", communication?.message);
   setText("wording-origin",communication?.generation_used?"Live AI wording · synthetic demo data only.":"Fixed wording · policy or model fallback.");
   $("communication-card").hidden = !communication?.message || Boolean(communication.pinned_resources);
@@ -125,22 +128,25 @@ function renderPatterns() {
   const {status, view, timeline} = current;
   const container = $("signal-list"); container.replaceChildren();
   for (const signal of status.signals) {
-    const card = element("section", undefined, "card signal-card");
-    card.append(element("h2", signalLabel(signal)));
+    const card = element("details", undefined, "card signal-card"), summary=element("summary"), body=element("div",undefined,"details-body");
+    summary.append(element("h2", signalLabel(signal)));
     const meta = element("div", undefined, "signal-meta");
-    meta.append(element("span", sensingLabels[signal.sensing_state], "badge"), element("span", trustLabels[signal.trust_state], "badge")); card.append(meta);
+    meta.append(element("span", sensingLabels[signal.sensing_state], "badge"), element("span", trustLabels[signal.trust_state], "badge")); summary.append(meta);card.append(summary);
     const drift = status.active_longitudinal_observations.find(item => sameSignal(item.key, signal));
-    card.append(element("p", drift?.description || "No current descriptive observation available."));
-    if (drift?.attenuated) card.append(element("p", `Relevant context retained: ${drift.benign_contexts.join("; ")}. Other evidence is not cleared.`, "fine"));
-    if (signal.sensing_state === "UNOBSERVED") card.append(element("p", "No current value is inferred from the gap.", "fine"));
-    if (signal.trust_state === "REESTABLISHING") card.append(element("p", "Reference trust is being re-established. No automatic exit rule is configured.", "fine"));
-    const button = element("button", "Why this observation", "text-button"); button.addEventListener("click", () => showWhy(signal)); card.append(button); container.append(card);
+    summary.append(element("span",signal.sensing_state==="UNOBSERVED" ? "No current observation inferred" : drift?.description || "No current descriptive observation", "summary-caption"));
+    body.append(element("p", drift?.description || "No current descriptive observation available."));
+    if (drift?.attenuated) body.append(element("p", `Relevant context retained: ${drift.benign_contexts.join("; ")}. Other evidence is not cleared.`, "fine"));
+    if (signal.sensing_state === "UNOBSERVED") body.append(element("p", "No current value is inferred from the gap.", "fine"));
+    if (signal.trust_state === "REESTABLISHING") body.append(element("p", "Reference trust is being re-established. No automatic exit rule is configured.", "fine"));
+    const button = element("button", "Reference, coverage & context", "text-button"); button.addEventListener("click", () => showWhy(signal)); body.append(button);card.append(body); container.append(card);
   }
   if (!status.signals.length) container.append(element("p", "No wearable observations yet. You can still check in or raise a concern."));
+  setText("patterns-summary",view.decision_reason || "Inspect recorded signals below. Missing observations are not a conclusion about your health.");
   $("held-list").replaceChildren();
+  $("held-section").hidden = !status.held_for_review.length;
   for (const row of status.held_for_review) {
     const held = row.record || row, card = element("section", undefined, "card held-item");
-    card.append(element("h3", `${signalLabel(held.key)} · ${held.status === "EXPLAINED_HELD_FOR_REVIEW" ? "Explained, held for review" : "New evidence; open for review"}`), element("p", held.detected_drift.description), element("p", `Your explanation: ${held.explanation}`, "fine"), element("p", "The anchored reference is unchanged. This observation stays available for clinician review.", "fine"));
+    card.append(element("h3", `${signalLabel(held.key)} · ${held.status === "EXPLAINED_HELD_FOR_REVIEW" ? "Explained, held for review" : "New evidence; open for review"}`), element("p", held.detected_drift.description), element("p", `Your explanation: ${held.explanation}`, "fine"), element("p", "The anchored reference is unchanged. This observation stays available for clinician review.", "fine"), element("p",held.status==="EXPLAINED_HELD_FOR_REVIEW" ? "Repeat prompts for this same change are reduced; the observation is retained." : "New evidence has reopened this item. Your explanation is still retained.","fine"));
     $("held-list").append(card);
   }
   if (!status.held_for_review.length) $("held-list").append(element("p", "No explained observations are currently held."));
@@ -169,20 +175,32 @@ function showWhy(selected = null) {
     const dl = element("dl");
     const fields = [["Source", drift.key.source], ["Anchored reference", baseline?.anchor ? `Version ${baseline.anchor.version} · ${baseline.anchor.reference_start || ""} — ${baseline.anchor.reference_end || ""}` : "Not created"], ["Current vs recent rolling reference", deviation(drift.current_vs_rolling,drift.key)], ["Rolling vs anchored reference", deviation(drift.rolling_vs_anchor,drift.key)], ["Recorded context", (drift.benign_contexts || []).concat(drift.risk_contexts || []).join("; ") || "None linked"], ["Coverage (0–1)", number(drift.coverage)]];
     for (const [title, value] of fields) dl.append(element("dt", title), element("dd", value));
-    section.append(dl); area.append(section);
+    const technical=element("details",undefined,"technical-details");technical.append(element("summary","Technical details & reference provenance"),dl);
+    section.append(technical); area.append(section);
   }
-  if (!drifts.length) area.append(element("p", "No current drift observation is available."));
+  if (!drifts.length) {
+    area.append(element("p", "No current drift observation is available."));
+    for(const baseline of current.status.signals.filter(signal=>!selected || sameSignal(signal,selected))){
+      const technical=element("details",undefined,"technical-details"),dl=element("dl");
+      technical.append(element("summary",`${signalLabel(baseline)} · reference details`));
+      for(const [title,value] of [["Source",baseline.source],["Anchored reference",baseline.anchor?`Version ${baseline.anchor.version} · ${baseline.anchor.reference_start || ""} — ${baseline.anchor.reference_end || ""}`:"Not created"],["Reference trust",trustLabels[baseline.trust_state]],["Coverage (0–1)",number(baseline.rolling.coverage_ratio)]])dl.append(element("dt",title),element("dd",value));
+      technical.append(dl);area.append(technical);
+    }
+  }
   $("why-dialog").showModal();
 }
 
 function reviewGroup(title, items) {
-  const group = element("section", undefined, "card review-group"); group.append(element("h2", title));
-  if (!items.length) group.append(element("p", "None recorded for this review period."));
+  const group = element("details", undefined, "card review-group"),summary=element("summary",title),body=element("div",undefined,"details-body");
+  summary.append(element("span",`${items.length} recorded item${items.length===1?"":"s"}`,"summary-caption"));group.append(summary);
+  group.open=Boolean(items.length && ["Meaningful observations","Explained & held for review","Questions you recorded"].includes(title));
+  if (!items.length) body.append(element("p", "None recorded for this review period."));
+  else body.append(element("p","Temporary preview only · selections are not sent or saved as approval.","fine"));
   items.forEach((text, index) => {
     const key = `${title}:${index}`, label = element("label"), box = element("input"); box.type = "checkbox"; box.checked = selections.has(key);
     box.addEventListener("change", () => { if (box.checked) selections.add(key); else selections.delete(key); selectionSummary(); });
-    label.append(box, element("span", text)); group.append(label);
-  }); $("review-list").append(group);
+    label.append(box, element("span", text)); body.append(label);
+  });group.append(body); $("review-list").append(group);
 }
 function selectionSummary() { setText("selection-summary", `${selections.size} item${selections.size === 1 ? "" : "s"} selected for this temporary preview. Nothing is sent or saved as approval.`); }
 function renderReview() {
@@ -204,10 +222,15 @@ function renderReview() {
 function openInput(kind = "text") {
   if (!current || busy) return;
   dialogKind = kind; $("input-text").value = ""; $("explanation-fields").hidden = kind !== "explanation";
+  $("input-text").readOnly=hosted;
+  setText("input-text-label",hosted ? kind==="explanation" ? "Linked synthetic explanation" : "Exact synthetic example to be submitted" : "Your note");
+  $("input-text").setAttribute("aria-label",hosted?"Exact synthetic input; choose an example":"Your note");
+  $("send-input").disabled=hosted && kind!=="explanation";
   $("fixture-buttons").hidden = !catalog.length || kind === "explanation";
   for (const button of document.querySelectorAll("[data-fixture]")) button.hidden = button.dataset.purpose !== kind;
-  setText("dialog-heading", kind === "explanation" ? "Keep an explanation with this change." : kind === "question" ? "A question for your next review." : "What would you like to share?");
-  setText("dialog-copy", kind === "explanation" ? "This preserves the observation and reference, while keeping your explanation alongside them." : "You can initiate a conversation even when AURA has nothing to ask.");
+  for(const button of document.querySelectorAll("[data-fixture]"))button.setAttribute("aria-pressed","false");
+  setText("dialog-heading", kind === "explanation" ? "Keep an explanation with this change." : kind === "question" ? "A question for your next review." : hosted ? "Try a conversation example" : "What would you like to share?");
+  setText("dialog-copy", kind === "explanation" ? "This preserves the observation and reference, while keeping your explanation alongside them." : hosted ? "Choose a labelled synthetic example. This prototype does not accept personal information or offer unrestricted chat." : "You can initiate a conversation even when AURA has nothing to ask.");
   setText("send-input", kind === "explanation" ? "Keep explanation for review" : "Submit note");
   if (kind === "explanation") {
     if (!current.view.explanation_options.length) { tell("No explicitly linked benign context is available. Arbitrary explanations are not automatically judged credible."); return; }
@@ -250,7 +273,7 @@ async function sendPending() {
     } else { pending = null; tell(error.message, true); }
   } finally { busy = false; toggleBusy(false); }
 }
-function toggleBusy(value) { for (const node of document.querySelectorAll("[data-checkin],[data-medication],#send-input,#scenario,#connect")) node.disabled = value; }
+function toggleBusy(value) { for (const node of document.querySelectorAll("[data-checkin],[data-medication],#send-input,#scenario,#connect,#talk")) node.disabled = value; if(!value && hosted && !$("input-text").value) $("send-input").disabled=true; }
 
 $("demo-toggle").addEventListener("click", () => { $("demo-panel").hidden = !$("demo-panel").hidden; $("demo-toggle").setAttribute("aria-expanded", String(!$("demo-panel").hidden)); });
 $("start-demo").addEventListener("click", () => { $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); $("scenario").focus(); });
@@ -262,9 +285,10 @@ $("talk").addEventListener("click", () => openInput("text")); $("add-note").addE
 $("clarify").addEventListener("click", () => openInput("explanation")); $("explain").addEventListener("click", () => openInput("explanation"));
 $("add-question").addEventListener("click", () => openInput("question"));
 $("why-home").addEventListener("click", () => showWhy());
+$("why-patterns").addEventListener("click", () => showWhy());
 $("close-dialog").addEventListener("click", () => $("input-dialog").close()); $("close-why").addEventListener("click", () => $("why-dialog").close());
 $("explanation-context").addEventListener("change", populateExplanation);
-for (const button of document.querySelectorAll("[data-fixture]")) button.addEventListener("click", () => { $("input-text").value = button.dataset.fixture; });
+for (const button of document.querySelectorAll("[data-fixture]")) button.addEventListener("click", () => { $("input-text").value = button.dataset.fixture;for(const option of document.querySelectorAll("[data-fixture]"))option.setAttribute("aria-pressed",String(option===button));$("send-input").disabled=busy; });
 $("input-form").addEventListener("submit", async (event) => {
   event.preventDefault(); const text = $("input-text").value.trim(); if (!text) return;
   if (dialogKind === "explanation") {
@@ -275,7 +299,7 @@ $("input-form").addEventListener("submit", async (event) => {
   } else if (dialogKind === "question") await submitEvent("REVIEW_COMMAND", {action:"ADD_QUESTION", question:text});
   else await submitEvent("PATIENT_FREE_TEXT", {text});
 });
-window.addEventListener("hashchange", goPage);
+window.addEventListener("hashchange",()=>{goPage();window.scrollTo(0,0);});
 $("retry-connection").addEventListener("click", async () => {
   if (busy) return;
   if (pending) await sendPending();

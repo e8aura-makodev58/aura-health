@@ -48,7 +48,7 @@ class MilestoneSix(unittest.TestCase):
 
     def test_ui1_stable_home_has_no_risk_score(self):
         self.assertEqual(self.status("stable")["latest_communication_decision"], "STAY_QUIET")
-        self.assertIn("Room for your day.", self.html)
+        self.assertIn("No question from AURA right now.", self.html)
         self.assertNotIn("risk_score", self.js)
 
     def test_ui2_checkin_reaches_existing_api(self):
@@ -146,7 +146,7 @@ class MilestoneSix(unittest.TestCase):
         self.assertIn('aria-label="Main navigation"', self.html)
         self.assertIn('aria-labelledby="dialog-heading"', self.html)
         self.assertIn("focus-visible", self.css)
-        self.assertIn("max-width:640px", self.css)
+        self.assertIn("min-width:960px", self.css)
 
     def test_offline_bundle_matches_accepted_fixture(self):
         bundle = fixture_bundle()

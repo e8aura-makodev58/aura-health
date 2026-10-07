@@ -1,8 +1,31 @@
-# Patient experience redesign — proposal
+# Patient experience redesign
 
-Status: dedicated UI/UX agent review completed; proposed structure for user alignment.
-Date: 2026-10-07. No replacement UI implemented by this review. No additional
-synthetic data/scenarios. Accepted safety and longitudinal engines remain unchanged.
+Status: implemented following explicit user instruction on 2026-10-07; ready for
+user/reviewer feedback. The original dedicated UI/UX review below informed the work.
+No additional synthetic data/scenarios. Accepted safety and longitudinal engines,
+application API and database schema remain unchanged.
+
+## Delivered implementation
+
+- Compact Today interaction state, optional one-tap check-in and expandable medication
+  record; quiet wording describes communication, never a health/safety assessment.
+- Today / Patterns / Review navigation; About/privacy and gear in header. Persistent
+  Talk action on every view. Mobile bottom dock; laptop navigation rail and reading column.
+- Expandable signal rows; descriptive observations stay visible in row summaries;
+  numeric/reference provenance is one level deeper. Held changes retain explanations,
+  unchanged-reference wording and review availability. No browser trend calculation.
+- Review groups disclose details progressively, with temporary-preview limitations at
+  the selection point. The backend snapshot and sharing behavior are unchanged.
+- Hosted composer offers labelled examples, read-only exact input and explicit synthetic
+  limitations; the non-hosted development note path remains available and safety-gated.
+- Independent safety/resources remain on every view. The bounded, keyboard-focusable
+  safety region scrolls on short screens rather than swallowing the whole viewport.
+- Configured/live versus actual generated/fallback disclosure and gear settings retained.
+
+Verification uses existing UI1–UI15/offline, hosted, settings and eight new UX browser
+checks. Screenshots/results are generated under `/tmp/aura-redesign-browser-artifacts`;
+run instructions: `aura_ui/README.md`. This is engineering UX verification, not clinical
+validation or CodeBuddy evidence.
 
 ## Purpose
 
@@ -11,7 +34,7 @@ psychiatric dashboard or an unrestricted therapy chatbot. The patient should qui
 understand: is AURA asking me anything, can I record my routine, and can I initiate help?
 Portrait mobile is the primary layout; laptop uses the same task hierarchy.
 
-## Findings from the current implementation
+## Findings from the pre-redesign implementation
 
 - `index.html`/`styles.css`: tall masthead, abstract headline and large cards consume
   the first phone screen; the primary patient-initiated entry is below them.

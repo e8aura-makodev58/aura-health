@@ -38,7 +38,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
   - `aura_app/`: FastAPI + SQLite application layer. It handles idempotent event ingestion, atomic transactions, safety-first gating, the timeline, and the clinician review snapshot (never shared automatically).
 - **M5 implemented and reviewed (Claude, 2026-10-02; no blocking findings):** [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). `aura_communication/` supplies bounded wording contracts, validator/fallback, optional HTTP gateway, fixture evaluation, and engineering configuration. `aura_app/communication.py` reads committed decisions/safety references and persists race-checked wording/audit. Accepted domain algorithms remain unchanged.
 - **M6 implemented; reviewed by Claude 2026-10-03, no blocking findings:** [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). `aura_ui/` is a responsive, no-build-step patient web app. It uses existing APIs for check-ins, medication records, explicit explanations, review preview, and pinned safety. `PatientViewService` provides read-only latest-event/provenance links. The explicitly synthetic demo factory shows stable + Cases A–F with before/after explanation and gap/return checkpoints. Accepted safety/longitudinal algorithms and DB schema are unchanged.
-- **Tests:** 150 pass (`.venv/bin/python -m unittest discover -s tests -q`), including 10 operator/provider checks, all previous gates and 16 M7 checks. Real Chromium: UI1–UI15 + OFFLINE + MANUAL_RETRY **17 PASS**, hosted **6 PASS**, and settings UI PASS; no page errors; 320/390/1280 widths checked. Provider tests use mocks, not paid/live calls. Existing Starlette/httpx deprecation remains.
+- **Tests:** 150 pass (`.venv/bin/python -m unittest discover -s tests -q`), including 10 operator/provider checks, all previous gates and 16 M7 checks. Real Chromium: UI1–UI15 + OFFLINE + MANUAL_RETRY **17 PASS**, hosted **6 PASS**, settings UI PASS, and **8 redesign UX checks PASS**; no page errors; 320/390/1280 widths plus short-screen safety/composer checked. Provider tests use mocks, not paid/live calls. Existing Starlette/httpx deprecation remains.
 - **M7 local implementation:** `aura_simulation/` validated scenario planning, deterministic observable-only driver/replay, 16 DEMO tests; atomic initial seeding and recoverable operator reset; `aura_app.hosted` isolated synthetic browser workspaces with fixture-only writes/reset; Docker + optional file-secret Cloudflare sidecar. Diagram/runbook: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Demo is healthy on **0.0.0.0:8017** (user-requested network publishing); LAN address `http://192.168.80.193:8017`. **User reports live hosting; public hostname/HTTPS unverified; M7 not complete.**
 - **Integration contradiction fixed:** application projector previously omitted the accepted domain's new-longitudinal-signal reopening input. It now forwards newly production-assessed persistent/divergent signals; DEMO11 verifies reopening with unchanged anchors. Safety/longitudinal domain algorithms and clinical configuration remain unchanged.
 - **Canonical plan:** [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/milestones/`](docs/milestones/), and [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
@@ -47,7 +47,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
-- **Current user revision (2026-10-07):** live-model wording only on synthetic data; future institutional model intended on-prem/private cloud (not validated readiness). Requested Compass-style gear/provider key configuration is implemented. Dedicated UI/UX agent completed a read-only mobile portrait/laptop review: `docs/PATIENT_UX_REDESIGN.md`. Broader redesign is still pending. Additional synthetic data is deferred.
+- **Current user revision (2026-10-07) implemented:** Compass-style provider gear plus patient-first UI redesign. Compact Today with central question/quiet state, optional check-in, expandable routine; Today/Patterns/Review with About/gear in header; persistent Talk, laptop rail, progressive signal/reference/review/timeline details, explicit temporary selections, honest read-only hosted fixture composer. Safety/resources remain independent and keyboard-scrollable on short screens. `docs/PATIENT_UX_REDESIGN.md` documents delivery; screenshots in `/tmp/aura-redesign-browser-artifacts`. Accepted engines, application algorithms/APIs, schema and dependencies unchanged. Ready for user/reviewer feedback, not a new clinical acceptance claim. Additional synthetic data remains deferred.
 
 ## Open decisions
 
@@ -60,13 +60,13 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 Scope/gate: [`docs/milestones/M7_DEMO_AND_INTEGRATION.md`](docs/milestones/M7_DEMO_AND_INTEGRATION.md); local evidence: [`MILESTONE7_REVIEW.md`](MILESTONE7_REVIEW.md). M5/M6 were accepted by Claude. Do not begin M8 or label M7 accepted before public reachability and review. Domain algorithms remain authoritative.
 
 Current priority is the user's live-synthetic-model and mobile-first UX revision;
-additional scenario/data generation waits until those are addressed. Provider settings
-are deployed locally; broader UX implementation is still next. UX review was delegated
-at explicit user request.
+additional scenario/data generation waits for user review. Provider settings and the
+patient-first redesign are deployed locally on 8017. UX review was delegated at explicit
+user request; implementation is now complete and ready for feedback.
 
 ## Next steps
 
-1. Operator configures provider/key/model through the header gear and optionally runs a paid synthetic connection test; instructions: `docs/SYSTEM_SETTINGS.md`. Implement the mobile-first Today/Patterns/Review hierarchy from the UX proposal, persistent help, progressive details, laptop adaptation and keyboard/safety/offline checks. Do not expand arbitrary chat, safety detectors or clinical policy. Defer additional synthetic data. No automatic CodeBuddy run.
+1. Obtain user/reviewer feedback on the implemented patient-first redesign. Operator configures provider/key/model through the header gear and optionally runs a paid synthetic connection test; instructions: `docs/SYSTEM_SETTINGS.md`. Do not expand arbitrary chat, safety detectors or clinical policy. Defer additional synthetic data until the user is satisfied with live model/UX work. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -75,7 +75,7 @@ at explicit user request.
    - `reviewed_by` is caller-supplied and not authenticated.
    - Replay-per-event cost grows with the length of the event history.
    - M5 wording render also loads full history. Public routing helper is now `requires_safety_gate`; latest-event IDs are supplied by the read view.
-   - Real-patient live-model consent/governance remains future work. User now authorizes live synthetic demo wording, but runtime is still disabled pending selected provider/configuration. Do not enable ordinary patient entry points implicitly.
+   - Real-patient live-model consent/governance remains future work. Hosted synthetic wording is operator-configurable and defaults off until configured/enabled. Do not enable ordinary patient entry points implicitly.
    - Offline pending input is memory-only with same-key retries and an unload warning; no durable encrypted queue/cold-start offline app. Review selections are temporary previews, not saved approval/sharing.
    - Hosted session mappings are in-memory; restart keeps baseline but starts fresh browser workspaces. Abrupt-restart orphan files are retained; storage cleanup/abuse rate limiting is not production-grade.
 
@@ -125,6 +125,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Codex Sol — Implement patient-first mobile/laptop redesign
+- User explicitly requested the actual redesign after clarifying that the previous release only added settings. Rebuilt `aura_ui/index.html`, `styles.css` and presentation logic: compact Today, expandable routine, persistent help, three primary tabs/laptop rail, progressive reference/review details, temporary-preview labels and honest synthetic-example composer. Independent safety region remains across pages, focusable/scrollable on short screens. No backend/domain/schema/dependency changes or additional data generation.
+- Verified: full Python suite **150 PASS**; existing Chromium **17 PASS**, hosted **6 PASS**, settings UI PASS, new UX1–UX8 **8 PASS**, no page errors. Phone widths 320/390, laptop 1280, safety 390×500, compact composer 390×360. Inspected screenshots; `git diff --check` clean. Updated obsolete visual assertions, preserving original behavioral gates. Docker rebuilt on 0.0.0.0:8017.
+- Delivery notes: `docs/PATIENT_UX_REDESIGN.md`, `aura_ui/README.md`; screenshot/results `/tmp/aura-redesign-browser-artifacts`. Left: user/reviewer design feedback, operator live synthetic smoke test, public hostname verification. No CodeBuddy run or clinical validation claim.
 
 ### 2026-10-07 — Codex Sol — Protected provider settings gear
 - Adapted Compass's write-only credential/per-provider model pattern. Added `aura_app/system_settings.py`, `aura_communication/vendor.py`, settings dialog/script, native OpenRouter/OpenAI/DeepSeek/Tencent transport and synthetic-only hosted injection. Owner-only atomic files, admin token/secure-origin gate, bounded calls, discovery/test and revision-based cache invalidation. Disclosure reflects actual generation/fallback. See `docs/SYSTEM_SETTINGS.md`.

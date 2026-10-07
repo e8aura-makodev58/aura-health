@@ -33,6 +33,12 @@ There is no production authentication: use synthetic data only, on loopback.
 
 ## Patient flows
 
+The 2026-10-07 redesign uses three primary views and persistent **Talk to AURA**.
+Phone portrait uses bottom navigation; laptop has a restrained left rail and central
+reading column. About/privacy and the operator gear stay in the header. Today places
+the approved question or quiet interaction state first, with a compact optional check-in
+and expandable medication routine. Quiet is not an assessment of health.
+
 - **Today:** optional Good/Okay/Rough check-in, separate optional note, neutral
   acknowledged/missed/unknown medication record, always-available patient entry.
 - **Patterns:** server-provided drift/context, signal-specific sensing/trust state,
@@ -59,8 +65,13 @@ nor evaluation windows reach decision payloads.
 
 ## Privacy and boundaries
 
-Both supplied entry points explicitly disable live models, regardless of gateway
-environment variables. Live use is deferred until informed consent is governed.
+Ordinary patient API/demo factory entry points disable live models, regardless of
+gateway environment variables. The fixture-restricted hosted service can opt into
+live synthetic-only wording through [operator settings](../docs/SYSTEM_SETTINGS.md).
+Real-patient model use is deferred until informed consent is governed. Hosted Talk
+offers labelled synthetic examples and a read-only exact-input field, not arbitrary
+chat. Patterns, numeric reference provenance, review groups and timeline use progressive
+disclosure. Review checkboxes state their temporary-preview-only meaning locally.
 All current wording/resources require review; no crisis contact is invented.
 Resources render outside communication text. REESTABLISHING has no invented exit.
 
@@ -90,3 +101,15 @@ process, runs UI1–UI15 plus offline retry, and writes results/screenshots unde
 `/tmp/aura-m6-browser-artifacts`. Override with `--artifacts` or `--port`. It never
 uses the persistent demo DB. Browser screenshots are ordinary UI verification,
 **not** CodeBuddy evidence.
+
+Additional hosted layout gate (local Docker demo on 8017):
+
+```sh
+NODE_PATH=/tmp/aura-ui-tools/node_modules node tests/browser/redesign.cjs
+NODE_PATH=/tmp/aura-ui-tools/node_modules node tests/browser/settings.cjs
+NODE_PATH=/tmp/aura-ui-tools/node_modules node tests/browser/milestone7.cjs
+```
+
+The redesign gate checks first-screen access, persistent help, progressive reference
+details, held/review state, gap/return, keyboard-scrollable safety at 390×500, and
+320/390/1280 layouts. Artifacts: `/tmp/aura-redesign-browser-artifacts`.
