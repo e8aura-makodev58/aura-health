@@ -1,0 +1,29 @@
+name: aura-health
+services:
+  app:
+    build: .
+    image: aura-health:demo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${AURA_DEMO_PORT:-8017}:8000"
+    volumes:
+      - demo-data:/data
+    environment:
+      AURA_SECURE_COOKIE: ${AURA_SECURE_COOKIE:-true}
+      AURA_MAX_DEMO_SESSIONS: ${AURA_MAX_DEMO_SESSIONS:-16}
+      AURA_DEMO_SESSION_TTL: ${AURA_DEMO_SESSION_TTL:-3600}
+    read_only: true
+    tmpfs:
+      - /tmp:size=67108864
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    cpus: 2
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 120s
+volumes:
+  demo-data:

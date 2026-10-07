@@ -11,6 +11,7 @@ const offlineBundle = {version: "fixture-unverified-v1", stale: true, notice: "D
 const offlineText = "AURA cannot assess this input while offline. Hold it for server safety evaluation. The built-in resource panel remains available.";
 let patientId = null, catalog = [], current = null, communication = null;
 let epoch = 0, busy = false, pending = null, offline = false, dialogKind = "text", lastCheckin = null;
+let hosted = false;
 const selections = new Set();
 
 function element(tag, text, className) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; }
@@ -201,7 +202,8 @@ function renderReview() {
 function openInput(kind = "text") {
   if (!current || busy) return;
   dialogKind = kind; $("input-text").value = ""; $("explanation-fields").hidden = kind !== "explanation";
-  $("fixture-buttons").hidden = !catalog.length || kind !== "text";
+  $("fixture-buttons").hidden = !catalog.length || kind === "explanation";
+  for (const button of document.querySelectorAll("[data-fixture]")) button.hidden = button.dataset.purpose !== kind;
   setText("dialog-heading", kind === "explanation" ? "Keep an explanation with this change." : kind === "question" ? "A question for your next review." : "What would you like to share?");
   setText("dialog-copy", kind === "explanation" ? "This preserves the observation and reference, while keeping your explanation alongside them." : "You can initiate a conversation even when AURA has nothing to ask.");
   setText("send-input", kind === "explanation" ? "Keep explanation for review" : "Submit note");
@@ -277,6 +279,18 @@ $("retry-connection").addEventListener("click", async () => {
   if (pending) await sendPending();
   else if (patientId) { try { await refresh(); tell("Server state reloaded."); } catch (error) { offline = true; showSafety(communication); tell(error.message, true); } }
 });
+$("reset-demo").addEventListener("click", async () => {
+  if (busy || pending) { tell("Finish the pending input before resetting the synthetic session.",true); return; }
+  if (!window.confirm("Restore this synthetic session to seed 7? This is demo tooling, not a patient safety transition.")) return;
+  busy = true; toggleBusy(true);
+  try {
+    await api("/demo/reset",{confirm:"RESET_SYNTHETIC_SESSION"});
+    await loadPatient(catalog[0].patient_id);
+    $("scenario").value = catalog[0].patient_id;
+    tell("Synthetic session restored. Other visitors were not changed.");
+  } catch(error) { tell(error.message,true); }
+  finally { busy = false; toggleBusy(false); }
+});
 window.addEventListener("offline", () => { offline = true; showSafety(communication); tell("Connection unavailable. No input is assessed locally. Resources remain visible.", true); });
 window.addEventListener("online", async () => { if (pending) await sendPending(); else if (current) { try { await refresh(); tell("Connection restored; server state reloaded."); } catch { offline = true; showSafety(communication); } } });
 window.addEventListener("beforeunload", (event) => { if (pending) { event.preventDefault(); event.returnValue = "Unconfirmed input is held in memory only."; } });
@@ -284,7 +298,10 @@ window.addEventListener("beforeunload", (event) => { if (pending) { event.preven
 async function start() {
   goPage();
   try {
-    const result = await api("/demo/scenarios"); catalog = result.scenarios;
+    const result = await api("/demo/scenarios"); catalog = result.scenarios; hosted = Boolean(result.hosted);
+    $("hosted-notice").hidden = !hosted; $("reset-demo").hidden = !result.can_reset;
+    $("connect-form").hidden = hosted;
+    if (hosted) setText("dialog-privacy","Only labelled synthetic fixtures are accepted on this hosted demo. Do not enter real information. No live model is called.");
     $("scenario").replaceChildren();
     for (const scenario of catalog) { const option = element("option", scenario.label); option.value = scenario.patient_id; $("scenario").append(option); }
     await loadPatient(catalog[0].patient_id);

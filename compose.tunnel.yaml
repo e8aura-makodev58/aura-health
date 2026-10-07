@@ -1,0 +1,15 @@
+services:
+  cloudflared:
+    image: ${AURA_CLOUDFLARED_IMAGE:-cloudflare/cloudflared:latest}
+    restart: unless-stopped
+    command: [tunnel, --no-autoupdate, --loglevel, warn, run, --token-file, /run/secrets/aura_tunnel_token]
+    secrets: [aura_tunnel_token]
+    depends_on:
+      app:
+        condition: service_healthy
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+secrets:
+  aura_tunnel_token:
+    file: ${AURA_TUNNEL_TOKEN_FILE:?Set the local tunnel token FILE path; never put its value here}

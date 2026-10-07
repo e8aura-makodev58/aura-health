@@ -110,6 +110,7 @@ class LongitudinalProjector:
         self.last_interruption_at: datetime | None = None
         self.checkins: list[dict] = []
         self.medication: list[dict] = []
+        self.previous_meaningful_signals: set[SignalKey] = set()
 
     def run(self, events: list[dict], safety_relevant_ids: set[str] | None = None) -> Projection:
         if not events:
@@ -192,6 +193,14 @@ class LongitudinalProjector:
         if safety_relevant:
             for item in self.held.review_items():
                 self.held.reopen(item.key, EvidenceEvent(EvidenceKind.SAFETY_RELEVANT_EVENT, at))
+        # Integration correction: the domain already defines new-signal reopening.
+        # Forward only a *new* production-assessed persistent/divergent signal;
+        # no threshold, context classification or reopening rule is duplicated here.
+        from aura_longitudinal.drift import DriftKind
+        meaningful = {item.drift.key for item in contextualized if item.drift.kind in
+                      (DriftKind.PERSISTENT_DRIFT, DriftKind.ROLLING_ANCHOR_DIVERGENCE)}
+        new_signal = next((item.drift.key for item in contextualized
+                           if item.drift.key in meaningful - self.previous_meaningful_signals), None)
         decision = self.communicator.decide(tuple(contextualized), self.held, at,
                                             previous_checkin=self.previous_checkin,
                                             current_checkin=current_checkin,
@@ -199,12 +208,14 @@ class LongitudinalProjector:
                                             structured_assessment_changed=(kind == EventType.STRUCTURED_ASSESSMENT_RESPONSE
                                                                            and bool(raw.get("changed"))),
                                             medication_event=medication_event,
+                                            new_longitudinal_signal=(new_signal if kind == EventType.WEARABLE_OBSERVATION else None),
                                             review_requested=(kind == EventType.REVIEW_COMMAND
                                                               and raw.get("action") == "PREPARE_REVIEW"))
         if decision.outcome.value in INTERRUPTIONS:
             self.last_interruption_at = at
         if current_checkin:
             self.previous_checkin = current_checkin
+        self.previous_meaningful_signals = meaningful
         held = []
         for item in self.held.review_items():
             held.append({"key": key_dict(item.key), "detected_drift": asdict(item.detected_drift),

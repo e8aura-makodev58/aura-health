@@ -6,8 +6,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from starlette.exceptions import HTTPException
 from pydantic import BaseModel, Field
 
 from aura_communication.domain import CommunicationPurpose
@@ -71,7 +71,8 @@ class CommunicationIn(BaseModel):
 
 
 def create_app(db_path: str | Path | None = None, service: PatientEventService | None = None,
-               communication_service: PatientCommunicationService | None = None) -> FastAPI:
+               communication_service: PatientCommunicationService | None = None,
+               *, docs_enabled: bool = False) -> FastAPI:
     if service is None:
         factory = SQLiteRepositoryFactory(db_path or os.environ.get("AURA_DEV_DB", "aura-m4-development.sqlite3"))
         factory.initialize()
@@ -79,7 +80,9 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     # M6 patient entry point remains local-only until live-model consent is governed.
     communication_service = communication_service or PatientCommunicationService(service, provider=DisabledProvider())
     view_service = PatientViewService(service, wording_provider_id=communication_service.provider.model_id)
-    app = FastAPI(title="AURA prototype application API", version="milestone-6")
+    # CDN-backed Swagger conflicts with the patient UI's strict same-origin CSP.
+    app = FastAPI(title="AURA prototype application API", version="milestone-7",
+                  docs_url=None, redoc_url=None, openapi_url="/openapi.json" if docs_enabled else None)
     app.state.service = service
     app.state.communication_service = communication_service
 
@@ -180,7 +183,11 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
         return anchor(patient_id, body, "CLINICAL_REVIEW_REANCHOR")
 
     ui = Path(__file__).resolve().parent.parent / "aura_ui"
-    app.mount("/assets", StaticFiles(directory=ui), name="patient-assets")
+    @app.get("/assets/{asset_name}", include_in_schema=False)
+    def patient_asset(asset_name: str):
+        if asset_name not in {"app.js", "styles.css"}:
+            raise HTTPException(404)
+        return FileResponse(ui / asset_name)
 
     @app.get("/", include_in_schema=False)
     def patient_application():

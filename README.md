@@ -80,3 +80,20 @@ descriptive observation. The API accepts an existing event ID and purpose, never
 raw text, safety state, or arbitrary generation instructions on this route. Provider
 configuration, JSON gateway contract, test commands, persistence, and engineering
 limits are documented in `aura_communication/README.md`.
+
+## Milestone 7 local integration
+
+[Review packet](MILESTONE7_REVIEW.md), [trust boundaries](docs/ARCHITECTURE.md),
+[deployment/reset instructions](docs/DEPLOYMENT.md), and
+[synthetic scenario planning/replay](aura_simulation/README.md).
+
+```sh
+AURA_SECURE_COOKIE=false docker compose up -d --build app
+# Open http://127.0.0.1:8017 (private synthetic browser workspace).
+.venv/bin/python -m aura_simulation --description 'Case D new signal after explanation' --seed 7 --save /tmp/aura-d.json
+.venv/bin/python -m aura_simulation --replay /tmp/aura-d.json
+```
+
+Hosted inputs are named fixtures only; no sign-up or real-data intake. Use Secure
+cookies for public HTTPS. Cloudflare setup awaits operator hostname/token-file
+configuration; no public link is claimed and M7 is not yet complete.

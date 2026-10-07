@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 .venv/
 *.sqlite3
+*.sqlite3.*
+.env
+.env.local
+*.token
+secrets/
+aura-demo-workspaces/

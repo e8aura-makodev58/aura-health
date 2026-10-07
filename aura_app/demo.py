@@ -56,6 +56,8 @@ class DemoFixtureGate:
             if payload == {"text": "fixture safety concern"}:
                 return FixtureSafetyGate({event.event_id: (("D2", "CLARIFY"),)}).resolve(
                     event, source_episode_id, source_sequence)
+        elif event.event_type == EventType.REVIEW_COMMAND:
+            normal = payload == {"action":"ADD_QUESTION", "question":"fixture review question"}
         if normal:
             return ()
         raise SafetyGateUnavailable("no reviewed/resolved fixture for this input")
@@ -66,7 +68,7 @@ def demo_catalog(seed=7):
              "synthetic": True} for key, label, *_ in CHECKPOINTS]
 
 
-def prepare(db_path, seed=7):
+def _seed_existing(db_path, seed=7):
     factory = SQLiteRepositoryFactory(db_path)
     factory.initialize()
     for key, label, case, day, explain in CHECKPOINTS:
@@ -77,6 +79,11 @@ def prepare(db_path, seed=7):
             run_case(case, seed, db_path, through_day=day, patient_id=patient_id,
                      event_prefix=patient_id, include_explanation=explain)
     return factory
+
+
+def prepare(db_path, seed=7):
+    from .demo_workspace import prepare_snapshot
+    return prepare_snapshot(db_path, seed, _seed_existing)
 
 
 def create_demo_app(db_path=None, seed=7):
@@ -100,7 +107,15 @@ def main():
     parser = argparse.ArgumentParser(description="Seed accepted synthetic checkpoint fixtures (no real patient data)")
     parser.add_argument("--db", type=Path, default=Path("aura-m6-demo.sqlite3"))
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--reset-from", type=Path, help="verified baseline; stop the local server first")
+    parser.add_argument("--confirm-synthetic-reset", action="store_true")
     args = parser.parse_args()
+    if args.reset_from:
+        if not args.confirm_synthetic_reset:
+            parser.error("reset requires --confirm-synthetic-reset")
+        from .demo_workspace import reset_snapshot
+        archive = reset_snapshot(args.db, args.reset_from, args.seed)
+        print(f"Synthetic workspace reset. Previous records recoverable from {archive}")
     prepare(args.db, args.seed)
     print(f"Synthetic checkpoints ready in {args.db}. Existing patients were preserved.")
 

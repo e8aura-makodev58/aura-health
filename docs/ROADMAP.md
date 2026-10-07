@@ -36,7 +36,7 @@ AURA divides computation into three roles:
 | M4.5 | Project canonicalization | COMPLETE | 2026-09-24 |
 | M5 | AI communication layer | COMPLETE / REVIEWED | 2026-10-02 (original target 2026-09-30) |
 | M6 | Patient application | IMPLEMENTED / REVIEW PENDING | 2026-10-03 (target 2026-10-07) |
-| M7 | Demo + integration hardening | PLANNED | by 2026-10-12 |
+| M7 | Demo + integration hardening | ACTIVE / local gates implemented; public link pending | by 2026-10-12 |
 | M8 | Submission + final freeze | PLANNED | 2026-10-13 to 2026-10-15 |
 
 Submission is due 2026-10-16; the goal is to be submission-ready one day early.

@@ -16,10 +16,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 Open `http://127.0.0.1:8000/`. **Explore demo** switches between nine persisted
 synthetic checkpoints: stable, A, B, C, D-before-explanation, D-held, E-gap,
 E-return, F. Initial seeding takes roughly half a minute on the development machine;
-restart preserves edits and skips existing patients. Use a new explicit DB path for
-a fresh demonstration. If initial seeding was interrupted, use a fresh DB path:
-events are atomic but the entire seed is not, and existing profiles are skipped.
-No reset/deletion API or Simulation Data Agent is included.
+restart verifies completion and preserves edits. M7 now stages the whole initial seed
+atomically; an existing incomplete seed is rejected and preserved. Use a new explicit
+DB path for a fresh demonstration. See [deployment](../docs/DEPLOYMENT.md) for isolated
+hosted browser sessions/reset and [scenario tools](../aura_simulation/README.md).
 
 Ordinary API startup also serves the UI, without a demo catalog or safety fixtures:
 
