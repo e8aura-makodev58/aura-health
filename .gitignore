@@ -8,3 +8,5 @@ __pycache__/
 *.token
 secrets/
 aura-demo-workspaces/
+**/provider-credentials.json
+**/provider-settings.json

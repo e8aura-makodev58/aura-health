@@ -9,3 +9,5 @@ __pycache__
 secrets
 aura-demo-workspaces
 docs/evidence
+**/provider-credentials.json
+**/provider-settings.json

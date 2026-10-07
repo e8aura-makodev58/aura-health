@@ -1,5 +1,8 @@
 # aura-health
 
+Operator API-key configuration: [AI provider settings](docs/SYSTEM_SETTINGS.md)
+(header gear; OpenRouter, OpenAI, DeepSeek, Tencent; synthetic demo only).
+
 ## Project planning
 
 **aura-health** is a wearable-first, patient-controlled companion for adults on stable antidepressant maintenance treatment (hackathon challenge: *AI Healthier Every Day*). It is a synthetic-data research prototype, not a diagnostic or clinical service.

@@ -103,6 +103,7 @@ function render() {
   setText("patient-label", `${view.patient.display_name} · ${dateLabel(view.latest_occurred_at)}`);
   setText("home-subtitle", communication?.pinned_resources ? "The safety pathway is active. The separate panel above remains available." : "AURA can stay quiet. You can still check in whenever you want.");
   setText("communication-message", communication?.message);
+  setText("wording-origin",communication?.generation_used?"Live AI wording · synthetic demo data only.":"Fixed wording · policy or model fallback.");
   $("communication-card").hidden = !communication?.message || Boolean(communication.pinned_resources);
   $("clarify").hidden = !["MICRO_CHECKIN", "TARGETED_CLARIFICATION"].includes(status.latest_communication_decision);
   setText("routine-name", view.patient.treatment?.medication_name || "Follow your existing clinician-managed routine.");
@@ -116,6 +117,7 @@ function render() {
   setText("data-heading", !status.signals.length ? "No wearable observations yet" : unavailable ? "Wearable data unavailable" : rebuilding ? "Data is back. Reference is re-establishing." : "Personal context, at your pace.");
   setText("data-summary", !status.signals.length ? "You can still check in or raise a concern without wearable data." : unavailable ? "Missing data is just missing data—not a conclusion about how you are doing." : rebuilding ? "Observations have returned; historical-reference trust is still being re-established." : "Recorded wearable observations are available. Reference status is shown with each signal.");
   setText("privacy-notice", view.privacy_notice);
+  if(hosted) setText("dialog-privacy",`Synthetic examples only; safety gate first. ${view.privacy_notice}`);
   renderPatterns(); renderReview(); goPage();
 }
 
@@ -294,6 +296,7 @@ $("reset-demo").addEventListener("click", async () => {
 window.addEventListener("offline", () => { offline = true; showSafety(communication); tell("Connection unavailable. No input is assessed locally. Resources remain visible.", true); });
 window.addEventListener("online", async () => { if (pending) await sendPending(); else if (current) { try { await refresh(); tell("Connection restored; server state reloaded."); } catch { offline = true; showSafety(communication); } } });
 window.addEventListener("beforeunload", (event) => { if (pending) { event.preventDefault(); event.returnValue = "Unconfirmed input is held in memory only."; } });
+document.addEventListener("aura-settings-updated",async()=>{if(current){try{await refresh();}catch{tell("Provider settings changed; reload context when connected.",true);}}});
 
 async function start() {
   goPage();
@@ -301,7 +304,7 @@ async function start() {
     const result = await api("/demo/scenarios"); catalog = result.scenarios; hosted = Boolean(result.hosted);
     $("hosted-notice").hidden = !hosted; $("reset-demo").hidden = !result.can_reset;
     $("connect-form").hidden = hosted;
-    if (hosted) setText("dialog-privacy","Only labelled synthetic fixtures are accepted on this hosted demo. Do not enter real information. No live model is called.");
+    if (hosted) setText("dialog-privacy","Only labelled synthetic fixtures are accepted. Do not enter real information. Current provider status is shown after loading.");
     $("scenario").replaceChildren();
     for (const scenario of catalog) { const option = element("option", scenario.label); option.value = scenario.patient_id; $("scenario").append(option); }
     await loadPatient(catalog[0].patient_id);

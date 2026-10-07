@@ -72,14 +72,15 @@ class CommunicationIn(BaseModel):
 
 def create_app(db_path: str | Path | None = None, service: PatientEventService | None = None,
                communication_service: PatientCommunicationService | None = None,
-               *, docs_enabled: bool = False) -> FastAPI:
+               *, docs_enabled: bool = False, synthetic_only: bool = False) -> FastAPI:
     if service is None:
         factory = SQLiteRepositoryFactory(db_path or os.environ.get("AURA_DEV_DB", "aura-m4-development.sqlite3"))
         factory.initialize()
         service = PatientEventService(factory)
     # M6 patient entry point remains local-only until live-model consent is governed.
     communication_service = communication_service or PatientCommunicationService(service, provider=DisabledProvider())
-    view_service = PatientViewService(service, wording_provider_id=communication_service.provider.model_id)
+    view_service = PatientViewService(service, wording_provider_id=communication_service.provider.model_id,
+                                     wording_provider=communication_service.provider, synthetic_only=synthetic_only)
     # CDN-backed Swagger conflicts with the patient UI's strict same-origin CSP.
     app = FastAPI(title="AURA prototype application API", version="milestone-7",
                   docs_url=None, redoc_url=None, openapi_url="/openapi.json" if docs_enabled else None)
@@ -185,7 +186,7 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     ui = Path(__file__).resolve().parent.parent / "aura_ui"
     @app.get("/assets/{asset_name}", include_in_schema=False)
     def patient_asset(asset_name: str):
-        if asset_name not in {"app.js", "styles.css"}:
+        if asset_name not in {"app.js", "styles.css", "settings.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)
 

@@ -189,6 +189,13 @@ small,.fine{
   color:var(--muted);
   text-align:right
 }
+.header-controls{display:flex;align-items:center;gap:14px}
+#system-settings{display:flex;align-items:center;justify-content:center;width:44px;padding:8px}
+.settings-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.settings-check{display:flex;align-items:center;gap:8px;margin:18px 0}
+#settings-feedback{font-size:.9rem;overflow-wrap:anywhere;margin-top:16px}
+#settings-dialog{overflow-y:auto}
+#settings-dialog code{overflow-wrap:anywhere}
 .eyebrow{
   font-size:.67rem;
   letter-spacing:.15em;
@@ -327,7 +334,8 @@ main{
   border-top:1px solid var(--line);
   display:flex;
   justify-content:center;
-  z-index:5;
+  /* Keep navigation usable when the in-flow sticky safety panel reaches the footer. */
+  z-index:7;
   padding-bottom:env(safe-area-inset-bottom)
 }
 .bottom-nav a{

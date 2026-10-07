@@ -17,13 +17,13 @@ from time import monotonic
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from aura_communication.provider import DisabledProvider
 from .api import create_app
 from .communication import PatientCommunicationService
 from .demo import DemoFixtureGate, demo_catalog, prepare
 from .models import AppError, EventType
 from .persistence import SQLiteRepositoryFactory
 from .service import PatientEventService
+from .system_settings import SystemSettings, SyntheticSettingsProvider, settings_api
 
 
 class SyntheticOnlyService(PatientEventService):
@@ -87,7 +87,8 @@ class SyntheticOnlyService(PatientEventService):
 class HostedDemo:
     """One worker; session isolation is demo infrastructure, not authenticated care."""
 
-    def __init__(self, root, *, seed=7, secure_cookie=True, max_sessions=16, ttl_seconds=3600):
+    def __init__(self, root, *, seed=7, secure_cookie=True, max_sessions=16, ttl_seconds=3600,
+                 settings=None):
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.seed, self.secure_cookie = seed, secure_cookie
@@ -98,6 +99,8 @@ class HostedDemo:
         prepare(self.baseline, seed)
         self.sessions = {}
         self.lock = asyncio.Lock()
+        self.settings = settings or SystemSettings(self.root / "system")
+        self.system_app = settings_api(self.settings)
         self.app = self  # ASGI entry point
 
     def _workspace(self, session):
@@ -105,7 +108,8 @@ class HostedDemo:
         shutil.copyfile(self.baseline, destination)
         factory = SQLiteRepositoryFactory(destination)
         service = SyntheticOnlyService(factory, self.seed)
-        app = create_app(service=service, communication_service=PatientCommunicationService(service, provider=DisabledProvider()))
+        app = create_app(service=service, communication_service=PatientCommunicationService(service, provider=SyntheticSettingsProvider(self.settings)),
+                         synthetic_only=True)
 
         @app.get("/demo/scenarios")
         def scenarios():
@@ -167,6 +171,9 @@ class HostedDemo:
                 body = b"".join(chunks); chunks = []
                 return {"type":"http.request", "body":body, "more_body":False}
             return await receive()
+        if scope["path"].startswith("/system/"):
+            await self.system_app(scope,replay_receive,send)
+            return
         cookie = SimpleCookie()
         try:
             cookie.load(headers.get(b"cookie",b"").decode("latin1"))

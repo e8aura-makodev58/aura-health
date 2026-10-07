@@ -13,11 +13,12 @@ audit and cached response reuse. `HTTPGenerationProvider` supports a provider-ne
 JSON gateway, not a vendor-native chat API. Model requests select an approved candidate;
 this is not unrestricted paraphrasing or conversational therapy.
 
-All current supplied API/demo entry points still force `DisabledProvider`. No live
-model is configured, enabled or tested by this planning change. Existing copy is
-accurate for today's runtime but must become configuration-aware during integration.
-Provider/model/endpoint and credential provisioning need a user choice. Share config
-names or a protected secret-file path, never credential values in chat/Git.
+The hosted fixture service now offers operator-protected gear settings and native
+OpenRouter, OpenAI, DeepSeek and Tencent transports. See [settings](SYSTEM_SETTINGS.md).
+It defaults to disabled until an operator saves credentials/model and explicitly
+enables synthetic live wording. The ordinary API/demo factory remains disabled.
+Disclosure reflects configuration and each response's actual generation/fallback.
+No real provider call has been made or verified by automated mock tests.
 
 ## Integration boundary
 
@@ -38,7 +39,7 @@ degraded/offline and other prohibited modes remain static. Resources stay separa
 Keep the accepted finite-candidate contract initially; any future free paraphrasing or
 new detector requires a separately reviewed boundary, not a vendor adapter shortcut.
 
-## Provider work once configuration is selected
+## Provider integration checklist
 
 1. Use the existing neutral gateway if available; otherwise implement the selected
    provider's native transport behind `GenerationProvider`, using its official API.
