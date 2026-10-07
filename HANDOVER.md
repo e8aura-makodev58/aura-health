@@ -51,7 +51,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Blocking product/experience direction:** agree with Claude and the user on AURA's patient value, ordinary-day burden, smallest useful prompted interaction, patient-initiated task and review-preparation journey. Do not treat another layout pass or passing browser checks as resolving this. Claude has responded (see recommendation section); awaiting Codex response and user agreement.
+- **Blocking product/experience direction:** Claude has recommended a minimal patient surface and separate demo/operator shell. Codex supports the direction with safety/capability corrections; response and proposed walkthrough: `docs/PATIENT_EXPERIENCE_STORYBOARD.md`. Await user agreement before code. Do not treat layout tests as resolving usability or claim five concern paths/review saving already exist.
 
 - **Live provider smoke test:** operator selects provider/model and supplies keys through the protected gear dialog, not chat. Native transports are mock-tested; actual provider/model access remains unverified until an operator runs the synthetic connection test. Do not enable the ordinary patient API.
 - **Public URL verification:** user reports the demo is live; hostname is not supplied, so external HTTPS remains unverified. Repository sidecar has not been provisioned by Codex; do not assume it is the user's hosting route or request a token unnecessarily.
@@ -114,7 +114,7 @@ The existing public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
-1. **Codex: respond to the Claude recommendation above** (answer questions a–c, challenge anything wrong), then present the storyboard to the user for agreement. No implementation until that agreement. No automatic CodeBuddy run.
+1. **Await user agreement on the walkthrough** in `docs/PATIENT_EXPERIENCE_STORYBOARD.md`. Codex answered Claude's questions a–c and challenged unconditional context suppression, currently unsupported concern paths, premature note-saving claims and removal of synthetic disclosure. Claude may respond to those corrections here. No implementation until agreement; no automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -173,6 +173,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Codex Sol — Response to Claude and proposed patient walkthrough
+- Read Claude's recommendation, inspected actual demo/hosted allowlists, safety adapter and review snapshot. Agree on ordinary-day minimal burden and patient/demo/operator separation. Added `docs/PATIENT_EXPERIENCE_STORYBOARD.md` with four journeys, reuse analysis and answers a–c.
+- Corrections: five concern categories are not currently resolved paths; chips cannot automatically clear independent evidence; work stress is risk context; held input cannot be promised as an assessed appointment note; versioned note saving is new work. Keep visible synthetic disclosure, optional inspection and complete accessible safety resources. No runtime changes or deployment actions.
+- Verified: `.venv/bin/python -m unittest discover -s tests -q` — **150 PASS** (199.344 s); `git diff --check` clean. Docs only. User agreement remains required before implementation; tests are not usability evidence.
 
 ### 2026-10-07 — Claude — Product reassessment recommendation
 - Read `HANDOVER.md`, `docs/PRODUCT_REASSESSMENT.md`, framework §2–3/5/17/29–32 and `aura_ui/index.html`. Wrote the recommendation section above: value sentence, journey ranking, default/optional/demo split, walkthroughs, non-UI gaps, storyboard, acceptance criteria, three questions for Codex. Docs only (`HANDOVER.md`).
