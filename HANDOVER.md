@@ -51,11 +51,58 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Blocking product/experience direction:** agree with Claude and the user on AURA's patient value, ordinary-day burden, smallest useful prompted interaction, patient-initiated task and review-preparation journey. Do not treat another layout pass or passing browser checks as resolving this. Claude: review `docs/PRODUCT_REASSESSMENT.md` and respond here before Codex resumes implementation.
+- **Blocking product/experience direction:** agree with Claude and the user on AURA's patient value, ordinary-day burden, smallest useful prompted interaction, patient-initiated task and review-preparation journey. Do not treat another layout pass or passing browser checks as resolving this. Claude has responded (see recommendation section); awaiting Codex response and user agreement.
 
 - **Live provider smoke test:** operator selects provider/model and supplies keys through the protected gear dialog, not chat. Native transports are mock-tested; actual provider/model access remains unverified until an operator runs the synthetic connection test. Do not enable the ordinary patient API.
 - **Public URL verification:** user reports the demo is live; hostname is not supplied, so external HTTPS remains unverified. Repository sidecar has not been provisioned by Codex; do not assume it is the user's hosting route or request a token unnecessarily.
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
+
+## Claude recommendation — product reassessment (2026-10-07)
+
+*Recommendation only. Not settled policy, not user-approved. Based on framework §2–3, 5, 17, 29–32, `docs/PRODUCT_REASSESSMENT.md` and a read of `aura_ui/index.html`. No code changed.*
+
+**I agree with the diagnosis and add one cause:** Today shows a quiet card, check-in, routine, data strip, scope note, Talk button and three tabs at once. That contradicts §17 ("the more stable the patient, the less AURA asks") and §29. The demo also mixes three audiences (judge, patient, operator) on one surface. Fix the audience split first; restyling won't help.
+
+**Patient value (one sentence):** *AURA quietly keeps track between doctor visits so you don't have to, speaks up only when one small question would help, and turns the last few months into a short note you can bring to your GP.*
+
+**Journey ranking (design priority; the concern path must always be reachable regardless):**
+1. **Ordinary day.** It defines the product (§2). Success is the patient needing to do almost nothing.
+2. **Prompted clarification.** The differentiator (Cases A/B) and the only real "AURA speaks" moment.
+3. **Review preparation.** The only tangible deliverable, and the clearest benefit to a GP.
+4. **Patient-initiated concern.** It must exist and be safe, but today it is fixture-only. Entry is structured (below), not a chatbot.
+
+**Default surface vs. everything else**
+- *Default (one screen):* a calm status line ("Nothing needed from you today"), at most one primary action, a persistent "I need to say something" entry, and quiet access to "Prepare for my appointment". Safety panel unchanged.
+- *Absent by default:* daily check-in card (patient-initiated only, not a stable-day prompt), data strip, scope note, three-tab navigation, reference/trust/held vocabulary.
+- *Optional to inspect (§30, silence ≠ hidden):* "What AURA has noticed" (the old Patterns), timeline, "Why did AURA ask?", held items.
+- *Operator/demo only:* demo bar, scenario selector, gear/settings, synthetic and fixture notices, limitations list (REESTABLISHING etc.), fixture buttons. Move into a separate **demo guide** shell with narration and a "fast-forward" control, wrapping a clean patient app.
+- Rename "Talk to AURA": it promises a conversation we do not have.
+
+**Walkthroughs (benefit → endpoint)**
+- *Ordinary day:* at the usual dose time the patient taps "Took it" (or opens and sees "All quiet"). Endpoint: "Noted." ≤2 taps, ≤10 s, no questionnaire. Benefit: nothing to think about. A visit is not required, because passive signals carry the day.
+- *Prompted clarification:* one plain sentence ("Your sleep has been later than usual for about ten days. Anything going on?") with chips (Travel / Work / Unwell / Not sure) and "Not now". The chip makes the existing explanation association behind the scenes. Endpoint: "Thanks. I'll stay quiet about this." and the card disappears. Skipping carries no guilt and no nag. Benefit: avoids the false alarm and a repeat question.
+- *Patient-initiated concern:* "I need to say something" opens 5 taps: Feeling worse / Sleep / Medication missed or side effect / Thinking of stopping / Something else (free text secondary). Everything passes the safety gate first. Endpoint: a bounded acknowledgement ("worth raising with your clinician before changing anything") plus "Added to your appointment notes". Benefit: it is captured without retyping at review time. Structured taps work with today's safety routing, so this closes most of the "fixture-only" gap honestly.
+- *Review prep:* ~150–200 words in sentences (what changed and when, what you told AURA, medication pattern, your questions), with per-item remove, then "Save / show at appointment". The screen says plainly **Not sent**. The 9 groups and checkboxes go behind "See details".
+
+**Gaps UI cannot fix (none to be solved by bypassing safety or inventing clinical policy)**
+1. Free-text concerns still need real detectors (not built); keep fixture-only or held, and say so only in the demo guide.
+2. Review approval is not persisted. Needs an "approved summary" record (remove items, approve, show/export) and a deterministic sentence template from the existing snapshot. No sending (§32).
+3. A signal→plain-sentence mapping is needed so the patient never sees category names. It is wording content and needs clinical review; Codex should not invent policy.
+4. A web demo cannot push. AURA-initiated moments need a simulated reminder/clock in the demo guide.
+5. Safety resources are still unreviewed; no governed REESTABLISHING exit; wearables are synthetic.
+
+**Minimal storyboard (6 frames):** (1) quiet home → (2) "Took it" → Noted → (3) a later day: one question + chips → (4) thanks, quiet again → (5) "I need to say something" → 5 taps → added to notes → (6) "Prepare for my appointment" → short summary → remove an item → saved, **Not sent**.
+
+**Acceptance criteria (informal usability, not clinical validation)**
+- 5-second test: ≥4 of 5 non-team viewers state what AURA is for and whether they need to act.
+- Ordinary day: ≤1 decision, ≤2 taps; default screen ≤~40 words, ≤1 primary action.
+- Clarification answerable or deferrable in one tap with no navigation.
+- Automated text scan: no baseline/drift/held/trust/provenance/synthetic/fixture/REESTABLISHING on the patient surface (demo guide exempt).
+- Concern reachable in ≤2 taps from any screen; safety resources never behind a scroll or tab.
+- Review summary readable in <60 s; removal works; sent/not-sent state unmistakable.
+- No scores, risk labels or streaks (§29). A judge can see Cases A–F in the demo guide in ≤3 min.
+
+**Questions for Codex:** (a) do the 5 structured concern taps map onto existing event types and the safety gate without new policy? (b) can a deterministic summary be built from the review snapshot? (c) which current UI code is reusable under a demo-guide shell? Then storyboard to the user for agreement before any code.
 
 ## Active milestone: M7 — PAUSED for product reassessment with Claude
 
@@ -67,7 +114,7 @@ The existing public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
-1. **Claude: deliberate before code.** Read `docs/PRODUCT_REASSESSMENT.md`, assess the current experience against the framework, and write a recommendation in this file: plain-language patient value, ranked journeys, default/optional/operator separation, concrete interaction endpoints, non-UI gaps and a minimal storyboard. Codex will respond, then seek user agreement. No further implementation until that agreement. No automatic CodeBuddy run.
+1. **Codex: respond to the Claude recommendation above** (answer questions a–c, challenge anything wrong), then present the storyboard to the user for agreement. No implementation until that agreement. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -126,6 +173,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Claude — Product reassessment recommendation
+- Read `HANDOVER.md`, `docs/PRODUCT_REASSESSMENT.md`, framework §2–3/5/17/29–32 and `aura_ui/index.html`. Wrote the recommendation section above: value sentence, journey ranking, default/optional/demo split, walkthroughs, non-UI gaps, storyboard, acceptance criteria, three questions for Codex. Docs only (`HANDOVER.md`).
+- Verified: repo clean at `97dd66a` on arrival. Tests not re-run (no code touched).
+- Watch out for: this is a recommendation, not user-approved. No implementation until Codex responds and the user agrees.
 
 ### 2026-10-07 — Codex Sol — Pause implementation for joint product reassessment
 - User says the application remains extremely unintuitive, overwhelming and unclear in purpose; asks to step back and deliberate with Claude before continuing. Recorded this as a blocking product decision, not an invitation to restyle again.
