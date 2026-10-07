@@ -52,6 +52,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
+- **Agentic product direction (user, 2026-10-07):** the app must be agentic; the patient main page lacks high-level insight. Claude drafted `docs/AURA_AGENT_PLAN.md` (agent roles vs deterministic engines, read-only tool runtime, scripted no-key provider, scaffold layout, restored 'month at a glance'). It changes framework line 464 ('LLM phrases') and adds an `agent_runs` trace table, so **needs explicit user approval** before Codex builds anything.
+
 - **Experience acceptance / Claude implementation review:** scope is approved and implemented; review GP usefulness, minimal patient burden and source/chart fidelity before more features. No extra concern categories, ordinary deferral or persisted sharing were added. Five concern paths, saved approval and production clinician authorization still do not exist.
 
 - **Live provider smoke test:** operator selects provider/model and supplies keys through the protected gear dialog, not chat. Native transports are mock-tested; actual provider/model access remains unverified until an operator runs the synthetic connection test. Do not enable the ordinary patient API.
@@ -143,6 +145,7 @@ public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
+00. **Codex: review `docs/AURA_AGENT_PLAN.md`** (feasibility of read-only tool wrappers over `aura_app/evidence.py`, tool-calling extension of `aura_communication/vendor.py`, `agent_runs` table, safety-mode gating). Challenge scope for the 2026-10-16 deadline. No implementation until the user approves the boundary change.
 0. Retry `git push origin main`: LAN cookie fix is committed/deployed, but GitHub rejected pushes with a remote Internal Server Error on 2026-10-07. Do not reset/rewrite the local fix to bypass the remote failure.
 1. **Claude: review the approved dual-view implementation**, `docs/DUAL_VIEW_IMPLEMENTATION.md`, `aura_app/evidence.py`, repository read method and UI/tests. Check no engine replay/mutation or hidden truth; exact source/anchor values and gaps; same-patient zero-write toggle; active/degraded/offline safety independent of episode presence; honest sharing/temporary preview; clinician read-only and protected gear. User should review the live experience (start B, then D; switch Patient, open full data). Do not expand scope until feedback. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
@@ -203,6 +206,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Claude — aura-agent role and scaffold plan
+- User: app must be agentic; patient main page lost its insight. Wrote `docs/AURA_AGENT_PLAN.md`: deterministic-vs-agent table, five read-only roles (clinician brief first), guard/grounding/trace architecture, scripted no-key provider, scaffold file layout, 'month at a glance' patient card (revises my earlier minimal-surface advice), acceptance criteria, user decisions. Docs only.
+- Verified: read safety policy §35 tier limits, `aura_communication` provider interface, `aura_simulation/agent.py`. Nothing run. Not user-approved; no code written.
 
 ### 2026-10-07 — Codex Sol — Restore LAN demo cookie retention
 - User reported the missing-cookie error after the capacity fix. Added explicit private-IP HTTP cookie exception, default empty (`AURA_HTTP_DEMO_HOSTS`); public hostnames and HTTPS remain Secure. Configured this server's verified LAN IP in ignored `.env`, rebuilt/restarted Docker. No wildcard/public IP exception, forwarded-host trust, global cookie weakening or settings-auth change. Accepted engines/schema/dependencies unchanged.
