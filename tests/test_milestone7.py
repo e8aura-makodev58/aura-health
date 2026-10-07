@@ -81,6 +81,8 @@ class MilestoneSeven(unittest.TestCase):
 
     def test_demo6_session_reset_isolated_and_deterministic(self):
         with TestClient(self.host) as first, TestClient(self.host) as second:
+            first.get("/demo/scenarios")
+            second.get("/demo/scenarios")
             before=first.get("/patients/demo-stable-7/status").json()
             second_before=second.get("/patients/demo-stable-7/status").json()
             self.assertEqual(self.ingest(first,"demo-stable-7","PATIENT_CHECKIN",{"state":"Rough"}).status_code,200)

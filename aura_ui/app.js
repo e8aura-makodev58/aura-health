@@ -330,7 +330,8 @@ window.addEventListener("hashchange",()=>{goPage();window.scrollTo(0,0);});
 $("retry-connection").addEventListener("click", async () => {
   if (busy) return;
   if (pending) await sendPending();
-  else if (patientId) { try { await refresh(); tell("Server state reloaded."); } catch (error) { offline = true; showSafety(communication); tell(error.message, true); } }
+  else if (patientId && current) { try { await refresh(); tell("Server state reloaded."); } catch (error) { offline = true; showSafety(communication); tell(error.message, true); } }
+  else await start();
 });
 $("reset-demo").addEventListener("click", async () => {
   if (busy || pending) { tell("Finish the pending input before resetting the synthetic session.",true); return; }
@@ -358,13 +359,15 @@ async function start() {
     $("connect-form").hidden = hosted;
     if (hosted) setText("dialog-privacy","Only labelled synthetic fixtures are accepted. Do not enter real information. Current provider status is shown after loading.");
     $("scenario").replaceChildren();
+    $("scenario").disabled = false;
     for (const scenario of catalog) { const option = element("option", scenario.label); option.value = scenario.patient_id; $("scenario").append(option); }
     const initial = catalog.find(item => item.id === "B") || catalog[0];
     $("scenario").value = initial.patient_id;
     await loadPatient(initial.patient_id);
   } catch (error) {
-    $("scenario").replaceChildren(element("option", "Demo fixtures not enabled")); $("scenario").disabled = true;
-    if (error.network) { offline = true; showSafety(null); }
+    $("scenario").replaceChildren(element("option", "Demo temporarily unavailable")); $("scenario").disabled = true;
+    tell(error.message, true);
+    if (error.network || error.status >= 500 || error.status === 409) { offline = true; showSafety(null); }
   }
 }
 start();

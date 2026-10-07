@@ -57,6 +57,15 @@ It is not a safety downgrade. Old clone is retained until session expiry; other
 visitors are unchanged. Engineering limits: 16 concurrent sessions, 3600-second idle
 TTL, 4 resets/session, 8192-byte input body. These are not clinical parameters.
 
+Only `GET /demo/scenarios` allocates a browser workspace. The shell, assets,
+health, settings and unknown URLs consume no session slots. Patient API calls
+require the bootstrap cookie; rejected/missing cookies return
+`DEMO_SESSION_REQUIRED` without allocating additional workspaces. Capacity returns
+503 with `Retry-After: 60`; existing sessions are not evicted. The shell and its
+local resource fallback still load at capacity, with an explicit retry message.
+For direct LAN HTTP use the explicit `AURA_SECURE_COOKIE=false` command above;
+keep `true` for public HTTPS. A Secure cookie is not usable on ordinary LAN HTTP.
+
 Restart preserves the verified baseline. Session mappings are in memory; existing
 cookies receive fresh workspaces after restart. Orphaned files from an abrupt restart
 are retained, not silently deleted. Operator storage cleanup/rate-limiting remains

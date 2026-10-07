@@ -14,6 +14,24 @@ async function main() {
   page.on('dialog', dialog=>dialog.accept());
   async function check(name, work) { await work(); results.push({name,result:'PASS'}); console.log(`${name} PASS`); }
   try {
+    await check('CAPACITY_MESSAGE_AND_RETRY',async()=>{
+      const limited = await browser.newContext({viewport:{width:390,height:844}});
+      try {
+        const screen = await limited.newPage(); let first = true;
+        await screen.route('**/demo/scenarios',route=>{
+          if(!first) return route.continue();
+          first = false;
+          return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:{code:'DEMO_BUSY',message:'All private demo sessions are in use. Existing sessions are preserved; please retry later.'}})});
+        });
+        await screen.goto(base);
+        await screen.waitForSelector('#retry-connection:not([hidden])');
+        assert.match(await screen.locator('#notice').textContent(),/private demo sessions/);
+        assert.equal(await screen.locator('#safety-resources').isVisible(),true);
+        await screen.locator('#retry-connection').click();
+        await screen.waitForSelector('#patterns-view:not([hidden])');
+        assert.equal(await screen.locator('#retry-connection').isVisible(),false);
+      } finally { await limited.close(); }
+    });
     await page.goto(base); await page.waitForSelector('#patterns-view:not([hidden])');
     await page.locator('#patient-role').click();
     const catalog = await (await context.request.get(`${base}/demo/scenarios`)).json();

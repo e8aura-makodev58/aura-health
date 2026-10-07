@@ -101,6 +101,11 @@ class HostedDemo:
         self.lock = asyncio.Lock()
         self.settings = settings or SystemSettings(self.root / "system")
         self.system_app = settings_api(self.settings)
+        # Presentation never needs a private workspace. Dispatch ONLY the shell
+        # and allowlisted assets here; baseline patient routes are never exposed.
+        self.presentation_app = create_app(
+            service=SyntheticOnlyService(SQLiteRepositoryFactory(self.baseline), seed),
+            synthetic_only=True)
         self.app = self  # ASGI entry point
 
     def _workspace(self, session):
@@ -152,6 +157,14 @@ class HostedDemo:
         if scope["path"] == "/health":
             await JSONResponse({"status":"ok", "synthetic_only":True, "seed":self.seed})(scope, receive, send)
             return
+        if scope["path"] == "/" or scope["path"].startswith("/assets/"):
+            await self.presentation_app(scope, receive, send)
+            return
+        if not (scope["path"].startswith("/patients") or
+                scope["path"] in {"/demo/scenarios", "/demo/reset"} or
+                scope["path"].startswith("/system/")):
+            await JSONResponse({"detail":"Not Found"}, status_code=404)(scope, receive, send)
+            return
         # No body/log inspection. Size is engineering containment, not clinical policy.
         chunks, size = [], 0
         while True:
@@ -190,8 +203,15 @@ class HostedDemo:
                     file.unlink(missing_ok=True)
             fresh = session not in self.sessions
             if fresh:
+                # Only the explicit bootstrap may allocate a workspace. A browser
+                # rejecting its cookie must not create one per parallel API call.
+                if scope["path"] != "/demo/scenarios" or scope["method"] != "GET":
+                    await JSONResponse({"error":{"code":"DEMO_SESSION_REQUIRED",
+                        "message":"Demo session cookie missing or expired. Reload the page and allow cookies. Secure-cookie hosting requires HTTPS; LAN HTTP requires the operator's explicit HTTP demo configuration."}},
+                        status_code=409)(scope, replay_receive, send)
+                    return
                 if len(self.sessions) >= self.max_sessions:
-                    await JSONResponse({"error":{"code":"DEMO_BUSY","message":"Demo capacity reached; try later"}}, status_code=503)(scope, replay_receive, send)
+                    await JSONResponse({"error":{"code":"DEMO_BUSY","message":"All private demo sessions are in use. Existing sessions are preserved; please retry later."}}, status_code=503, headers={"Retry-After":"60"})(scope, replay_receive, send)
                     return
                 session = secrets.token_hex(32)
                 app, db = self._workspace(session)
