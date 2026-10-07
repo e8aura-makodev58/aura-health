@@ -46,9 +46,11 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
+- **Current user revision (2026-10-07):** enable live-model wording on synthetic data; future institutional model intended on-prem/private cloud (not implemented/validated readiness). Dedicated UI/UX agent completed a read-only purpose-led mobile portrait/laptop review. Proposal: `docs/PATIENT_UX_REDESIGN.md`; provider plan: `docs/SYNTHETIC_LIVE_MODEL.md`. Runtime still uses disabled providers/current UI; this session records the decision/design, not a live-model or redesigned-UI implementation. Additional synthetic data is deferred.
 
 ## Open decisions
 
+- **Live provider configuration:** user must identify provider/model/endpoint and protected credential provisioning (configuration names/file path only, never secret values). Existing adapter expects a neutral JSON gateway, not a vendor-native chat API. No live call is configured or claimed. New synthetic-only enablement must not enable the ordinary patient API.
 - **Public URL verification:** user reports the demo is live; hostname is not supplied, so external HTTPS remains unverified. Repository sidecar has not been provisioned by Codex; do not assume it is the user's hosting route or request a token unnecessarily.
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
@@ -56,9 +58,13 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 Scope/gate: [`docs/milestones/M7_DEMO_AND_INTEGRATION.md`](docs/milestones/M7_DEMO_AND_INTEGRATION.md); local evidence: [`MILESTONE7_REVIEW.md`](MILESTONE7_REVIEW.md). M5/M6 were accepted by Claude. Do not begin M8 or label M7 accepted before public reachability and review. Domain algorithms remain authoritative.
 
+Current priority is the user's live-synthetic-model and mobile-first UX revision;
+additional scenario/data generation waits until those are addressed. UX review was
+delegated at explicit user request; no new runtime changes in this planning session.
+
 ## Next steps
 
-1. Review the local M7 changes/evidence. Re-run browser checks per deployment/review docs; unknown non-demo text must remain held, not classified as safe. No CodeBuddy run is authorized automatically.
+1. Resolve live provider/model/configuration, then integrate synthetic-only wording with existing validation/fallback and truthful configuration/per-response disclosure. Implement the mobile-first Today/Patterns/Review hierarchy from the UX proposal, persistent help, progressive details, laptop adaptation and keyboard/safety/offline checks. Do not expand arbitrary chat, safety detectors or clinical policy. Defer additional synthetic data. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -67,7 +73,7 @@ Scope/gate: [`docs/milestones/M7_DEMO_AND_INTEGRATION.md`](docs/milestones/M7_DE
    - `reviewed_by` is caller-supplied and not authenticated.
    - Replay-per-event cost grows with the length of the event history.
    - M5 wording render also loads full history. Public routing helper is now `requires_safety_gate`; latest-event IDs are supplied by the read view.
-   - Live-model informed consent remains future work; supplied patient entry points stay local-only. Explicit developer provider injection is for synthetic evaluation, not consent-approved patient deployment.
+   - Real-patient live-model consent/governance remains future work. User now authorizes live synthetic demo wording, but runtime is still disabled pending selected provider/configuration. Do not enable ordinary patient entry points implicitly.
    - Offline pending input is memory-only with same-key retries and an unload warning; no durable encrypted queue/cold-start offline app. Review selections are temporary previews, not saved approval/sharing.
    - Hosted session mappings are in-memory; restart keeps baseline but starts fresh browser workspaces. Abrupt-restart orphan files are retained; storage cleanup/abuse rate limiting is not production-grade.
 
@@ -117,6 +123,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Codex Sol — Live synthetic AI decision and dedicated UX review
+- User requests live model on synthetic data and future institution-managed on-prem/private-cloud direction; rejects “no live model” as a permanent stance. Recorded decision §36, integration boundary/configuration needs in `docs/SYNTHETIC_LIVE_MODEL.md`.
+- Explicitly delegated read-only UI/UX review: mobile portrait-first Today/Patterns/Review, persistent help, compact routine/check-ins, progressively disclosed context/reference/review, honest fixture composer and laptop reading-column adaptation. Proposal in `docs/PATIENT_UX_REDESIGN.md`; no UI/domain/runtime changes yet.
+- Verified: `.venv/bin/python -m unittest discover -s tests -q` — 140 tests PASS (168.416 s); `git diff --check` clean. Documentation only. Additional synthetic data deferred by user. Provider/model/endpoint/secret provisioning is unresolved; actual live use is not claimed. User alone controls CodeBuddy.
 
 ### 2026-10-07 — Codex Sol — Publish demo on all network interfaces
 - User requested `0.0.0.0`. Compose now defaults to `0.0.0.0:8017` with `AURA_DEMO_BIND` override; deployment/example configuration updated. Domain logic unchanged.

@@ -156,3 +156,17 @@ User decision, 2026-10-02: Codex has implementation authority over the project; 
 ## 35. Product-first implementation and independent rebuild
 
 User decision, 2026-10-02: build a functioning application and iterate until the user and reviewers agree it is a strong product. Only then translate the agreed product into a detailed SOW for a manually triggered CodeBuddy implementation from scratch. Preserve intended use, interfaces, governance, tests, demo behavior, and trust boundaries in that SOW. Keep the rebuild isolated from the existing implementation; compare the completed applications and adopt useful features after review/regression checks. Final implementation choice is based on product quality; using our version remains allowed. No SOW/rebuild is initiated by the M5 implementation task.
+
+## 36. Live synthetic model and patient UX revision
+
+User decision, 2026-10-07: use a live model with synthetic demo data; do not treat
+“no live model” as a permanent product principle. Future institutional use is intended
+to connect to an institution-managed on-premises/private-cloud model, not a claimed
+implemented or validated clinical deployment. Deterministic state/policy/validation
+boundaries remain authoritative. Provider choice/configuration and a verified live
+call are still needed; do not declare it enabled prematurely.
+
+A dedicated UI/UX agent should contemplate a purpose-led redesign, optimized for
+phone portrait and usable on laptop. Additional synthetic-data work is deferred until
+these changes are addressed. See `docs/PATIENT_UX_REDESIGN.md` (proposal) and
+`docs/SYNTHETIC_LIVE_MODEL.md` (integration plan/current limitations).
