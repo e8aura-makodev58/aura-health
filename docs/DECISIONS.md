@@ -1,6 +1,6 @@
 # AURA Health — Canonical Decisions
 
-Status date: 2026-09-23.
+Status date: 2026-10-07.
 
 These are settled cross-cutting decisions. Reopen one only for a concrete contradiction, safety issue, implementation failure, or explicit new user decision.
 
@@ -170,3 +170,20 @@ A dedicated UI/UX agent should contemplate a purpose-led redesign, optimized for
 phone portrait and usable on laptop. Additional synthetic-data work is deferred until
 these changes are addressed. See `docs/PATIENT_UX_REDESIGN.md` (proposal) and
 `docs/SYNTHETIC_LIVE_MODEL.md` (integration plan/current limitations).
+
+## 37. Separate patient and clinician experiences — planning decision
+
+User decision, 2026-10-07: the patient experience must be as simple, intuitive and
+visual as possible; analytical information belongs in a separate clinician dashboard.
+The synthetic demo should have a Patient / Clinician view toggle. Delegate a plan
+to a sub-agent for Claude review before implementation.
+
+This explicitly adds clinician-dashboard planning despite older milestone exclusions.
+It does not authorize a production clinician portal, real-patient disclosure,
+automatic sharing, reviewer authorization, clinical scoring or treatment decisions.
+The demo toggle is presentation, not an access-control or consent mechanism. Accepted
+safety/longitudinal engines and synthetic-only live-model boundary remain unchanged.
+Patient inspection of retained information must remain available on request.
+
+The dual-view direction is user-requested; the detailed design/implementation plan
+still requires review. No implementation is authorized in this planning task.

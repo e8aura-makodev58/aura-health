@@ -47,11 +47,11 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
-- **Product reassessment / implementation paused (user, 2026-10-07):** despite technical checks, the user finds the redesigned application unintuitive, overwhelming and unclear in purpose. It is **not accepted as a satisfactory patient experience**. Stop feature/UI work; reassess the patient's actual benefit and journeys, deliberate with Claude via this handover, then seek user agreement before implementation. Discussion brief: [`docs/PRODUCT_REASSESSMENT.md`](docs/PRODUCT_REASSESSMENT.md). The current demo remains unchanged; accepted engines and synthetic-only boundary remain authoritative. Additional data remains deferred.
+- **Product reassessment / implementation paused (user, 2026-10-07):** the current redesign is not accepted as a satisfactory patient experience. Latest direction: **minimal, intuitive, more visual patient view + separate analytical clinician dashboard**, with a **Patient / Clinician demo toggle**. User explicitly requested delegated planning for Claude review, not implementation. See `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; earlier deliberation: `docs/PRODUCT_REASSESSMENT.md`, `docs/PATIENT_EXPERIENCE_STORYBOARD.md`. The demo stays unchanged; accepted engines/synthetic-only boundary remain authoritative. Additional data remains deferred.
 
 ## Open decisions
 
-- **Blocking product/experience direction:** Claude has recommended a minimal patient surface and separate demo/operator shell. Codex supports the direction with safety/capability corrections; response and proposed walkthrough: `docs/PATIENT_EXPERIENCE_STORYBOARD.md`. Await user agreement before code. Do not treat layout tests as resolving usability or claim five concern paths/review saving already exist.
+- **Blocking detailed dual-view plan:** user has supplied the patient/clinician split and demo toggle direction. A delegated planning proposal is now for Claude review in `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; detailed workflows must be agreed before coding. Five concern paths, saved review approval, production clinician authorization and patient sharing do not currently exist.
 
 - **Live provider smoke test:** operator selects provider/model and supplies keys through the protected gear dialog, not chat. Native transports are mock-tested; actual provider/model access remains unverified until an operator runs the synthetic connection test. Do not enable the ordinary patient API.
 - **Public URL verification:** user reports the demo is live; hostname is not supplied, so external HTTPS remains unverified. Repository sidecar has not been provisioned by Codex; do not assume it is the user's hosting route or request a token unnecessarily.
@@ -114,7 +114,7 @@ The existing public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
-1. **Await user agreement on the walkthrough** in `docs/PATIENT_EXPERIENCE_STORYBOARD.md`. Codex answered Claude's questions a–c and challenged unconditional context suppression, currently unsupported concern paths, premature note-saving claims and removal of synthetic disclosure. Claude may respond to those corrections here. No implementation until agreement; no automatic CodeBuddy run.
+1. **Claude: review delegated dual-view plan** `docs/DUAL_VIEW_EXPERIENCE_PLAN.md` and respond here. Check whether the visual patient frame genuinely reduces burden, the analytical clinician workspace is useful to a time-limited GP, charts match available persisted data, and the synthetic role toggle preserves state without implying consent/authorization/sharing. Challenge scope creep and unsupported concern/note-saving claims. Codex will address findings; obtain user agreement before implementing. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -173,6 +173,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Codex Sol — Delegated patient/clinician dual-view planning
+- User identifies the missing audience split: very simple, intuitive, more visual patient experience; separate analytical clinician dashboard; Patient / Clinician demo toggle. Delegated planning to `/root/dual_view_planning` explicitly as requested. Proposal: `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; user direction recorded in `docs/DECISIONS.md` §37. No implementation/deployment changes.
+- Main reviewed endpoint/repository evidence: current status vs saved per-event baselines, source observations/timeline, snapshot limits, synthetic allowlist and safety boundary. Plan distinguishes new read-only projections from new approval/deferral/concern workflows, preserves same selected synthetic patient across toggle, and makes the toggle neither permission nor sharing. Existing before/after checkpoints are different seeded records, not fabricated continuous transitions.
+- Verified: `.venv/bin/python -m unittest discover -s tests -q` — **150 PASS** (201.321 s); `git diff --check` clean. These are unchanged engineering tests, not acceptance of the proposed UX. **Claude review next**, through this file; detailed user agreement required before coding. Additional data and CodeBuddy remain deferred.
 
 ### 2026-10-07 — Codex Sol — Response to Claude and proposed patient walkthrough
 - Read Claude's recommendation, inspected actual demo/hosted allowlists, safety adapter and review snapshot. Agree on ordinary-day minimal burden and patient/demo/operator separation. Added `docs/PATIENT_EXPERIENCE_STORYBOARD.md` with four journeys, reuse analysis and answers a–c.
@@ -238,45 +243,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 - User decisions: Codex is implementation owner, Claude reviewer; user alone controls CodeBuddy. Build/review final product first, then detailed SOW for a manual clean rebuild, compare/adopt useful improvements, choose submission version. Updated decisions/roadmap/M5–M7 notes; no CodeBuddy implementation/evidence claimed.
 - Next: M5 review, then M6. Live provider, reviewed safety questions/content/resources, production auth, and inherited M4 issues remain open; no clinical policy was invented.
 
-### 2026-09-24 — Claude — Hosting decided: this server via Cloudflare
-- User decision: host the live demo on this server via Cloudflare; decide on a Tencent Cloud mirror near the deadline.
-- Added a **Live demo hosting** section here (corrected: cloudflared runs as per-app Docker containers, not a host install), and updated `DECISIONS.md` §31 and `M7_DEMO_AND_INTEGRATION.md`.
-
-### 2026-09-24 — Claude — Live hosted demo decided
-- User decision: aura-health **will have a live hosted demo** (the brief gives bonus points for a live link).
-- Updated `DECISIONS.md` §31, `ROADMAP.md` (M7 and priorities), `M7_DEMO_AND_INTEGRATION.md` (new required "Live hosted demo" section and gate), and `M8_SUBMISSION.md` (project link will be submitted).
-- Still open: which hosting provider to use.
-
-### 2026-09-24 — Claude — Reviewed M4.5 docs; filled submission gaps
-- Verified Codex Sol's M4.5: every P1–P18, L1–L14, and A1–A20 ID and the cited test names exist in `tests/`; M4 safety-first flow matches the code; M5 matches safety spec §35 LLM containment. Only docs changed in `358f5c9`.
-- Fixed:
-  - `M8_SUBMISSION.md` omitted brief-required items: title, <10-word blurb, 16:9 cover image, the four-part description (incl. "how prompts drive AI generation" and quantified value), ≥3 CodeBuddy/WorkBuddy chat screenshots. Also added the optional video/live-link details and the judging rubric.
-  - `DECISIONS.md` §2 now states the user's official name, aura-health. §32 now gives the brief's exact evidence minimum and an evidence location (`docs/evidence/`).
-  - M5 now includes T1/T2 generation limits from spec §35.
-  - M7 and Open decisions now flag the live-link bonus.
-  - README now links `docs/`.
-- Not verifiable from the repo: M1/M2 review chronology (no M1/M2 review packets are committed). Behavior is backed by the cited tests.
-
-### 2026-09-24 — Codex Sol — M4.5 project canonicalization
-- Created `docs/ROADMAP.md`, `docs/DECISIONS.md`, all eight `docs/milestones/` specs, and `docs/DEMO_SCRIPT.md`; no runtime code changed.
-- Verified all historical P1–P18, L1–L14, and A1–A20 IDs against tests/review packets. No acceptance criterion required `(reconstructed)`.
-- Corrected chronology: CLOSED/degraded, immutable CLOSED, and configured high-tier defaults were accepted with the M1 review, not first decided in M2. Corrected M4 event-flow shorthand to safety-first for safety-relevant input; clarified that M7's explicit ground-truth isolation test is still future work.
-- Verified: `.venv/bin/python -m unittest discover -s tests -q` — 69 tests pass. M5 is next; it has not begun.
-
-### 2026-09-23 — Claude — M4.5 instructions for Sol
-- Sol 6 proposed M4.5 (Project Canonicalization) and the M5–M8 sequence; the user asked Claude to pass its adjustments to Sol via this file. See **Active milestone** above.
-- Watch out for: don't duplicate this handover file under `docs/`.
-
-### 2026-09-23 — Claude — Care Plan Bridge dropped; project named aura-health
-- User decision: drop Care Plan Bridge, and use aura-health as the official project name.
-- Updated the README intro and doc list. Added a "Superseded" banner to `PRODUCT_FRAMEWORK.md`, `PRODUCT_FRAMEWORK_V2.md`, and `FRAMEWORK_CRITIQUE.md` (no other content changed).
-- Watch out for: the frameworks and code still say "AURA" in places. That's the same product, so no renaming is needed unless the user asks.
-
-### 2026-09-23 — Claude — Status review, first push, handover created
-- Reviewed Milestone 4 and re-ran the tests: 69 pass.
-- Committed all milestone 1–4 work (`527cc13`) and merged the remote's LICENSE-only initial commit (`97aad5b`), with no force-push. Pushed to `origin/main`.
-- Created this `HANDOVER.md`.
-- Watch out for: the product-direction mismatch (resolved in the entry above).
-
-### 2026-09-23 — Sol — Milestones 1–4
-- Built `aura_safety`, `aura_longitudinal`, and `aura_app` along with the tests and review packets (`MILESTONE3_REVIEW.md`, `MILESTONE4_REVIEW.md`). *(Summarized by Claude from the repo; Sol did not write this entry.)*
+### Earlier history — 2026-09-23 to 2026-09-24
+- Milestones 1–4 implemented, 69 tests PASS; Claude reviewed M4, created this handover, and pushed repository history (initial implementation `527cc13`, LICENSE merge `97aad5b`). Canonical evidence: `MILESTONE3_REVIEW.md`, `MILESTONE4_REVIEW.md`.
+- User named the project `aura-health` and superseded Care Plan Bridge (2026-09-23); older framework files retain explicit superseded banners.
+- M4.5 canonicalized roadmap/decisions/M1–M8/demo script; P1–P18/L1–L14/A1–A20 trace to tests. No reconstructed criterion; corrected accepted CLOSED/high-tier correction chronology and safety-first M4 shorthand. 69 tests PASS; docs-only `358f5c9`.
+- Claude reviewed M4.5 and added submission requirements, exact CodeBuddy evidence minimum, intended-use/safety containment details and live-link gate. M1/M2 review chronology has no separate committed packets; actual tests back behavior.
+- User required a live demo on this server via Cloudflare (2026-09-24); optional per-app sidecar rather than host install. Tencent mirror deferred until near the deadline. Current hosting/CodeBuddy decisions above supersede older timing instructions.
