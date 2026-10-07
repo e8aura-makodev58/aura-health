@@ -47,11 +47,11 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
-- **Product reassessment / implementation paused (user, 2026-10-07):** the current redesign is not accepted as a satisfactory patient experience. Latest direction: **minimal, intuitive, more visual patient view + separate analytical clinician dashboard**, with a **Patient / Clinician demo toggle**. User explicitly requested delegated planning for Claude review, not implementation. See `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; earlier deliberation: `docs/PRODUCT_REASSESSMENT.md`, `docs/PATIENT_EXPERIENCE_STORYBOARD.md`. The demo stays unchanged; accepted engines/synthetic-only boundary remain authoritative. Additional data remains deferred.
+- **Product reassessment / implementation paused (2026-10-07):** the current redesign is not accepted as a satisfactory patient experience. Direction: **minimal visual patient view + analytical clinician centerpiece**, with a **Patient / Clinician demo toggle**; clinician emphasis and patient entitlement to analytics on demand were relayed by Claude. Delegated planning and Claude review are complete; Codex incorporated clinician-first order, shared **See my full data** projection, explicit synthetic sharing disclosure and scope cuts in `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`. User agreement remains required before coding. Anchor-version snapshots/commands exist in persisted results but need a new repository read projection; active/degraded safety must stay visible even without an episode. The demo/accepted engines remain unchanged; additional data is deferred.
 
 ## Open decisions
 
-- **Blocking detailed dual-view plan:** user has supplied the patient/clinician split and demo toggle direction. A delegated planning proposal is now for Claude review in `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; detailed workflows must be agreed before coding. Five concern paths, saved review approval, production clinician authorization and patient sharing do not currently exist.
+- **Blocking user agreement on revised dual-view scope:** Claude supports the direction; required revisions are addressed in `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`. Proposed order: shared evidence contract → clinician workspace (B/D first) → minimal patient frame with optional full data → A–F completion. No extra concern categories, ordinary deferral or persisted sharing in this slice. Five concern paths, saved review approval and production clinician authorization do not currently exist.
 
 - **Live provider smoke test:** operator selects provider/model and supplies keys through the protected gear dialog, not chat. Native transports are mock-tested; actual provider/model access remains unverified until an operator runs the synthetic connection test. Do not enable the ordinary patient API.
 - **Public URL verification:** user reports the demo is live; hostname is not supplied, so external HTTPS remains unverified. Repository sidecar has not been provisioned by Codex; do not assume it is the user's hosting route or request a token unnecessarily.
@@ -142,7 +142,7 @@ The existing public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
-1. **Codex: address the Claude review of `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`** (clinician-first order, patient 'See my full data' entry, sharing banner, scope cuts), then seek user agreement. (Original review request, now answered:) Check whether the visual patient frame genuinely reduces burden, the analytical clinician workspace is useful to a time-limited GP, charts match available persisted data, and the synthetic role toggle preserves state without implying consent/authorization/sharing. Challenge scope creep and unsupported concern/note-saving claims. Codex will address findings; obtain user agreement before implementing. No automatic CodeBuddy run.
+1. **Obtain user agreement on the revised `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`.** Claude findings addressed: clinician-first build/demo, optional patient full data from the same projection, synthetic full-record disclosure, B/D-first scope cuts and truthful temporary notes. Historical anchor snapshots are available but not exposed by the current repository read method. Do not collapse active/degraded safety based on episode presence. After agreement, implement the shared read-only evidence contract and clinician slice; preserve all A–F containment checks. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -201,6 +201,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Codex Sol — Revised clinician-first plan after Claude review
+- Addressed Claude's three required changes and scope cuts in `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; recorded relayed user direction in `docs/DECISIONS.md` §37. Same read projection, patient entitlement, exact synthetic sharing disclosure, display-only 8-week/all filter, B/D-first clinician build and minimal patient follow-up. No runtime/deployment changes.
+- Verified source: committed event results contain anchor version/reference/creation/reviewer and rolling snapshots; current repository event reads discard those results, so a new read interface is still needed. Mutable latest baselines are not a version ledger. Corrected proposed safety collapsing: active/degraded policy and resources stay visible even without an episode ID.
+- Verified: `.venv/bin/python -m unittest discover -s tests -q` — **150 PASS** (198.324 s); `git diff --check` clean. User agreement next, not implementation. Additional data and CodeBuddy remain deferred.
 
 ### 2026-10-07 — Codex Sol — Delegated patient/clinician dual-view planning
 - User identifies the missing audience split: very simple, intuitive, more visual patient experience; separate analytical clinician dashboard; Patient / Clinician demo toggle. Delegated planning to `/root/dual_view_planning` explicitly as requested. Proposal: `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; user direction recorded in `docs/DECISIONS.md` §37. No implementation/deployment changes.
@@ -263,19 +268,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 - M5 review notes handled: latest committed event reference supplied; routing helper public; live-provider startup disabled pending consent. History scaling remains. Separate resources persist offline; retry preserves event key. Preview selections are not approval/sharing.
 - Left: Claude/user M6 review. M7 has not started; clinical content/resources, real detectors, governed REESTABLISHING exit, durable offline queue and prod auth remain absent. No CodeBuddy used; later rebuild remains user-controlled.
 
-### 2026-10-02 — Claude — M5 review: accepted, no blocking findings
-- Read `aura_app/communication.py`, `validation.py`, `provider.py`, API/persistence diffs. Confirmed: provider gets data only; model output must exactly match an approved candidate; state is rechecked in a second transaction and stale output is discarded; T3/T4/degraded/offline/STAY_QUIET make zero provider calls; `BEGIN IMMEDIATE` serializes duplicate requests so only one output commits; provider URL is HTTPS/localhost-only, no redirects, size/time bounded; `aura_safety/` and `aura_longitudinal/` untouched since `110218c`.
-- Verified: 106 tests pass; `aura_communication.evaluation --behavior disabled` all nine fixtures PASS; `git diff --check` clean.
-- Changed: fixed a misindented line in `aura_app/persistence.py` (cosmetic). Non-blocking notes are in **Next steps**.
-- Not verified: live provider (none configured); regex checks are defense-in-depth only, as M5 states.
-
-### 2026-10-02 — Codex Sol — M5 bounded communication and current user workflow
-- Added wording contracts/catalog/config, deterministic candidate/claim validation, optional HTTP provider, fixed fallbacks, and nine prompt fixtures. Application communication service reads committed gate results/current safety state and rejects stale generated output. New command endpoint and append-oriented output/audit persistence; core domain engines unchanged. See `MILESTONE5_REVIEW.md`.
-- Verified: `.venv/bin/python -m unittest discover -s tests -q` — **106 tests PASS** (69 prior + 37 M5). Nine fixtures PASS with fixture provider and with provider disabled; cached replay matches. `git diff --check` clean.
-- User decisions: Codex is implementation owner, Claude reviewer; user alone controls CodeBuddy. Build/review final product first, then detailed SOW for a manual clean rebuild, compare/adopt useful improvements, choose submission version. Updated decisions/roadmap/M5–M7 notes; no CodeBuddy implementation/evidence claimed.
-- Next: M5 review, then M6. Live provider, reviewed safety questions/content/resources, production auth, and inherited M4 issues remain open; no clinical policy was invented.
-
-### Earlier history — 2026-09-23 to 2026-09-24
+### Earlier history — 2026-09-23 to 2026-10-02
+- M5 implemented and accepted by Claude (2026-10-02), 106 tests PASS, nine wording fixtures PASS with fixture/disabled providers. Candidate validation, race-checked commit, static prohibited modes and append-oriented wording/audit verified; domain engines unchanged. Live provider not tested. See `MILESTONE5_REVIEW.md`; regex validation remains defense-in-depth only. User assigned implementation ownership to Codex and CodeBuddy timing to themselves; product-first/manual rebuild workflow supersedes older scheduling.
 - Milestones 1–4 implemented, 69 tests PASS; Claude reviewed M4, created this handover, and pushed repository history (initial implementation `527cc13`, LICENSE merge `97aad5b`). Canonical evidence: `MILESTONE3_REVIEW.md`, `MILESTONE4_REVIEW.md`.
 - User named the project `aura-health` and superseded Care Plan Bridge (2026-09-23); older framework files retain explicit superseded banners.
 - M4.5 canonicalized roadmap/decisions/M1–M8/demo script; P1–P18/L1–L14/A1–A20 trace to tests. No reconstructed criterion; corrected accepted CLOSED/high-tier correction chronology and safety-first M4 shorthand. 69 tests PASS; docs-only `358f5c9`.

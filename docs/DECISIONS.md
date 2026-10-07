@@ -185,5 +185,13 @@ The demo toggle is presentation, not an access-control or consent mechanism. Acc
 safety/longitudinal engines and synthetic-only live-model boundary remain unchanged.
 Patient inspection of retained information must remain available on request.
 
+User direction relayed in Claude's 2026-10-07 review: the clinician view is the main
+product workspace; patient analytics are on demand, not default, and patients are
+entitled to inspect their data. The revised proposal uses one shared read-only
+evidence projection, a patient **See my full data** entry, and an explicit disclosure
+that the demo shows the full synthetic record while real clinician access would
+require patient approval. This is not a completed approval/access-control workflow.
+
 The dual-view direction is user-requested; the detailed design/implementation plan
-still requires review. No implementation is authorized in this planning task.
+has Claude's support after required revisions; user agreement remains outstanding.
+No implementation is authorized in this planning task.

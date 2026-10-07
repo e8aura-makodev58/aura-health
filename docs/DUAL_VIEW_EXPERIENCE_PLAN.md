@@ -1,6 +1,6 @@
 # AURA — two views, one longitudinal record
 
-2026-10-07. **Planning only; for Claude review, then user agreement.**
+2026-10-07. **Planning only; revised after Claude review, awaiting user agreement.**
 The user requests a very simple, intuitive, visual patient experience and an
 analytical clinician dashboard, switched by a demo toggle. This supersedes the
 earlier exclusion of clinician-dashboard work **for this proposed demo scope**;
@@ -16,7 +16,9 @@ and how complete the evidence is—without reading months of records.**
 
 These are two presentations of the same persisted selected synthetic patient,
 not two independent products. Detailed analysis belongs primarily in the clinician
-workspace; it remains optionally inspectable by the patient. Neither view diagnoses,
+workspace, which is the main product workspace (user direction relayed by Claude,
+2026-10-07). Patients are entitled to inspect the same data on demand through
+**See my full data**; analytics are not their default experience. Neither view diagnoses,
 predicts relapse, recommends treatment, determines suicide risk or implies monitoring
 by a human. Visual simplicity is not permission to hide mandatory safety content.
 
@@ -33,11 +35,16 @@ Synthetic demo · no real information     [Patient | Clinician]   [Demo guide] [
               accepted longitudinal / safety engines
 ```
 
-- Patient is the default view. The switch changes presentation only: no events,
+- Proposed judge walkthrough starts in Clinician; patient home stays minimal when
+  selected. This is demo sequencing, not a requirement that patients open a clinician
+  dashboard. The switch changes presentation only: no events,
   permissions, anchor changes, sharing or safety downgrades occur on toggle.
 - Clinician view says **Synthetic clinician demonstration — not a shared patient
   record**. All current snapshots remain `NOT_SHARED`. A demo viewer can inspect
   synthetic records, not obtain clinical authorization by selecting a role.
+  Also display: **Demo shows the full synthetic record. In real use you would see
+  only what the patient approves.** This describes the intended future access rule,
+  not an implemented sharing workflow.
 - Real clinician access later requires identity, authorization and an explicit
   patient-approved/versioned sharing workflow. There is no automatic transmission.
 - Scenario labels, narration, reset and simulated time stay in Demo guide. Hidden
@@ -60,7 +67,7 @@ Synthetic demo · no real information     [Patient | Clinician]   [Demo guide] [
 │ [ I want to mention something ] │
 │                                  │
 │ Prepare for my appointment     › │
-│ My recorded information        › │
+│ See my full data                › │
 └──────────────────────────────────┘
 ```
 
@@ -70,7 +77,11 @@ for appointment preparation. No changing smiley, mood-colored orb or gauge sugge
 that AURA has assessed mental health. The same text meaning remains available to
 screen readers; icons supplement it rather than require interpretation. Within
 optional recorded information, a simple dated sequence can show “You recorded…”
-events without turning them into a score or a daily task.
+events without turning them into a score or a daily task. **See my full data** opens
+the same read-only evidence projection and charts as the synthetic clinician view,
+with patient-oriented labels. No clinician permission is needed for this entry.
+One projection, two framings; no second set of calculations or filtered-away evidence.
+Future real clinician access would be patient-approved subsets, not this demo toggle.
 
 The motif carries no health classification. No daily checklist, metrics, streaks,
 permanent check-in/routine cards or three competing analytical tabs. An ordinary
@@ -83,7 +94,8 @@ short approved question, relevant answer controls and optional “Why this quest
 Do not manufacture a question because a drift exists; Case B's final quiet cooldown
 can coexist with retained change. “Not now” requires a defined ordinary deferral
 contract and cannot dismiss safety, erase evidence or change a reference. Until that
-contract is approved, defer control is an explicit implementation gap.
+contract is approved, omit that control from this slice; deferral remains an explicit
+implementation gap, not a frontend dismissal.
 
 Four shortest journeys:
 
@@ -109,6 +121,13 @@ across views and offline; short screens may scroll rather than truncate policy t
 
 Start with **one selected synthetic patient**, not a population ranking or alert
 queue. Optimize laptop for a time-limited GP review; phone fallback stacks sections.
+Lead with at most three deterministic, source-linked factual sentences about what
+changed and when, then the four charts and context/check-in/routine strip. These are
+descriptive templates, not new clinical ranking or an unrestricted generated summary.
+Use a display-only **Last 8 weeks / All** selector, relative to the selected record's
+latest timestamp, not today's wall clock. Filtering hides dates only; it cannot
+recompute baselines, coverage, drift or decisions. Label current rolling coverage
+with its actual window rather than claiming it measures the selected display period.
 
 ```text
 Selected patient · treatment context · actual record dates · coverage/trust limits
@@ -135,6 +154,7 @@ Analysis means better inspection, not more speculative inference:
 - Raw observed points and production rolling values are distinct. Show anchor
   version/reference dates; historical anchor changes must use stored command/result
   provenance, not extend today's anchor backward as if always authoritative.
+  Label the anchor **your own reference**, never a clinical normal range.
 - Missing/insufficient periods remain gaps, never interpolated zero/normal. A point
   returning after a gap does not imply restored trust. `REESTABLISHING` remains
   labelled; no new exit rule is proposed.
@@ -142,16 +162,23 @@ Analysis means better inspection, not more speculative inference:
   drift alongside its explanation and any reopening reason. Illness shading on HR
   must not visually clear independent check-ins or unrelated sleep timing.
 - Check-ins are categorical patient reports, not a numeric depression trend.
+  Use dots or a categorical strip, not a connecting line implying a clinical scale.
+  Coverage means data availability, not a health or clinical-quality score.
   Routine acknowledgements are self-report, not verified ingestion/adherence.
 - Safety is a separate policy-status/episode section with sequence, provenance,
   lifecycle, degradation/incomplete follow-up and timestamps. Never a risk percentage,
   inferred diagnosis, or automatically resolved status. Keep policy resources
   independent; clarify that no clinician/emergency service was notified.
+  Historical episode detail can be secondary, but active policy content, degraded
+  or offline containment and resources cannot be collapsed merely because no episode
+  ID exists. An episode is not required for degraded safety policy to apply.
 - No dose editor, anchor command, “dismiss safety” or automatic messaging in the
   first dashboard. Reviewer authorization is not solved by caller-supplied identity.
 - Selecting a finding reveals its exact source records and reference window.
   Historical findings and current communication are distinguished. Clinician-facing
   detail stays descriptive even if optional bounded wording is enabled.
+  Keep the first evidence drawer shallow: source/date/reference and explanation,
+  not an engineering console. Explained retained observations are not risk labels.
 
 ## 5. Reuse, projections and genuinely new workflows
 
@@ -171,7 +198,7 @@ the rejected information hierarchy is not a usability constraint.
 | Check-in/routine/explanation | Existing event/explanation commands | Preserve idempotency, explicit association and authoritative engine decisions. |
 | Full historical rolling/anchor series | Persisted event `result_json`; current status only shows latest | New **read-only projection** may expose ordered committed per-event baselines. Do not smooth/recompute them in JS; no engine/schema change presumed. |
 | Safety provenance detail | Persisted safety references/current state; snapshot is abbreviated | New bounded read-only projection if timeline/status are insufficient; omit routine null references without deleting history. |
-| Date filtering / chart evidence contract | Current endpoints lack a dedicated chart contract | Define application read projection with units/source IDs and nulls; initially use actual full-record period. No new statistical/clinical rules. |
+| Date filtering / chart evidence contract | Current endpoints lack a dedicated chart contract | Define application read projection with units/source IDs and nulls; Last 8 weeks / All is display-only. No new statistical/clinical rules. |
 | Approved selected appointment note | Not persisted; temporary preview only | **New persisted workflow**, not part of initial read-only dashboard. Needs selection/version/audit and explicit user approval; cannot be simulated as an existing permission. |
 | Ordinary deferral / extra concern categories | Not complete today | Separate application contracts/approved synthetic fixtures if subsequently authorized; never frontend safety classification. |
 
@@ -179,6 +206,19 @@ Frontend may format dates/coordinates and arrange records. It may not derive dri
 rolling statistics, sensing/trust transitions, safety tiers, context credibility or
 new urgency rankings. If saved historical output is unavailable, show unavailable
 or a labelled current summary—not a fabricated historical line. No new data required.
+
+**Anchor history verification (Codex, 2026-10-07):**
+`aura_app/service.py` commits each `ApplicationResult.longitudinal.baselines` into
+`app_events.result_json`. `aura_app/longitudinal.py` includes anchor center/spread,
+reference start/end, version, creation timestamp and reviewer, and consumes explicit
+anchor command payloads. Thus committed result snapshots plus command events can
+support a historical reference projection without recalculating anchors. The mutable
+`baselines` table is only the latest state, not an anchor-version ledger. The current
+repository `events()` method discards `result_json` after reading its deferred flag;
+a new repository read interface is needed to expose committed snapshots. There is
+no existing chart/history endpoint. Missing/deferred snapshots must be marked absent;
+do not reconstruct a historical version from today's anchor. This verifies stored
+source capability, not a finished projection or a check of every deployed record.
 
 ## 6. Cases A–F: toggle reveals the reason, not another patient's story
 
@@ -198,21 +238,26 @@ mutated one record unless implemented through accepted observable-event replay.
 
 ## 7. Proposed stages and acceptance gate
 
-No implementation begins until Claude reviews this plan and the user agrees.
+Claude supports the revised direction; implementation still requires user agreement.
 
-1. Agree on two static walkthroughs: quiet patient → one question → appointment;
-   GP opens the same record → understands change/context/gaps → inspects provenance.
-2. Define the smallest read-only chart/evidence contract using saved outputs. Agree
-   what is unavailable. Avoid extending accepted domain algorithms.
-3. Build the demo shell/toggle, minimal patient hierarchy and clinician read workspace.
-   Reuse current safe writes/settings. Keep approval/sharing explicitly unimplemented.
-4. Run A–F, policy/reload/offline/browser checks and human comprehension review.
+1. Agree on the clinician-first scope: GP opens the record → sees change/context/gaps
+   → inspects sources; patient sees one quiet moment with optional full-data access.
+2. Define the shared read-only evidence contract using saved outputs, including
+   anchor versions and unavailable values. Avoid extending accepted domain algorithms.
+3. Build the clinician workspace and demo shell/toggle first. Polish Cases B and D
+   as the first vertical slice; retain all A–F regression and safety checks throughout.
+4. Build the minimal patient frame with optional full-data access to that projection.
+   Reuse safe writes/settings. Appointment notes remain a **temporary preview — Not
+   sent**. Defer extra concern categories, ordinary deferral and deep evidence tooling;
+   persisted approval/sharing remains explicitly unimplemented.
+5. Finish visible A–F flows, policy/reload/offline/browser checks and human review.
    Additional synthetic data, detectors, real wearable APIs and production auth remain
    separate; no CodeBuddy run without the user's instruction.
 
 Engineering acceptance: unchanged accepted domain gates; same-patient toggle performs
 no writes and preserves active safety; charts reproduce stored values/gaps/versions;
-context and held evidence remain inspectable; no hidden truth, scores or unapproved
+context and held evidence remain inspectable; patient full-data access uses the same
+projection; synthetic full-record disclosure is visible; no hidden truth, scores or unapproved
 sharing; admin remains separately protected; keyboard/44px targets/non-color labels;
 320/390 portrait and 1280 laptop usable, clinician phone fallback and short-screen
 safety verified. Preserve all current containment/idempotency tests.
@@ -224,7 +269,19 @@ the change/context/coverage and locate its source without coaching. Judge walkth
 should make A–F intelligible without opening engineering tables. Mechanical test
 success alone does not establish patient usability or clinical efficacy.
 
-## 8. Questions for Claude
+## 8. Claude review and remaining agreement
+
+Claude's 2026-10-07 review supports this audience split, the four-chart GP workspace,
+read-only first scope and historical rolling projection. Required clinician-first
+order, explicit patient data entitlement and synthetic sharing disclosure are now
+incorporated. The safety-section collapse recommendation is limited as above:
+degraded/active policy remains authoritative even without an episode. Anchor history
+source capability is verified above; an actual projection still needs implementation.
+The original review questions are retained below as history, not unanswered blockers.
+
+**User agreement needed:** proceed with shared read-only evidence → clinician-first
+B/D slice → minimal patient view with full-data access → A–F completion, without new
+domain policy, sharing, concern classification or additional synthetic data?
 
 1. Does this audience split finally make the patient benefit apparent, or is even
    this home too much? Which single patient journey should the initial demo emphasize?
