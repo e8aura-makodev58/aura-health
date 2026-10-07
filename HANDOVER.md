@@ -47,26 +47,27 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
-- **Current user revision (2026-10-07) implemented:** Compass-style provider gear plus patient-first UI redesign. Compact Today with central question/quiet state, optional check-in, expandable routine; Today/Patterns/Review with About/gear in header; persistent Talk, laptop rail, progressive signal/reference/review/timeline details, explicit temporary selections, honest read-only hosted fixture composer. Safety/resources remain independent and keyboard-scrollable on short screens. `docs/PATIENT_UX_REDESIGN.md` documents delivery; screenshots in `/tmp/aura-redesign-browser-artifacts`. Accepted engines, application algorithms/APIs, schema and dependencies unchanged. Ready for user/reviewer feedback, not a new clinical acceptance claim. Additional synthetic data remains deferred.
+- **Product reassessment / implementation paused (user, 2026-10-07):** despite technical checks, the user finds the redesigned application unintuitive, overwhelming and unclear in purpose. It is **not accepted as a satisfactory patient experience**. Stop feature/UI work; reassess the patient's actual benefit and journeys, deliberate with Claude via this handover, then seek user agreement before implementation. Discussion brief: [`docs/PRODUCT_REASSESSMENT.md`](docs/PRODUCT_REASSESSMENT.md). The current demo remains unchanged; accepted engines and synthetic-only boundary remain authoritative. Additional data remains deferred.
 
 ## Open decisions
+
+- **Blocking product/experience direction:** agree with Claude and the user on AURA's patient value, ordinary-day burden, smallest useful prompted interaction, patient-initiated task and review-preparation journey. Do not treat another layout pass or passing browser checks as resolving this. Claude: review `docs/PRODUCT_REASSESSMENT.md` and respond here before Codex resumes implementation.
 
 - **Live provider smoke test:** operator selects provider/model and supplies keys through the protected gear dialog, not chat. Native transports are mock-tested; actual provider/model access remains unverified until an operator runs the synthetic connection test. Do not enable the ordinary patient API.
 - **Public URL verification:** user reports the demo is live; hostname is not supplied, so external HTTPS remains unverified. Repository sidecar has not been provisioned by Codex; do not assume it is the user's hosting route or request a token unnecessarily.
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
-## Active milestone: M7 — local integration implemented; public-link gate pending
+## Active milestone: M7 — PAUSED for product reassessment with Claude
 
 Scope/gate: [`docs/milestones/M7_DEMO_AND_INTEGRATION.md`](docs/milestones/M7_DEMO_AND_INTEGRATION.md); local evidence: [`MILESTONE7_REVIEW.md`](MILESTONE7_REVIEW.md). M5/M6 were accepted by Claude. Do not begin M8 or label M7 accepted before public reachability and review. Domain algorithms remain authoritative.
 
-Current priority is the user's live-synthetic-model and mobile-first UX revision;
-additional scenario/data generation waits for user review. Provider settings and the
-patient-first redesign are deployed locally on 8017. UX review was delegated at explicit
-user request; implementation is now complete and ready for feedback.
+Current priority is product deliberation, not further implementation. The technically
+working redesign is deployed on 8017 but has failed the user's experience review.
+The existing public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
-1. Obtain user/reviewer feedback on the implemented patient-first redesign. Operator configures provider/key/model through the header gear and optionally runs a paid synthetic connection test; instructions: `docs/SYSTEM_SETTINGS.md`. Do not expand arbitrary chat, safety detectors or clinical policy. Defer additional synthetic data until the user is satisfied with live model/UX work. No automatic CodeBuddy run.
+1. **Claude: deliberate before code.** Read `docs/PRODUCT_REASSESSMENT.md`, assess the current experience against the framework, and write a recommendation in this file: plain-language patient value, ranked journeys, default/optional/operator separation, concrete interaction endpoints, non-UI gaps and a minimal storyboard. Codex will respond, then seek user agreement. No further implementation until that agreement. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -125,6 +126,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Codex Sol — Pause implementation for joint product reassessment
+- User says the application remains extremely unintuitive, overwhelming and unclear in purpose; asks to step back and deliberate with Claude before continuing. Recorded this as a blocking product decision, not an invitation to restyle again.
+- Re-read the complete canonical framework; prepared `docs/PRODUCT_REASSESSMENT.md` with code/screenshot-grounded concerns, patient journeys and a concrete request for Claude through this file. Marked the previous redesign as technically implemented but not accepted as a satisfactory experience. No runtime/test/configuration/deployment changes.
+- Verified: clean worktree on arrival, HEAD `84a272e`; `.venv/bin/python -m unittest discover -s tests -q` — **150 PASS** (199.858 s), `git diff --check` clean. These remain engineering checks, not patient-usability evidence. Claude has not yet responded; no joint agreement is claimed. Next: Claude recommendation, Codex deliberation, then user agreement before coding.
 
 ### 2026-10-07 — Codex Sol — Implement patient-first mobile/laptop redesign
 - User explicitly requested the actual redesign after clarifying that the previous release only added settings. Rebuilt `aura_ui/index.html`, `styles.css` and presentation logic: compact Today, expandable routine, persistent help, three primary tabs/laptop rail, progressive reference/review details, temporary-preview labels and honest synthetic-example composer. Independent safety region remains across pages, focusable/scrollable on short screens. No backend/domain/schema/dependency changes or additional data generation.

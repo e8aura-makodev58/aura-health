@@ -1,7 +1,10 @@
 # Patient experience redesign
 
-Status: implemented following explicit user instruction on 2026-10-07; ready for
-user/reviewer feedback. The original dedicated UI/UX review below informed the work.
+Status: implemented on 2026-10-07, but the user subsequently found the experience
+unintuitive and overwhelming. **Not accepted as a satisfactory patient experience.**
+Further implementation is paused for joint product reassessment with Claude; see
+[discussion brief](PRODUCT_REASSESSMENT.md). Technical checks below are not usability
+validation. The original dedicated UI/UX review below informed the work.
 No additional synthetic data/scenarios. Accepted safety and longitudinal engines,
 application API and database schema remain unchanged.
 
