@@ -193,5 +193,7 @@ that the demo shows the full synthetic record while real clinician access would
 require patient approval. This is not a completed approval/access-control workflow.
 
 The dual-view direction is user-requested; the detailed design/implementation plan
-has Claude's support after required revisions; user agreement remains outstanding.
-No implementation is authorized in this planning task.
+has Claude's support after required revisions. User approved implementation with
+"Proceed" on 2026-10-07. The synthetic dual-view scope is implemented; product/UX
+acceptance and Claude implementation review are still outstanding. No production
+sharing or new domain policy was authorized.

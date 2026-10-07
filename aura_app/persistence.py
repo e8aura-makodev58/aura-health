@@ -199,6 +199,15 @@ class SQLiteUnitOfWork:
         except sqlite3.IntegrityError as exc:
             raise RepositoryConflict("event ID or idempotency key exists") from exc
 
+    def committed_results(self, patient_id):
+        """Original committed snapshots, not replay or today's mutable baselines."""
+        rows = self._all("SELECT rowid AS commit_order,event_id,event_type,occurred_at,received_at,result_json "
+                         "FROM app_events WHERE patient_id=? ORDER BY rowid", (patient_id,))
+        for row in rows:
+            raw = row.pop("result_json")
+            row["result"] = json.loads(raw) if raw else None
+        return rows
+
     def save_result(self, event_id, result):
         self.conn.execute("UPDATE app_events SET result_json=? WHERE event_id=?", (_json(result), event_id))
 

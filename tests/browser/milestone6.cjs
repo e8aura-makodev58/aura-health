@@ -28,6 +28,7 @@ async function main() {
     await page.waitForFunction(patient => document.getElementById("patient-label").textContent && document.getElementById("scenario").value === patient && !document.getElementById("home-view").hidden && document.getElementById("notice").hidden, id(key));
     await page.locator("#demo-toggle").click();
   }
+  async function navigate(name) { await page.evaluate(value=>location.hash=value,name); await page.waitForSelector(`#${name}-view:not([hidden])`); }
   async function test(name, work) {
     try { await work(); results.push({test:name,result:"PASS"}); console.log(`${name} PASS`); }
     catch (error) { results.push({test:name,result:"FAIL",error:error.message}); console.error(`${name} FAIL: ${error.message}`); await page.screenshot({path:path.join(artifacts,`${name}-failure.png`),fullPage:true}); }
@@ -40,32 +41,32 @@ async function main() {
   }
 
   try {
-    await page.goto(base); await page.waitForSelector("#home-view:not([hidden])");
+    await page.goto(base); await page.waitForSelector("#patterns-view:not([hidden])"); await page.locator("#patient-role").click(); await choose("stable");
     await test("UI1", async () => { assert.equal((await state("stable")).latest_communication_decision,"STAY_QUIET"); assert.equal(await page.locator("#communication-card").isHidden(),true); assert.equal(await page.locator("#safety-panel").isHidden(),true); await page.screenshot({path:path.join(artifacts,"home-mobile.png"),fullPage:true}); });
-    await test("UI2", async () => { const result = await submitAndWait(page.locator('[data-checkin="Good"]')); assert.equal(result.longitudinal.deferred,false); assert.match(await page.locator("#checkin-saved").innerText(),/Good/); });
+    await test("UI2", async () => { await page.locator("#records-panel summary").first().click(); const result = await submitAndWait(page.locator('[data-checkin="Good"]')); assert.equal(result.longitudinal.deferred,false); assert.match(await page.locator("#checkin-saved").innerText(),/Good/); });
     await test("UI8", async () => { await page.locator('#routine-details summary').click(); const result = await submitAndWait(page.locator('[data-medication="acknowledged"]')); assert.equal(result.longitudinal.deferred,false); assert.match(await page.locator("#routine-saved").innerText(),/acknowledged/i); assert.equal(await page.locator('input[name="dose"], input[name="taper"]').count(),0); });
     await test("UI12", async () => { await page.locator("#talk").click(); await page.locator('[data-fixture="fixture ordinary message"]').click(); const result = await submitAndWait(page.locator("#send-input")); assert.equal(result.conversation_status,"NORMAL_CONVERSATION_ALLOWED"); assert.match(await page.locator("#communication-message").innerText(),/What would you like/); });
-    await test("UI4", async () => { await choose("D-before"); const before=(await state("D-before")).signals.map(s=>s.anchor); await page.locator('[data-page="patterns"]').click(); await page.locator("#explain").click(); assert.equal(await page.locator("#input-text").inputValue(),"new stable work schedule"); await submitAndWait(page.locator("#send-input")); const after=await state("D-before"); assert.equal(after.held_for_review.length,2); assert.deepEqual(before,after.signals.map(s=>s.anchor)); });
-    await test("UI5", async () => { await choose("D"); await page.locator('[data-page="patterns"]').click(); assert.equal(await page.locator(".held-item").count(),2); assert.match(await page.locator("#held-list").innerText(),/reference is unchanged/); assert.match(await page.locator("#held-list").innerText(),/held for review/); });
-    await test("UI6", async () => { await choose("E-gap"); assert.match(await page.locator("#data-heading").innerText(),/unavailable/); assert.match(await page.locator("#data-summary").innerText(),/Missing data is just missing data/); assert.ok((await state("E-gap")).signals.every(s=>s.rolling.mean===null && s.rolling.sample_count===0)); });
-    await test("UI7", async () => { await choose("E"); await page.locator('[data-page="patterns"]').click(); await page.locator('.signal-card summary').first().click(); assert.match(await page.locator("#signal-list").innerText(),/No automatic exit rule/); assert.ok((await state("E")).signals.every(s=>s.trust_state==="REESTABLISHING")); });
-    await test("UI9", async () => { await choose("F"); assert.equal(await page.locator("#safety-panel").isVisible(),true); await submitAndWait(page.locator('[data-checkin="Good"]')); await page.locator('[data-page="review"]').click(); assert.equal(await page.locator("#safety-panel").isVisible(),true); assert.equal((await state("F")).latest_communication_decision,"SAFETY_REVIEW_REQUIRED"); assert.equal(await page.locator("#safety-panel button:visible").count(),0); await page.screenshot({path:path.join(artifacts,"safety-mobile.png"),fullPage:true}); });
-    await test("UI10", async () => { await choose("D"); await page.locator('[data-page="review"]').click(); await page.locator('.review-group summary').first().click(); await page.locator("#review-list input").first().check(); assert.match(await page.locator("#selection-summary").innerText(),/1 item selected/); assert.equal((await snapshot("D")).automatically_sent,false); assert.equal((await snapshot("D")).share_status,"NOT_SHARED"); });
+    await test("UI4", async () => { await choose("D-before"); const before=(await state("D-before")).signals.map(s=>s.anchor); await navigate("patterns"); await page.locator("#explain").click(); assert.equal(await page.locator("#input-text").inputValue(),"new stable work schedule"); await submitAndWait(page.locator("#send-input")); const after=await state("D-before"); assert.equal(after.held_for_review.length,2); assert.deepEqual(before,after.signals.map(s=>s.anchor)); });
+    await test("UI5", async () => { await choose("D"); await navigate("patterns"); assert.equal(await page.locator(".held-item").count(),2); assert.match(await page.locator("#held-list").innerText(),/reference is unchanged/); assert.match(await page.locator("#held-list").innerText(),/held for review/); });
+    await test("UI6", async () => { await choose("E-gap"); assert.match(await page.locator("#home-subtitle").innerText(),/unavailable/); assert.match(await page.locator("#home-subtitle").innerText(),/Missing data/); assert.ok((await state("E-gap")).signals.every(s=>s.rolling.mean===null && s.rolling.sample_count===0)); });
+    await test("UI7", async () => { await choose("E"); await navigate("patterns"); await page.locator("#recorded-details>summary").click(); await page.locator('.signal-card summary').first().click(); assert.match(await page.locator("#signal-list").innerText(),/No automatic exit rule/); assert.ok((await state("E")).signals.every(s=>s.trust_state==="REESTABLISHING")); });
+    await test("UI9", async () => { await choose("F"); assert.equal(await page.locator("#safety-panel").isVisible(),true); await page.locator("#records-panel summary").first().click(); await submitAndWait(page.locator('[data-checkin="Good"]')); await navigate("review"); assert.equal(await page.locator("#safety-panel").isVisible(),true); assert.equal((await state("F")).latest_communication_decision,"SAFETY_REVIEW_REQUIRED"); assert.equal(await page.locator("#safety-panel button:visible").count(),0); await page.screenshot({path:path.join(artifacts,"safety-mobile.png"),fullPage:true}); });
+    await test("UI10", async () => { await choose("D"); await navigate("review"); await page.locator("#review-details>summary").click(); await page.locator('.review-group summary').first().click(); await page.locator("#review-list input").first().check(); assert.match(await page.locator("#selection-summary").innerText(),/1 item selected/); assert.equal((await snapshot("D")).automatically_sent,false); assert.equal((await snapshot("D")).share_status,"NOT_SHARED"); });
     await test("UI11", async () => { await choose("C"); await page.locator("#why-home").click(); for(const detail of await page.locator('#why-content details summary').all())await detail.click(); assert.match(await page.locator("#why-content").innerText(),/Version 1/); assert.match(await page.locator("#why-content").innerText(),/synthetic_wearable/); const status=await state("C"); assert.ok((await page.locator("#why-content").innerText()).includes(status.active_longitudinal_observations[0].description)); await page.locator("#close-why").click(); });
-    await test("UI14", async () => { for (const key of "ABCDEF") { await choose(key); assert.equal(await page.locator("#home-view").isVisible(),true); await page.locator('[data-page="patterns"]').click(); assert.equal(await page.locator(".signal-card").count(),4); await page.locator('[data-page="review"]').click(); assert.ok(await page.locator("#review-list .review-group").count()>=8); } });
+    await test("UI14", async () => { for (const key of "ABCDEF") { await choose(key); assert.equal(await page.locator("#home-view").isVisible(),true); await navigate("patterns"); assert.equal(await page.locator(".signal-card").count(),4); await navigate("review"); assert.ok(await page.locator("#review-list .review-group").count()>=8); } });
     await test("UI13", async () => { for (const key of "ABCDEF") { await choose(key); const visible=await page.locator("body").innerText(); assert.doesNotMatch(visible,/relapse (?:probability|likelihood)|psychiatric risk\s*\d|T[1-4]\b|depression score/i); } });
     await test("UI15", async () => {
       await choose("stable");
       for (const width of [320,390,1280]) {
         await page.setViewportSize({width,height:900});
         for (const panel of ["home","patterns","review","about"]) {
-          await page.locator(`[data-page="${panel}"]`).click();
+          await navigate(panel);
           const overflow = await page.evaluate(()=>({width:innerWidth, scroll:document.documentElement.scrollWidth,
             elements:[...document.querySelectorAll("body *")].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,id:el.id,class:el.className,right:el.getBoundingClientRect().right}))}));
           assert.ok(overflow.scroll<=overflow.width,`${width}/${panel} overflow ${JSON.stringify(overflow)}`);
         }
       }
-      await page.setViewportSize({width:390,height:844}); await page.locator('[data-page="home"]').click();
+      await page.setViewportSize({width:390,height:844}); await navigate("home");
       await page.locator("#talk").click(); assert.equal(await page.locator("#input-dialog").isVisible(),true);
       assert.equal(await page.evaluate(()=>document.getElementById("input-dialog").contains(document.activeElement)),true);
       await page.keyboard.press("Escape"); assert.equal(await page.locator("#input-dialog").isHidden(),true);
@@ -76,7 +77,7 @@ async function main() {
       assert.equal((await http.post(`${base}/patients`,{data:{patient_id:patient,display_name:"Synthetic note test",age:35}})).status(),200);
       await page.locator("#demo-toggle").click(); await page.locator("#patient-id").fill(patient); await page.locator("#connect").click();
       await page.waitForFunction(()=>document.getElementById("patient-label").textContent.includes("Synthetic note test")); await page.locator("#demo-toggle").click();
-      await page.locator("#add-note").click(); await page.locator("#input-text").fill("<script>window.injection=true</script> arbitrary note");
+      await page.locator("#talk").click(); await page.locator("#input-text").fill("<script>window.injection=true</script> arbitrary note");
       const result=await submitAndWait(page.locator("#send-input")); assert.equal(result.longitudinal.deferred,true); assert.equal(result.safety.state.degraded,true); assert.equal(await page.locator("#safety-resources").isVisible(),true); assert.equal(await page.evaluate(()=>window.injection),undefined);
     });
     await test("OFFLINE", async () => {

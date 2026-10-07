@@ -14,7 +14,8 @@ async function main() {
   page.on('dialog', dialog=>dialog.accept());
   async function check(name, work) { await work(); results.push({name,result:'PASS'}); console.log(`${name} PASS`); }
   try {
-    await page.goto(base); await page.waitForSelector('#home-view:not([hidden])');
+    await page.goto(base); await page.waitForSelector('#patterns-view:not([hidden])');
+    await page.locator('#patient-role').click();
     const catalog = await (await context.request.get(`${base}/demo/scenarios`)).json();
     const patient = key=>catalog.scenarios.find(item=>item.id===key).patient_id;
     const status = async (client,key)=>(await (await client.get(`${base}/patients/${patient(key)}/status`)).json());
@@ -23,15 +24,16 @@ async function main() {
       await page.locator('#scenario').selectOption(patient(key));
       await page.waitForFunction(()=>!document.getElementById('notice').hidden ? false : !document.getElementById('home-view').hidden);
     }
+    async function navigate(name){await page.evaluate(value=>location.hash=value,name);await page.waitForSelector('#'+name+'-view:not([hidden])');}
     await check('HOSTED_NOTICE',async()=>{assert.equal(catalog.hosted,true); await page.locator('#demo-toggle').click(); assert.equal(await page.locator('#hosted-notice').isVisible(),true); assert.equal(await page.locator('#connect').isVisible(),false);});
-    await check('CASES_A_F',async()=>{for(const key of 'ABCDEF'){await choose(key); await page.locator('[data-page="patterns"]').click(); assert.equal(await page.locator('.signal-card').count(),4); await page.locator('[data-page="review"]').click(); assert.ok(await page.locator('.review-group').count()>=8); assert.equal((await (await context.request.get(`${base}/patients/${patient(key)}/review-snapshot`)).json()).automatically_sent,false);}});
+    await check('CASES_A_F',async()=>{for(const key of 'ABCDEF'){await choose(key); await navigate('patterns'); assert.equal(await page.locator('.signal-card').count(),4); await navigate('review'); assert.ok(await page.locator('.review-group').count()>=8); assert.equal((await (await context.request.get(`${base}/patients/${patient(key)}/review-snapshot`)).json()).automatically_sent,false);}});
     await check('SAFETY_PRECEDENCE',async()=>{await choose('F'); assert.equal(await page.locator('#safety-panel').isVisible(),true); assert.equal((await status(context.request,'F')).latest_communication_decision,'SAFETY_REVIEW_REQUIRED');});
     await check('PRIVATE_RESET',async()=>{
       const original=await status(context.request,'stable');
       await other.request.get(`${base}/demo/scenarios`);
       await choose('stable');
       const saved=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname.endsWith('/events'));
-      await page.locator('[data-checkin="Rough"]').click(); assert.equal((await saved).status(),200);
+      await page.locator('#records-panel>summary').click(); await page.locator('[data-checkin="Rough"]').click(); assert.equal((await saved).status(),200);
       await page.waitForFunction(()=>document.getElementById('notice').textContent==='Recorded. Nothing has been sent to a clinician.');
       assert.notDeepEqual(await status(context.request,'stable'),original);
       assert.deepEqual(await status(other.request,'stable'),original);

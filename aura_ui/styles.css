@@ -188,3 +188,103 @@ textarea[readonly] {background:#eaf0e6;font-size:.8rem}
   .quiet-card h2 {font-size:1rem}
   .checkin-footer>.fine {font-size:.7rem}
 }
+
+/* Two audiences, one record. These rules replace the previous dashboard rail. */
+body {padding-left:0;padding-bottom:110px}
+body[data-role=clinician] {padding-bottom:30px}
+main,.masthead {max-width:1200px}
+main {padding-inline:24px}
+.masthead {padding:18px 24px}
+.demo-bar {gap:12px;flex-wrap:wrap;padding:8px 24px;font-size:.7rem}
+#role-switch {display:flex;gap:2px;border:1px solid #b8c9bb;border-radius:12px;padding:2px}
+#role-switch button {font-size:.75rem;padding:7px 12px;min-height:44px;border:0;background:transparent}
+#role-switch button[aria-pressed=true] {background:var(--accent);color:white}
+.demo-bar>span {margin-right:auto}
+.demo-bar #demo-toggle {min-height:44px}
+.bottom-nav {position:static;max-width:1200px;margin:auto;justify-content:flex-start;border:0;background:transparent;padding:0 24px}
+.bottom-nav::before {display:none}
+.bottom-nav a {width:auto;max-width:none;min-height:44px;font-size:.85rem;flex-direction:row;background:transparent!important;padding:8px 0}
+.help-dock {left:0;right:0;bottom:0;width:auto;padding:14px 20px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--paper) 20%);z-index:8}
+.help-dock button {font-size:.9rem;max-width:460px;padding:14px 18px}
+#home-view {max-width:520px;margin:24px auto}
+#home-view .page-intro {padding-top:16px}
+#home-heading {font-size:clamp(1.8rem,5vw,2.4rem)}
+#home-view .quiet-card {display:block;text-align:center;padding:30px 22px;margin:22px 0;background:transparent}
+#home-view .quiet-symbol {display:block;font-size:5rem;margin-bottom:18px;color:#879e8e}
+#home-view .quiet-card h2 {font-size:1.12rem}
+#home-view .quiet-card p {font-size:.84rem;max-width:310px;margin:8px auto 0}
+.patient-links {border-block:1px solid var(--line);margin:24px 0 16px}
+.patient-links a {display:flex;align-items:center;gap:12px;text-decoration:none;padding:16px 4px;min-height:56px;font-size:.9rem}
+.patient-links a:first-child {border-bottom:1px solid var(--line)}
+.patient-links a>span:last-child {margin-left:auto}
+.optional-records {margin:18px 0}
+.optional-records>summary {font-size:.82rem;color:var(--muted);padding:10px 26px 10px 0}
+.optional-records .home-grid {grid-template-columns:1fr;margin-top:14px}
+.clinician-disclosure {border-left:3px solid #b9c9bf;padding:10px 14px;margin:12px 0 6px;background:#ebefe9;font-size:.76rem;border-radius:0 10px 10px 0}
+.clinician-disclosure p {margin:3px 0 0;font-size:.74rem}
+.workspace-heading {display:flex;align-items:center;justify-content:space-between;gap:20px}
+.workspace-heading .page-intro {padding:26px 0 18px}
+#workspace-patient {font-size:.85rem}
+.range-control {font-size:.7rem;min-width:155px;flex-shrink:0}
+.range-control select {font-size:.8rem;padding:10px;margin-top:5px}
+.findings-overview {border:1px solid #cbd9cb;border-radius:18px;background:#e9efe4;padding:20px 22px;margin-bottom:22px}
+#changes-overview>section {padding:8px 0;border-bottom:1px solid #cfdbcc}
+#changes-overview>section:last-child {border-bottom:0}
+#changes-overview p {margin:0;font-size:.94rem;color:var(--ink)}
+.finding-source>summary {font-size:.7rem;min-height:44px;padding-top:4px}
+.finding-source p {font-size:.73rem!important;overflow-wrap:anywhere}
+#workspace-decision {margin:12px 0 0;font-size:.74rem}
+.chart-legend {display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.7rem;margin:16px 0;color:var(--muted)}
+.observed-key {color:#315761}.rolling-key {color:#98733f}.anchor-key {color:#64847b}
+.evidence-charts {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0 24px}
+.chart-card {min-width:0;border:1px solid var(--line);background:var(--white);border-radius:18px;padding:18px}
+.chart-heading {display:flex;gap:8px;align-items:center;justify-content:space-between}
+.chart-heading h2 {font-size:.97rem;margin:0}
+.chart-unit {font-size:.67rem;color:var(--muted);text-align:right}
+.chart-status {font-size:.7rem;margin:8px 0 0}
+.chart-card svg {width:100%;height:auto;display:block;margin:8px 0}
+.chart-axis {font-size:15px;fill:#596963}.chart-empty {font-size:14px;fill:#596963}
+.chart-grid {stroke:#e0e7de;stroke-width:1}
+.chart-observed {fill:#315761;opacity:.85}
+.chart-rolling {stroke:#98733f;stroke-width:2.5;fill:none}.chart-rolling-point {fill:#98733f}
+.chart-anchor {stroke:#64847b;stroke-width:2;stroke-dasharray:5 4;fill:none}.chart-anchor-point {fill:#64847b}
+.context-band {fill:#dce9d2;opacity:.5}.risk-context-band {fill:#efe2cb;opacity:.45}
+.chart-card>.fine {font-size:.69rem;margin:8px 0}
+.chart-sources {border-top:1px solid var(--line);padding-top:8px;margin-top:12px}
+.chart-sources>summary {font-size:.72rem}
+.chart-sources p {font-size:.7rem;overflow-wrap:anywhere}
+.table-scroll {overflow-x:auto;max-height:260px}
+table {border-collapse:collapse;width:100%;font-size:.7rem;text-align:left}
+td,th {padding:8px 6px;border-bottom:1px solid var(--line);overflow-wrap:anywhere;max-width:170px}
+caption {text-align:left;padding:8px 0;font-size:.72rem;color:var(--muted)}
+.reports-card {margin:18px 0}
+.reports-card h2 {font-size:1rem}
+.reports-card summary {font-size:.8rem}
+.categorical-strip {display:flex;flex-wrap:wrap;gap:6px;max-height:250px;overflow-y:auto;margin-bottom:16px}
+.report-dot {border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:.7rem;color:var(--muted);background:#f3f5f0}
+#workspace-safety {margin:18px 0}
+#workspace-review {margin:18px 0}
+#workspace-review summary {font-size:.86rem}
+#workspace-safety summary {font-size:.86rem}
+#safety-evidence {overflow-wrap:anywhere}
+.recorded-details {padding:20px 0;border-top:1px solid var(--line);margin-top:28px}
+.recorded-details>summary {font-size:.86rem;font-weight:600}
+#review-view,#about-view {max-width:740px;margin:auto}
+.appointment-preview {margin:12px 0 24px}
+.appointment-preview p {font-size:.88rem}
+#review-details>summary {font-size:.85rem;margin-bottom:16px}
+@media(max-width:700px) {
+  main {padding-inline:16px}
+  .masthead {padding:14px 16px}
+  .demo-bar {padding:8px 16px;gap:8px}
+  .demo-bar>span {flex-basis:100%;font-size:.65rem}
+  #demo-toggle {margin-left:auto}
+  #home-view {margin-top:8px}
+  .workspace-heading {align-items:flex-start;flex-direction:column;gap:0}
+  .workspace-heading .page-intro {padding-bottom:8px}
+  .range-control {margin:8px 0 16px;min-width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .range-control select {width:auto;margin:0}
+  .evidence-charts {grid-template-columns:1fr}
+  .chart-card {padding:14px}
+  .findings-overview {padding:16px}
+}

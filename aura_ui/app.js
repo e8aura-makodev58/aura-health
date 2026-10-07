@@ -11,7 +11,7 @@ const offlineBundle = {version: "fixture-unverified-v1", stale: true, notice: "D
 const offlineText = "AURA cannot assess this input while offline. Hold it for server safety evaluation. The built-in resource panel remains available.";
 let patientId = null, catalog = [], current = null, communication = null;
 let epoch = 0, busy = false, pending = null, offline = false, dialogKind = "text", lastCheckin = null;
-let hosted = false;
+let hosted = false, presentationRole = "patient";
 const selections = new Set();
 
 function element(tag, text, className) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; }
@@ -25,6 +25,8 @@ function dateLabel(at) {
 }
 function signalLabel(key) { return labels[key.signal] || key.signal; }
 function sameSignal(a, b) { return a.signal === b.signal && a.source === b.source && (a.metric || "") === (b.metric || ""); }
+// Finite hosted demo action, not context credibility or a clinical classification.
+function explanationOptions() { return current.view.explanation_options.filter(option => !hosted || option.explanation === "new stable work schedule"); }
 function number(value) { return value == null ? "Not available" : new Intl.NumberFormat("en-GB", {maximumFractionDigits: 1}).format(value); }
 function deviation(value, key) {
   if (value == null) return "Not available";
@@ -63,7 +65,17 @@ function showSafety(output) {
 
 function goPage() {
   const requested = location.hash.slice(1) || "home";
-  const page = ["home", "patterns", "review", "about"].includes(requested) ? requested : "home";
+  let page = ["home", "patterns", "review", "about"].includes(requested) ? requested : "home";
+  if (presentationRole === "clinician" && page !== "about") page = "patterns";
+  document.body.dataset.role = presentationRole;
+  document.body.dataset.page = page;
+  $("patient-help").hidden = presentationRole !== "patient" || !current;
+  document.querySelector(".bottom-nav").hidden = presentationRole !== "patient" || page === "home" || !current;
+  $("clinician-disclosure").hidden = presentationRole !== "clinician";
+  $("explain").hidden = presentationRole !== "patient";
+  $("patient-role").setAttribute("aria-pressed", String(presentationRole === "patient"));
+  $("clinician-role").setAttribute("aria-pressed", String(presentationRole === "clinician"));
+  setText("patterns-heading", presentationRole === "clinician" ? "Between appointments" : "Your full data");
   for (const node of document.querySelectorAll(".view")) node.hidden = !current || node.id !== `${page}-view`;
   $("empty-state").hidden = Boolean(current);
   for (const link of document.querySelectorAll("[data-page]")) { if (link.dataset.page === page) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current"); }
@@ -74,13 +86,14 @@ function goPage() {
 async function loadPatient(id) {
   if (pending && id !== patientId) { tell("Reconnect to finish the pending input before changing patients. It is held in memory only.", true); return; }
   const ticket = ++epoch; patientId = id; current = null; communication = null; selections.clear(); lastCheckin = null;
+  $("records-panel").open = false; $("recorded-details").open = false;
   goPage(); tell("Loading your recorded context…");
   try {
     const base = `/patients/${encodeURIComponent(id)}`;
-    const [view, status, snapshot, timeline] = await Promise.all([api(`${base}/view`), api(`${base}/status`), api(`${base}/review-snapshot`), api(`${base}/timeline`)]);
+    const [view, status, snapshot, timeline, evidence] = await Promise.all([api(`${base}/view`), api(`${base}/status`), api(`${base}/review-snapshot`), api(`${base}/timeline`), api(`${base}/evidence`)]);
     const output = view.latest_event_id ? await api(`${base}/events/${encodeURIComponent(view.latest_event_id)}/communication`, {purpose:"AUTO"}) : null;
     if (ticket !== epoch) return;
-    current = {view, status, snapshot, timeline}; communication = output; offline = false;
+    current = {view, status, snapshot, timeline, evidence}; communication = output; offline = false;
     render(); $("notice").hidden = true;
   } catch (error) {
     if (ticket !== epoch) return;
@@ -91,11 +104,11 @@ async function loadPatient(id) {
 
 async function refresh() {
   const ticket = ++epoch, base = `/patients/${encodeURIComponent(patientId)}`;
-  const [view, status, snapshot, timeline] = await Promise.all([api(`${base}/view`), api(`${base}/status`), api(`${base}/review-snapshot`), api(`${base}/timeline`)]);
+  const [view, status, snapshot, timeline, evidence] = await Promise.all([api(`${base}/view`), api(`${base}/status`), api(`${base}/review-snapshot`), api(`${base}/timeline`), api(`${base}/evidence`)]);
   const output = view.latest_event_id ? await api(`${base}/events/${encodeURIComponent(view.latest_event_id)}/communication`, {purpose:"AUTO"}) : null;
   if (ticket !== epoch) return;
   if (JSON.stringify(current?.snapshot) !== JSON.stringify(snapshot)) selections.clear();
-  current = {view,status,snapshot,timeline}; communication = output; offline = false; render();
+  current = {view,status,snapshot,timeline,evidence}; communication = output; offline = false; render();
 }
 
 function render() {
@@ -108,7 +121,7 @@ function render() {
   setText("communication-message", communication?.message);
   setText("wording-origin",communication?.generation_used?"Live AI wording · synthetic demo data only.":"Fixed wording · policy or model fallback.");
   $("communication-card").hidden = !communication?.message || Boolean(communication.pinned_resources);
-  $("clarify").hidden = !["MICRO_CHECKIN", "TARGETED_CLARIFICATION"].includes(status.latest_communication_decision);
+  $("clarify").hidden = !["MICRO_CHECKIN", "TARGETED_CLARIFICATION"].includes(status.latest_communication_decision) || !explanationOptions().length;
   setText("routine-name", view.patient.treatment?.medication_name || "Follow your existing clinician-managed routine.");
   setText("routine-schedule", view.patient.treatment?.medication_schedule || "Record only. No dose or schedule recommendation.");
   setText("routine-saved", view.latest_medication ? `Latest record: ${view.latest_medication.status}. This does not change your treatment.` : "This records your routine. It does not change your treatment.");
@@ -117,11 +130,13 @@ function render() {
   // Exact server state labels; no missingness/trust calculation happens in the browser.
   const unavailable = status.signals.some(signal => signal.sensing_state === "UNOBSERVED");
   const rebuilding = status.signals.some(signal => signal.trust_state === "REESTABLISHING");
+  if (!communication?.pinned_resources && unavailable) setText("home-subtitle", "Wearable data is unavailable. Missing data is not a conclusion about you.");
+  else if (!communication?.pinned_resources && rebuilding) setText("home-subtitle", "Data is back. Your personal reference is being re-established.");
   setText("data-heading", !status.signals.length ? "No wearable observations yet" : unavailable ? "Wearable data unavailable" : rebuilding ? "Data is back. Reference is re-establishing." : "Personal context, at your pace.");
   setText("data-summary", !status.signals.length ? "You can still check in or raise a concern without wearable data." : unavailable ? "Missing data is just missing data—not a conclusion about how you are doing." : rebuilding ? "Observations have returned; historical-reference trust is still being re-established." : "Recorded wearable observations are available. Reference status is shown with each signal.");
   setText("privacy-notice", view.privacy_notice);
   if(hosted) setText("dialog-privacy",`Synthetic examples only; safety gate first. ${view.privacy_notice}`);
-  renderPatterns(); renderReview(); goPage();
+  renderPatterns(); renderReview(); window.renderAuraEvidence(current.evidence); goPage();
 }
 
 function renderPatterns() {
@@ -153,7 +168,7 @@ function renderPatterns() {
   $("context-list").replaceChildren();
   for (const context of view.active_context) $("context-list").append(element("p", `${context.patient_explanation || context.explanation || "Recorded context"} · ${(context.affected_signals || []).map(signal => labels[signal] || signal).join(", ")}`, "fine"));
   if (!view.active_context.length) $("context-list").append(element("p", "No active context recorded."));
-  $("explain").disabled = !view.explanation_options.length;
+  $("explain").disabled = !explanationOptions().length;
   $("timeline-list").replaceChildren();
   const records = timeline.filter(record => recordLabels[record.record_type]).slice(-14).reverse();
   for (const record of records) {
@@ -205,6 +220,14 @@ function reviewGroup(title, items) {
 function selectionSummary() { setText("selection-summary", `${selections.size} item${selections.size === 1 ? "" : "s"} selected for this temporary preview. Nothing is sent or saved as approval.`); }
 function renderReview() {
   const snapshot = current.snapshot; $("review-list").replaceChildren();
+  const preview=$("appointment-preview"); preview.replaceChildren(element("h2","A note to look through"));
+  for(const change of snapshot.meaningful_longitudinal_changes.slice(0,3)) preview.append(element("p",`${change.latest.description} Recorded ${dateLabel(change.first_seen)} — ${dateLabel(change.last_seen)}.`));
+  if(!snapshot.meaningful_longitudinal_changes.length)preview.append(element("p","No meaningful longitudinal change is retained in this snapshot. This is not a health assessment."));
+  const last=snapshot.patient_checkin_trend.at(-1);
+  if(last)preview.append(element("p",`Latest check-in you recorded: ${last.state}, ${dateLabel(last.at)}.`));
+  for(const row of snapshot.explained_held_for_review){const held=row.record||row;preview.append(element("p",`${held.detected_drift.description} Your explanation: ${held.explanation}. The observation and your own reference are retained.`));}
+  for(const question of snapshot.patient_selected_questions)preview.append(element("p",`Question you recorded: ${question}`));
+  preview.append(element("p","Temporary preview — not sent, saved as approval or shared. Sources and routine records are available below.","fine"));
   setText("review-period", `${dateLabel(snapshot.review_period.start)} — ${dateLabel(snapshot.review_period.end)}`);
   reviewGroup("Reference & data availability", current.status.signals.map(signal => `${signalLabel(signal)} · ${sensingLabels[signal.sensing_state]} · ${trustLabels[signal.trust_state]} · coverage ${number(signal.rolling.coverage_ratio)}`));
   reviewGroup("Meaningful observations", snapshot.meaningful_longitudinal_changes.map(change => change.latest.description));
@@ -233,9 +256,9 @@ function openInput(kind = "text") {
   setText("dialog-copy", kind === "explanation" ? "This preserves the observation and reference, while keeping your explanation alongside them." : hosted ? "Choose a labelled synthetic example. This prototype does not accept personal information or offer unrestricted chat." : "You can initiate a conversation even when AURA has nothing to ask.");
   setText("send-input", kind === "explanation" ? "Keep explanation for review" : "Submit note");
   if (kind === "explanation") {
-    if (!current.view.explanation_options.length) { tell("No explicitly linked benign context is available. Arbitrary explanations are not automatically judged credible."); return; }
+    if (!explanationOptions().length) { tell("No supported linked explanation is available. Arbitrary explanations are not automatically judged credible."); return; }
     const select = $("explanation-context"); select.replaceChildren();
-    for (const context of current.view.explanation_options) { const option = element("option", context.explanation || "Linked context"); option.value = context.context_event_id; select.append(option); }
+    for (const context of explanationOptions()) { const option = element("option", context.explanation || "Linked context"); option.value = context.context_event_id; select.append(option); }
     populateExplanation();
   }
   $("input-dialog").showModal();
@@ -286,6 +309,10 @@ $("clarify").addEventListener("click", () => openInput("explanation")); $("expla
 $("add-question").addEventListener("click", () => openInput("question"));
 $("why-home").addEventListener("click", () => showWhy());
 $("why-patterns").addEventListener("click", () => showWhy());
+$("chart-range").addEventListener("change", () => { if(current) window.renderAuraEvidence(current.evidence); });
+for (const role of ["patient", "clinician"]) $(`${role}-role`).addEventListener("click", () => {
+  presentationRole = role; location.hash = "home"; goPage(); window.scrollTo(0,0);
+});
 $("close-dialog").addEventListener("click", () => $("input-dialog").close()); $("close-why").addEventListener("click", () => $("why-dialog").close());
 $("explanation-context").addEventListener("change", populateExplanation);
 for (const button of document.querySelectorAll("[data-fixture]")) button.addEventListener("click", () => { $("input-text").value = button.dataset.fixture;for(const option of document.querySelectorAll("[data-fixture]"))option.setAttribute("aria-pressed",String(option===button));$("send-input").disabled=busy; });
@@ -326,12 +353,15 @@ async function start() {
   goPage();
   try {
     const result = await api("/demo/scenarios"); catalog = result.scenarios; hosted = Boolean(result.hosted);
+    presentationRole = "clinician"; $("role-switch").hidden = false;
     $("hosted-notice").hidden = !hosted; $("reset-demo").hidden = !result.can_reset;
     $("connect-form").hidden = hosted;
     if (hosted) setText("dialog-privacy","Only labelled synthetic fixtures are accepted. Do not enter real information. Current provider status is shown after loading.");
     $("scenario").replaceChildren();
     for (const scenario of catalog) { const option = element("option", scenario.label); option.value = scenario.patient_id; $("scenario").append(option); }
-    await loadPatient(catalog[0].patient_id);
+    const initial = catalog.find(item => item.id === "B") || catalog[0];
+    $("scenario").value = initial.patient_id;
+    await loadPatient(initial.patient_id);
   } catch (error) {
     $("scenario").replaceChildren(element("option", "Demo fixtures not enabled")); $("scenario").disabled = true;
     if (error.network) { offline = true; showSafety(null); }

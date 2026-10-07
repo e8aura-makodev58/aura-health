@@ -1,6 +1,7 @@
 # AURA — two views, one longitudinal record
 
-2026-10-07. **Planning only; revised after Claude review, awaiting user agreement.**
+2026-10-07. **Scope approved by user ("Proceed"); implemented, experience review pending.**
+Delivery evidence and remaining limitations: `docs/DUAL_VIEW_IMPLEMENTATION.md`.
 The user requests a very simple, intuitive, visual patient experience and an
 analytical clinician dashboard, switched by a demo toggle. This supersedes the
 earlier exclusion of clinician-dashboard work **for this proposed demo scope**;
@@ -238,7 +239,8 @@ mutated one record unless implemented through accepted observable-event replay.
 
 ## 7. Proposed stages and acceptance gate
 
-Claude supports the revised direction; implementation still requires user agreement.
+Claude supported the revised direction; the user approved implementation on
+2026-10-07. The stages below remain the agreed scope, not a usability acceptance claim.
 
 1. Agree on the clinician-first scope: GP opens the record → sees change/context/gaps
    → inspects sources; patient sees one quiet moment with optional full-data access.
@@ -279,7 +281,7 @@ degraded/active policy remains authoritative even without an episode. Anchor his
 source capability is verified above; an actual projection still needs implementation.
 The original review questions are retained below as history, not unanswered blockers.
 
-**User agreement needed:** proceed with shared read-only evidence → clinician-first
+**User agreement received (2026-10-07):** shared read-only evidence → clinician-first
 B/D slice → minimal patient view with full-data access → A–F completion, without new
 domain policy, sharing, concern classification or additional synthetic data?
 

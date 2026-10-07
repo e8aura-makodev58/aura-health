@@ -19,7 +19,7 @@ async function main(){
     await route.fulfill({json:action==='models'?{models:['fixture-text'],status:'READY'}:state});
   });
   try{
-    await page.goto(base);await page.waitForSelector('#home-view:not([hidden])');
+    await page.goto(base);await page.waitForSelector('#patterns-view:not([hidden])');
     await page.locator('#system-settings').click();await page.locator('#settings-admin').fill('synthetic-operator-token');
     await page.locator('#settings-unlock button').click();await page.waitForSelector('#settings-editor:not([hidden])');
     assert.equal(await page.locator('#settings-provider option').count(),4);

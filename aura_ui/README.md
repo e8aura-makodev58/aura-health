@@ -13,7 +13,7 @@ From the repository root after the Python setup in the root README:
 AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:create_demo_app --factory --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000/`. **Explore demo** switches between nine persisted
+Open `http://127.0.0.1:8000/`. **Demo guide** selects between nine persisted
 synthetic checkpoints: stable, A, B, C, D-before-explanation, D-held, E-gap,
 E-return, F. Initial seeding takes roughly half a minute on the development machine;
 restart verifies completion and preserves edits. M7 now stages the whole initial seed
@@ -27,26 +27,38 @@ Ordinary API startup also serves the UI, without a demo catalog or safety fixtur
 .venv/bin/python -m uvicorn aura_app.api:app --host 127.0.0.1 --port 8000
 ```
 
-Open a development patient by ID in **Explore demo**. Without resolved detector
+Open a development patient by ID in **Demo guide**. Without resolved detector
 outputs the public gate holds safety-relevant input; it does not assert safety.
 There is no production authentication: use synthetic data only, on loopback.
 
 ## Patient flows
 
-The 2026-10-07 redesign uses three primary views and persistent **Talk to AURA**.
-Phone portrait uses bottom navigation; laptop has a restrained left rail and central
-reading column. About/privacy and the operator gear stay in the header. Today places
-the approved question or quiet interaction state first, with a compact optional check-in
-and expandable medication routine. Quiet is not an assessment of health.
+The approved 2026-10-07 audience split has a **Patient / Clinician** demo toggle.
+The synthetic walkthrough starts in Clinician on Case B. Toggle performs no API write
+and keeps the selected patient, records, references, resources and policy unchanged.
+Clinician is a read-only demonstration, not an authenticated portal. The full-record
+synthetic disclosure distinguishes demo access from future patient-approved sharing.
+See [implementation](../docs/DUAL_VIEW_IMPLEMENTATION.md).
 
-- **Today:** optional Good/Okay/Rough check-in, separate optional note, neutral
+Patient home has a quiet moment or approved question, persistent **I want to mention
+something**, appointment preparation and optional **See my full data**. Check-in and
+routine controls are collapsed under an optional record action; no analytical tabs,
+daily-task cards or risk score occupy the ordinary home. About and the protected gear
+remain in the shell. Quiet is not an assessment of health. Patient full data and
+Clinician use the **same** read-only evidence projection and chart DOM.
+
+- **My day:** optional Good/Okay/Rough check-in, separate optional note, neutral
   acknowledged/missed/unknown medication record, always-available patient entry.
-- **Patterns:** server-provided drift/context, signal-specific sensing/trust state,
-  governed reference provenance, held observations, and typed recent timeline.
+- **Full data / clinician workspace:** at most three source-linked descriptive
+  findings, four aligned charts of raw records/stored rolling means/governed references,
+  linked context bands, categorical reports, held observations, questions/review items
+  and safety provenance. Dates/sources/exact values and reference details are expandable.
+  Last 8 weeks / All filters display only, anchored to the record date, not wall time.
 - **Explain:** cite an existing linked benign context and associated signals. D-before
   has the prepared explanation `new stable work schedule`; submitting it exercises
   the real held-for-review command. Arbitrary text is not classified as credible.
-- **Review:** structured persisted snapshot. Checkboxes are a temporary local preview,
+- **Review:** factual appointment preview over the structured persisted snapshot.
+  Record selection is optional expandable detail. Checkboxes are a temporary local preview,
   never approval, saved selection, sharing, or clinician transmission. Questions are
   safety-gated; unresolved questions are held and excluded from the snapshot.
 - **Safety:** committed communication output and separate resources are displayed
@@ -68,9 +80,9 @@ nor evaluation windows reach decision payloads.
 Ordinary patient API/demo factory entry points disable live models, regardless of
 gateway environment variables. The fixture-restricted hosted service can opt into
 live synthetic-only wording through [operator settings](../docs/SYSTEM_SETTINGS.md).
-Real-patient model use is deferred until informed consent is governed. Hosted Talk
+Real-patient model use is deferred until informed consent is governed. Hosted patient entry
 offers labelled synthetic examples and a read-only exact-input field, not arbitrary
-chat. Patterns, numeric reference provenance, review groups and timeline use progressive
+chat. Numeric reference provenance, review groups and timeline use progressive
 disclosure. Review checkboxes state their temporary-preview-only meaning locally.
 All current wording/resources require review; no crisis contact is invented.
 Resources render outside communication text. REESTABLISHING has no invented exit.
@@ -81,6 +93,10 @@ a read-only application service. Existing event/communication endpoints handle a
 writes. Frontend code does not compute drift, move anchors, score mental health, or
 assign safety tiers. Routine null-episode references are filtered only in the UI;
 the accepted backend snapshot is unchanged.
+
+`GET /patients/{id}/evidence` is the new shared read-only historical projection over
+committed results and normalized source records. No engine replay, anchor mutation,
+model generation or additional permission comes from this endpoint or the view toggle.
 
 ## Verify
 
@@ -108,8 +124,13 @@ Additional hosted layout gate (local Docker demo on 8017):
 NODE_PATH=/tmp/aura-ui-tools/node_modules node tests/browser/redesign.cjs
 NODE_PATH=/tmp/aura-ui-tools/node_modules node tests/browser/settings.cjs
 NODE_PATH=/tmp/aura-ui-tools/node_modules node tests/browser/milestone7.cjs
+NODE_PATH=/tmp/aura-ui-tools/node_modules node tests/browser/dual_view.cjs
 ```
 
 The redesign gate checks first-screen access, persistent help, progressive reference
 details, held/review state, gap/return, keyboard-scrollable safety at 390×500, and
 320/390/1280 layouts. Artifacts: `/tmp/aura-redesign-browser-artifacts`.
+
+For a fresh, isolated hosted server instead of the deployed container, use
+`tests/browser/run.py --hosted --suite dual_view.cjs milestone7.cjs settings.cjs redesign.cjs`.
+See the implementation notes for this machine's existing Chromium installation.
