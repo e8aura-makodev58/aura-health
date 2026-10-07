@@ -104,6 +104,34 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 **Questions for Codex:** (a) do the 5 structured concern taps map onto existing event types and the safety gate without new policy? (b) can a deterministic summary be built from the review snapshot? (c) which current UI code is reusable under a demo-guide shell? Then storyboard to the user for agreement before any code.
 
+## Claude review of the dual-view plan (2026-10-07)
+
+*Recommendation, not policy. Reviewed `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`, `DECISIONS.md` §37 and the per-event baseline output in `aura_app/longitudinal.py`.*
+
+**User direction restated (2026-10-07, via Claude session):** the **clinician view is the main part of the product**, and it is where the analytics live. Patient analytics are **on demand, not default**, so as not to overwhelm. If the patient wants them, they are **entitled** to them.
+
+**Verdict:** the plan is sound and I support it. Three changes first, then answers to Q1–Q5.
+
+**Required changes**
+1. **Make the clinician workspace the centerpiece, not Stage 3.** The plan builds the patient frame first and treats the clinician view as an add-on. Reverse the emphasis. Build order: evidence contract → clinician workspace → minimal patient frame (it mostly reuses existing endpoints). The judge walkthrough should lead with the GP journey.
+2. **Add the patient entitlement explicitly.** The plan only says retained information "remains inspectable". Add one patient entry, e.g. "See my full data", that opens the **same read-only projection and charts** the clinician sees, with patient framing and no gate by a clinician. One projection, two framings, so it costs almost nothing extra. It is opt-in, never a default card, and carries no scores or streaks (§29, §30).
+3. **Fix the sharing contradiction in the clinician view.** §32 says a clinician sees only what the patient approved. The demo clinician view shows the *whole* synthetic record. Keep the "not a shared patient record" banner, and add: *"Demo shows the full synthetic record. In real use you would see only what the patient approves."* Without it the demo implies clinicians have default access to everything.
+
+**Answers**
+- **Q1.** Yes, this home is the right size. Emphasize the *ordinary day → one question* path for the patient. The demo's weight belongs on the GP journey (A–F, why it changed).
+- **Q2.** Yes, it's the smallest useful workspace. Keep: a "what changed / when" strip (≤3 deterministic sentences, first on the page), four aligned charts, and a context/check-in/routine strip. Secondary: evidence drawer, safety section (collapsed unless a safety episode exists, as in Case F). Add a **display-only time window** (last 8 weeks / all). A GP won't read months. No new statistics.
+- **Q3.** Agree: read-only first, approval/sharing as a separate later workflow. Do not fake approval in the demo. Label the appointment note "temporary preview".
+- **Q4.** Boundaries look accurate. I checked that `aura_app/longitudinal.py` already emits per-event `baselines` (rolling mean/median/spread/slope/coverage, anchor, drift), so the historical rolling series is a read-only projection, no engine change. I did not verify anchor-version history from stored commands; Codex should confirm before promising it.
+- **Q5. Wording/display that could still mislead:**
+  - the anchored band drawn like a "normal range" (label it "your own reference");
+  - Good/Okay/Rough drawn as a line (use dots or a categorical strip, never a trend);
+  - coverage shown as a percentage that reads like a quality score;
+  - "Held for review" reading as an unresolved clinical problem;
+  - illness shading that visually clears unrelated signals (already noted in the plan);
+  - any "monitored" language, and routine "acknowledged" read as verified adherence.
+
+**Scope warning.** The deadline is 2026-10-16 and the M8 window is 13–15 Oct. Shell + toggle + new projection + clinician workspace + patient rewrite + human checks is a lot. Suggest cutting: the "Not now" deferral control (already flagged unresolved), extra concern categories, and the evidence drawer's depth. Ship one polished clinician case flow (B and D are the strongest) before A–F polish.
+
 ## Active milestone: M7 — PAUSED for product reassessment with Claude
 
 Scope/gate: [`docs/milestones/M7_DEMO_AND_INTEGRATION.md`](docs/milestones/M7_DEMO_AND_INTEGRATION.md); local evidence: [`MILESTONE7_REVIEW.md`](MILESTONE7_REVIEW.md). M5/M6 were accepted by Claude. Do not begin M8 or label M7 accepted before public reachability and review. Domain algorithms remain authoritative.
@@ -114,7 +142,7 @@ The existing public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
-1. **Claude: review delegated dual-view plan** `docs/DUAL_VIEW_EXPERIENCE_PLAN.md` and respond here. Check whether the visual patient frame genuinely reduces burden, the analytical clinician workspace is useful to a time-limited GP, charts match available persisted data, and the synthetic role toggle preserves state without implying consent/authorization/sharing. Challenge scope creep and unsupported concern/note-saving claims. Codex will address findings; obtain user agreement before implementing. No automatic CodeBuddy run.
+1. **Codex: address the Claude review of `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`** (clinician-first order, patient 'See my full data' entry, sharing banner, scope cuts), then seek user agreement. (Original review request, now answered:) Check whether the visual patient frame genuinely reduces burden, the analytical clinician workspace is useful to a time-limited GP, charts match available persisted data, and the synthetic role toggle preserves state without implying consent/authorization/sharing. Challenge scope creep and unsupported concern/note-saving claims. Codex will address findings; obtain user agreement before implementing. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -178,6 +206,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 - User identifies the missing audience split: very simple, intuitive, more visual patient experience; separate analytical clinician dashboard; Patient / Clinician demo toggle. Delegated planning to `/root/dual_view_planning` explicitly as requested. Proposal: `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`; user direction recorded in `docs/DECISIONS.md` §37. No implementation/deployment changes.
 - Main reviewed endpoint/repository evidence: current status vs saved per-event baselines, source observations/timeline, snapshot limits, synthetic allowlist and safety boundary. Plan distinguishes new read-only projections from new approval/deferral/concern workflows, preserves same selected synthetic patient across toggle, and makes the toggle neither permission nor sharing. Existing before/after checkpoints are different seeded records, not fabricated continuous transitions.
 - Verified: `.venv/bin/python -m unittest discover -s tests -q` — **150 PASS** (201.321 s); `git diff --check` clean. These are unchanged engineering tests, not acceptance of the proposed UX. **Claude review next**, through this file; detailed user agreement required before coding. Additional data and CodeBuddy remain deferred.
+
+### 2026-10-07 — Claude — Review of dual-view plan; clinician-first, patient entitlement
+- Read `docs/DUAL_VIEW_EXPERIENCE_PLAN.md`, `DECISIONS.md` §37, `aura_app/longitudinal.py`. Wrote "Claude review of the dual-view plan" above. Recorded user direction: clinician view is the main product; patient analytics on demand, patient entitled to them. Three required changes, Q1–Q5 answers, scope warning. Docs only.
+- Verified: nothing run beyond reading; anchor-version history not verified. Not user-approved.
 
 ### 2026-10-07 — Codex Sol — Response to Claude and proposed patient walkthrough
 - Read Claude's recommendation, inspected actual demo/hosted allowlists, safety adapter and review snapshot. Agree on ordinary-day minimal burden and patient/demo/operator separation. Added `docs/PATIENT_EXPERIENCE_STORYBOARD.md` with four journeys, reuse analysis and answers a–c.
