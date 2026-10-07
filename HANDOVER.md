@@ -39,17 +39,17 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **M5 implemented and reviewed (Claude, 2026-10-02; no blocking findings):** [`MILESTONE5_REVIEW.md`](MILESTONE5_REVIEW.md). `aura_communication/` supplies bounded wording contracts, validator/fallback, optional HTTP gateway, fixture evaluation, and engineering configuration. `aura_app/communication.py` reads committed decisions/safety references and persists race-checked wording/audit. Accepted domain algorithms remain unchanged.
 - **M6 implemented; reviewed by Claude 2026-10-03, no blocking findings:** [`MILESTONE6_REVIEW.md`](MILESTONE6_REVIEW.md). `aura_ui/` is a responsive, no-build-step patient web app. It uses existing APIs for check-ins, medication records, explicit explanations, review preview, and pinned safety. `PatientViewService` provides read-only latest-event/provenance links. The explicitly synthetic demo factory shows stable + Cases A–F with before/after explanation and gap/return checkpoints. Accepted safety/longitudinal algorithms and DB schema are unchanged.
 - **Tests:** 140 pass (`.venv/bin/python -m unittest discover -s tests -q`), including all previous gates and 16 M7 checks. Real Chromium: UI1–UI15 + OFFLINE + MANUAL_RETRY **17 PASS**, plus hosted **6 PASS**, no page errors; 320/390/1280 widths checked. The only Python warning is the existing Starlette/httpx deprecation. Timing/replay evidence is in `MILESTONE7_REVIEW.md`.
-- **M7 local implementation:** `aura_simulation/` validated scenario planning, deterministic observable-only driver/replay, 16 DEMO tests; atomic initial seeding and recoverable operator reset; `aura_app.hosted` isolated synthetic browser workspaces with fixture-only writes/reset; Docker + optional file-secret Cloudflare sidecar. Diagram/runbook: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Local app is healthy on loopback port 8017. **Public URL not configured/verified; M7 not complete.**
+- **M7 local implementation:** `aura_simulation/` validated scenario planning, deterministic observable-only driver/replay, 16 DEMO tests; atomic initial seeding and recoverable operator reset; `aura_app.hosted` isolated synthetic browser workspaces with fixture-only writes/reset; Docker + optional file-secret Cloudflare sidecar. Diagram/runbook: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Demo is healthy on **0.0.0.0:8017** (user-requested network publishing); LAN address `http://192.168.80.193:8017`. **User reports live hosting; public hostname/HTTPS unverified; M7 not complete.**
 - **Integration contradiction fixed:** application projector previously omitted the accepted domain's new-longitudinal-signal reopening input. It now forwards newly production-assessed persistent/divergent signals; DEMO11 verifies reopening with unchanged anchors. Safety/longitudinal domain algorithms and clinical configuration remain unchanged.
 - **Canonical plan:** [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/milestones/`](docs/milestones/), and [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
-- **Not configured/built yet:** live model/gateway, real safety detectors, production auth, clinician-sharing workflow, public tunnel. Simulation planner defaults to offline templates; optional gateway is mock-tested, not live AI evidence. Supplied API/demo entry points explicitly disable models pending informed-consent governance. Public non-demo safety gate holds unassessed text; hosted demo rejects non-fixture input before storing.
+- **Not configured/built by Codex yet:** live model/gateway, real safety detectors, production auth, clinician-sharing workflow, repository Cloudflare sidecar. User-managed live hosting is reported but not externally verified. Simulation planner defaults to offline templates; optional gateway is mock-tested, not live AI evidence. Supplied API/demo entry points explicitly disable models pending informed-consent governance. Public non-demo safety gate holds unassessed text; hosted demo rejects non-fixture input before storing.
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
 
 ## Open decisions
 
-- **Cloudflare provisioning:** public hostname and protected local tunnel-token file path are needed from the user; never paste the token. The sidecar is prepared but not started. No public URL is claimed.
+- **Public URL verification:** user reports the demo is live; hostname is not supplied, so external HTTPS remains unverified. Repository sidecar has not been provisioned by Codex; do not assume it is the user's hosting route or request a token unnecessarily.
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
 ## Active milestone: M7 — local integration implemented; public-link gate pending
@@ -59,7 +59,7 @@ Scope/gate: [`docs/milestones/M7_DEMO_AND_INTEGRATION.md`](docs/milestones/M7_DE
 ## Next steps
 
 1. Review the local M7 changes/evidence. Re-run browser checks per deployment/review docs; unknown non-demo text must remain held, not classified as safe. No CodeBuddy run is authorized automatically.
-2. Obtain hostname/token-file path, pin cloudflared image, start sidecar with Secure cookies and verify HTTPS/public Cases A–F/isolation/fallback. Record the real public URL here only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
+2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
 3. The user controls CodeBuddy timing. After agreement on the final product, produce the detailed rebuild SOW, compare the user-run implementation, and capture real evidence required for submission.
 4. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
    - Backend `safety_episode_references` still includes routine T0/null records; M6 filters null episode references in presentation only. Future sharing needs governance/filtering.
@@ -103,6 +103,7 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 - **Primary host (user decision, 2026-09-24):** this server (`makodev58-thinkcentre-m920`), exposed publicly through **Cloudflare Zero Trust**. The server already hosts several live apps this way.
 - **Configured pattern:** Compose app plus optional dedicated cloudflared sidecar. User manages tunnel/hostname in Zero Trust. Token stays in a protected external file mounted as a Compose secret; only its path goes in ignored `.env`. See `docs/DEPLOYMENT.md`. Local HTTP testing uses `AURA_SECURE_COOKIE=false`; public HTTPS must restore true.
 - Record the public URL and redeploy steps here once live.
+- **2026-10-07 user decision:** publish host port on `0.0.0.0:8017` for network access; override with `AURA_DEMO_BIND=127.0.0.1` if needed. Direct HTTP remains synthetic-only, unencrypted and unauthenticated. User reports live hosting; public hostname/reachability still unverified by Codex.
 - A possible Tencent Cloud mirror is pending (see Open decisions). Keep the deployment portable: one-command start, config via environment variables, no host-specific paths.
 
 ## Git & remote
@@ -116,6 +117,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-07 — Codex Sol — Publish demo on all network interfaces
+- User requested `0.0.0.0`. Compose now defaults to `0.0.0.0:8017` with `AURA_DEMO_BIND` override; deployment/example configuration updated. Domain logic unchanged.
+- User reports hosting is live; hostname is not yet supplied, so public HTTPS verification remains open. No tunnel credentials requested or changed in this task.
+- Verified: Docker publishes `0.0.0.0:8017->8000`, container healthy, loopback and LAN health return synthetic-only OK; full suite 140 tests PASS (165.953 s), `git diff --check` clean. Direct HTTP remains unencrypted; use only synthetic fixtures.
 
 ### 2026-10-07 — Codex Sol — M7 local integration and synthetic deployment
 - Added scenario planner/validated gateway interface, observable-only replay driver, DEMO1–DEMO16, atomic seed/reset, private fixture-only hosted sessions, Docker/Cloudflare file-secret configuration, diagram and demo/runbook. See `MILESTONE7_REVIEW.md` for commands/results and limitations.

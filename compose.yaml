@@ -5,7 +5,7 @@ services:
     image: aura-health:demo
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${AURA_DEMO_PORT:-8017}:8000"
+      - "${AURA_DEMO_BIND:-0.0.0.0}:${AURA_DEMO_PORT:-8017}:8000"
     volumes:
       - demo-data:/data
     environment:
