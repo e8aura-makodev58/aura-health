@@ -12,7 +12,18 @@ const offlineText = "AURA cannot assess this input while offline. Hold it for se
 let patientId = null, catalog = [], current = null, communication = null;
 let epoch = 0, busy = false, pending = null, offline = false, dialogKind = "text", lastCheckin = null;
 let hosted = false, presentationRole = "patient";
+window.auraAgentContext = () => ({patientId, record: current?.evidence,
+  revision: current?.view.latest_event_id, offline: offline || Boolean(pending), role: presentationRole});
 const selections = new Set();
+// randomUUID requires a secure context; getRandomValues also works on the
+// operator-approved synthetic LAN HTTP host. IDs never classify patient input.
+window.auraUniqueId = () => {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 15) | 64; bytes[8] = (bytes[8] & 63) | 128;
+  const hex = [...bytes].map(value => value.toString(16).padStart(2,"0")).join("");
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+};
 
 function element(tag, text, className) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; }
 function setText(id, text) { $(id).textContent = text ?? ""; }
@@ -54,6 +65,7 @@ function renderResources(bundle) {
 }
 
 function showSafety(output) {
+  window.dispatchEvent(new Event("aura-record-view"));
   const visible = offline || Boolean(output?.pinned_resources);
   $("safety-panel").hidden = !visible;
   $("retry-connection").hidden = !offline;
@@ -81,6 +93,7 @@ function goPage() {
   for (const link of document.querySelectorAll("[data-page]")) { if (link.dataset.page === page) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current"); }
   // Navigation cannot dismiss or replace the server's safety panel.
   showSafety(communication);
+  window.dispatchEvent(new Event("aura-record-view"));
 }
 
 async function loadPatient(id) {
@@ -270,7 +283,7 @@ function populateExplanation() {
   $("input-text").value = context.explanation || "";
 }
 function eventEnvelope(type, payload) {
-  const id = crypto.randomUUID();
+  const id = window.auraUniqueId();
   // The fixture date is shown explicitly, not passed as hidden scenario information.
   const at = catalog.some(item => item.patient_id === patientId) ? current.view.latest_occurred_at : new Date().toISOString();
   return {event_id:id, event_type:type, occurred_at:at, source:"patient", payload, correlation_id:id, idempotency_key:id};

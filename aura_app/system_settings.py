@@ -192,6 +192,29 @@ class SyntheticSettingsProvider:
         return VendorProvider(*options[:3],variant=options[3],config=self.settings.config,transport=self.settings.transport).generate(contract)
 
 
+class SyntheticAgentProvider(SyntheticSettingsProvider):
+    """Native read-only agent calls share existing synthetic-only budgets/keys."""
+    live = True
+
+    def __init__(self, settings, *, config=None):
+        super().__init__(settings)
+        from aura_agent.runtime import load_config as agent_config
+        self.agent_config = config or agent_config()
+
+    def step(self, messages, tools):
+        with self.settings.lock:
+            if not self.settings.state["enabled"]:
+                raise ProviderUnavailable("Live synthetic assistant disabled")
+            options = self.settings._options()
+        if not options[1] or not options[2]:
+            raise ProviderUnavailable("Provider unconfigured")
+        self.settings.reserve()
+        from dataclasses import replace
+        config = replace(self.settings.config, provider_timeout_seconds=self.agent_config.provider_timeout_seconds)
+        return VendorProvider(*options[:3], variant=options[3], config=config,
+                              transport=self.settings.transport).agent_step(messages, tools)
+
+
 def settings_api(settings):
     app=FastAPI(docs_url=None,redoc_url=None,openapi_url=None)
 

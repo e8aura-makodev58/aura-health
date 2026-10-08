@@ -107,6 +107,14 @@
   window.renderAuraEvidence = evidence => {
     if (!evidence) return;
     lastEvidence=evidence;
+    const recap = document.getElementById("month-recap");
+    const hasRetained = evidence.signals.some(signal => signal.findings.length) || evidence.held.length;
+    recap.hidden = !hasRetained;
+    const mini = document.getElementById("recap-charts"); mini.replaceChildren();
+    if (hasRetained && evidence.period.end) {
+      const end = day(evidence.period.end);
+      for (const signal of evidence.signals) mini.append(drawChart(signal, end - 29 * dayMs, end));
+    }
     const byId = id => document.getElementById(id);
     byId("workspace-patient").textContent = `${evidence.patient.display_name} · ${evidence.patient.age} · ${evidence.patient.timezone} · ${evidence.patient.treatment?.medication_name || "Recorded treatment context"}`;
     const overview = byId("changes-overview"); overview.replaceChildren();

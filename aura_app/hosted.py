@@ -20,6 +20,8 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from .api import create_app
+from .agent import AgentService
+from .system_settings import SyntheticAgentProvider
 from .communication import PatientCommunicationService
 from .demo import DemoFixtureGate, demo_catalog, prepare
 from .models import AppError, EventType
@@ -121,8 +123,10 @@ class HostedDemo:
         destination = self.root / f"session-{secrets.token_hex(16)}.sqlite3"
         shutil.copyfile(self.baseline, destination)
         factory = SQLiteRepositoryFactory(destination)
+        factory.initialize()  # Additive agent trace table for pre-agent baselines.
         service = SyntheticOnlyService(factory, self.seed)
         app = create_app(service=service, communication_service=PatientCommunicationService(service, provider=SyntheticSettingsProvider(self.settings)),
+                         agent_service=AgentService(service, provider=SyntheticAgentProvider(self.settings), synthetic_only=True),
                          synthetic_only=True)
 
         @app.get("/demo/scenarios")

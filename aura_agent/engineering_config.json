@@ -1,0 +1,7 @@
+{
+  "version": "agent-engineering-v1",
+  "max_steps": 8,
+  "max_seconds": 50,
+  "max_prompt_chars": 90000,
+  "provider_timeout_seconds": 15
+}

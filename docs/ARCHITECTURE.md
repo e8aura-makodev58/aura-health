@@ -4,7 +4,7 @@ M7 synthetic engineering prototype. Diagram reflects the code, not clinical vali
 
 ```mermaid
 flowchart TD
-  UI[Patient web UI: presentation only] --> API[FastAPI / application services]
+  UI[Patient / clinician demo UI: presentation only] --> API[FastAPI / application services]
   API --> DB[(Repository protocols / development SQLite)]
   API --> GATE[Safety gate: resolved inputs or fail closed]
   GATE --> SAFETY[aura_safety: authoritative deterministic policy]
@@ -20,6 +20,16 @@ flowchart TD
   PIN --> UI
   INTENT --> DB
   VALID --> DB
+  API --> AGUARD[Agent guard: valid NORMAL, assessed input, online]
+  AGUARD --> AGENT[aura_agent: bounded read-only model/tool loop]
+  AGENT --> READ[Immutable patient-scoped committed facts]
+  DB --> READ
+  READ --> AGENT
+  AGENT --> GROUNDED[Citation / numeric / claim validation or extraction]
+  GROUNDED --> RACE[State and provider revision recheck]
+  RACE --> UI
+  RACE --> TRACE[Append-only agent_runs + application audit]
+  TRACE --> DB
   API --> AUDIT[Linked application / safety / wording audit]
   AUDIT --> DB
   subgraph Evaluation_only
@@ -35,8 +45,8 @@ flowchart TD
 
 Safety-relevant input reaches the safety boundary before longitudinal/conversational
 processing. Unknown assessment fails closed; no model decides policy. Public hosted
-demo accepts only named fixtures, rejects other input before persistence, disables
-models, disallows patient/anchor creation, and gives each browser a separate synthetic
+demo accepts only named fixtures, rejects other input before persistence, allows
+operator-configured synthetic-only models, disallows patient/anchor creation, and gives each browser a separate synthetic
 workspace. No authenticated care or real-data intake is provided.
 
 Only observable values, structured patient reports, explicit context links, and
@@ -49,4 +59,11 @@ The application adapter forwards production-assessed newly meaningful signal evi
 to the **existing** held-record reopening API. No domain threshold or rule is copied.
 Anchors require explicit commands. Snapshot selection is a temporary UI preview, not
 approval or transmission. Fixture resources are unverified and contain no invented
-crisis contacts. Live generation requires future consent/content governance.
+crisis contacts. Real-patient live generation requires future consent/content governance.
+
+The read-only product agent is separate from the Simulation Data Agent. It may
+investigate and draft, never decide safety/drift, move anchors, establish context
+credibility, authorize interruption or share records. No write tools exist.
+Tools exclude latent truth and use opaque model-facing source aliases; displayed
+citations still identify real committed records. Offline extraction is not AI.
+See [agent implementation and limits](AURA_AGENT_IMPLEMENTATION.md).

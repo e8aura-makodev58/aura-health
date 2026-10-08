@@ -1,0 +1,55 @@
+"use strict";
+const assert = require("node:assert/strict");
+const {chromium} = require("playwright");
+const fs = require("node:fs/promises");
+const base = process.env.AURA_BROWSER_URL;
+const out = process.env.AURA_BROWSER_ARTIFACTS;
+if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Local synthetic tests only");
+(async () => {
+  await fs.mkdir(out,{recursive:true});
+  const browser = await chromium.launch({headless:true});
+  const context = await browser.newContext({viewport:{width:390,height:844}});
+  await context.addInitScript(()=>Object.defineProperty(Crypto.prototype,"randomUUID",{value:undefined,configurable:true}));
+  const page = await context.newPage(), errors=[];
+  page.on("pageerror",error=>errors.push(error.message));
+  try {
+    await page.goto(base);
+    await page.waitForSelector("#patterns-view:not([hidden])");
+    await page.waitForFunction(()=>document.getElementById("notice").hidden);
+    await page.locator('[data-agent-role="clinician_brief"]').click();
+    await page.waitForSelector("#agent-clinician_brief .agent-disclosure");
+    assert.match(await page.locator("#agent-clinician_brief").innerText(),/Offline rule-based/);
+    assert.ok(await page.locator("#agent-clinician_brief .agent-claim").count()>0);
+    await page.locator("#agent-clinician_brief .agent-claim summary").first().click();
+    assert.match(await page.locator("#agent-clinician_brief").innerText(),/Source:/);
+    console.log("AG_UI1_BRIEF_SOURCES_TRACE PASS");
+    await page.locator("#agent-workspace > details").first().locator("summary").first().click();
+    await page.locator("#agent-query").selectOption("sleep_change");
+    await page.locator('[data-agent-role="record_qa"]').click();
+    await page.waitForSelector("#agent-record_qa .agent-disclosure");
+    console.log("AG_UI2_SELECTED_RECORD_QUESTION PASS");
+    await page.locator("#patient-role").click();
+    assert.equal(await page.locator("#month-recap").isVisible(),true);
+    await page.locator("#month-recap > summary").click();
+    assert.equal(await page.locator("#recap-charts .chart-card").count(),4);
+    await page.locator('[data-agent-role="patient_insight"]').click();
+    await page.waitForSelector("#agent-patient_insight .agent-disclosure");
+    assert.ok(await page.locator("#agent-patient_insight .agent-claim").count()<=2);
+    console.log("AG_UI3_OPTIONAL_MOBILE_RECAP PASS");
+    await page.getByRole("link",{name:"Prepare for my appointment"}).click();
+    await page.locator('[data-agent-role="visit_prep"]').click();
+    await page.waitForSelector("#agent-visit_prep .agent-disclosure");
+    const count = await page.locator("#agent-visit_prep .agent-claim").count();
+    await page.getByRole("button",{name:"Remove from this preview"}).first().click();
+    assert.equal(await page.locator("#agent-visit_prep .agent-claim").count(),count-1);
+    assert.match(await page.locator("#review-view").innerText(),/Nothing is.*sent|not sent/i);
+    console.log("AG_UI4_REMOVABLE_NOT_SENT_PREVIEW PASS");
+    for(const width of [320,390,1280]) {
+      await page.setViewportSize({width,height:844});
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+    }
+    console.log("AG_UI5_PHONE_LAPTOP_LAYOUT PASS");
+    await page.screenshot({path:`${out}/agent-review.png`,fullPage:true});
+    assert.deepEqual(errors,[]);
+  } finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

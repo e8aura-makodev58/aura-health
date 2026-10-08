@@ -122,6 +122,15 @@ CREATE TABLE IF NOT EXISTS communication_outputs (
  FOREIGN KEY(event_id) REFERENCES app_events(event_id)
 );
 CREATE INDEX IF NOT EXISTS communication_patient ON communication_outputs(patient_id, created_at);
+CREATE TABLE IF NOT EXISTS agent_runs (
+ run_id TEXT NOT NULL, patient_id TEXT NOT NULL, role TEXT NOT NULL,
+ created_at TEXT NOT NULL, result_json TEXT NOT NULL,
+ PRIMARY KEY(patient_id,run_id), FOREIGN KEY(patient_id) REFERENCES patients(patient_id)
+);
+CREATE TRIGGER IF NOT EXISTS agent_runs_no_update BEFORE UPDATE ON agent_runs
+BEGIN SELECT RAISE(ABORT, 'agent runs are append-only'); END;
+CREATE TRIGGER IF NOT EXISTS agent_runs_no_delete BEFORE DELETE ON agent_runs
+BEGIN SELECT RAISE(ABORT, 'agent runs are append-only'); END;
 """
 
 
@@ -347,6 +356,14 @@ class SQLiteUnitOfWork:
     def communication_records(self, patient_id):
         rows = self._all("SELECT result_json FROM communication_outputs WHERE patient_id=? ORDER BY rowid", (patient_id,))
         return [json.loads(row["result_json"]) for row in rows]
+
+    def agent_run(self, patient_id, run_id):
+        row = self._one("SELECT result_json FROM agent_runs WHERE patient_id=? AND run_id=?", (patient_id, run_id))
+        return json.loads(row["result_json"]) if row else None
+
+    def append_agent_run(self, row):
+        self.conn.execute("INSERT INTO agent_runs VALUES (?,?,?,?,?)",
+                          (row["run_id"], row["patient_id"], row["role"], row["created_at"], _json(row)))
 
 
 class SQLiteRepositoryFactory:

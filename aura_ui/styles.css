@@ -288,3 +288,18 @@ caption {text-align:left;padding:8px 0;font-size:.72rem;color:var(--muted)}
   .chart-card {padding:14px}
   .findings-overview {padding:16px}
 }
+/* Optional, source-linked agent outputs stay secondary to policy and charts. */
+.agent-card { margin-block: 1rem; }
+.agent-card > details { margin-top: 1rem; }
+.agent-claim { border-top: 1px solid var(--line, #d7ded5); padding-block: .8rem; }
+.agent-claim p { overflow-wrap: anywhere; }
+.agent-disclosure, .agent-trace { margin-top: 1rem; }
+.agent-trace p { overflow-wrap: anywhere; }
+.recap-charts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .65rem; }
+.recap-charts .chart-card { min-width: 0; padding: .65rem; }
+.recap-charts .chart-heading { display: block; }
+.recap-charts .chart-heading h2 { font-size: .9rem; }
+.recap-charts .chart-unit { font-size: .7rem; }
+.recap-charts svg { width: 100%; }
+.recap-charts .chart-card > details, .recap-charts .chart-status { display: none; }
+@media(max-width:380px) { .recap-charts { grid-template-columns: 1fr; } }

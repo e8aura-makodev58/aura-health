@@ -1,9 +1,10 @@
 # aura-agent — role, boundary and scaffold plan
 
-2026-10-07. **Planning by Claude; not user-approved; no code written.** Codex has
-implementation authority (HANDOVER), so scaffolding below is a spec for Codex to build
-after the user agrees. No LLM API key exists yet: the design must run and demo
-end-to-end without one, and be honest about that.
+2026-10-07. **Original planning by Claude. User approved implementation on
+2026-10-07 by asking Codex to build aura-agent and its skills.** Live OpenAI
+GPT-6 Luna connectivity was separately approved/verified before this work.
+Implementation and scoped deviations: `docs/AURA_AGENT_IMPLEMENTATION.md`.
+The historical proposal below is retained; no-key claims are superseded.
 
 ## 1. Why this is needed
 

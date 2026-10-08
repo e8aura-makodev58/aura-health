@@ -18,6 +18,8 @@ from .persistence import SQLiteRepositoryFactory
 from .service import PatientEventService
 from .patient_view import PatientViewService
 from .evidence import EvidenceViewService
+from .agent import AgentService
+from aura_agent.roles import AgentRole
 
 
 class PatientIn(BaseModel):
@@ -71,8 +73,17 @@ class CommunicationIn(BaseModel):
     client_offline: bool = False
 
 
+class AgentIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    run_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    query_id: str | None = None
+    window_days: int = Field(default=56, ge=1, le=180)
+    client_offline: bool = False
+
+
 def create_app(db_path: str | Path | None = None, service: PatientEventService | None = None,
                communication_service: PatientCommunicationService | None = None,
+               agent_service: AgentService | None = None,
                *, docs_enabled: bool = False, synthetic_only: bool = False) -> FastAPI:
     if service is None:
         factory = SQLiteRepositoryFactory(db_path or os.environ.get("AURA_DEV_DB", "aura-m4-development.sqlite3"))
@@ -83,11 +94,13 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     view_service = PatientViewService(service, wording_provider_id=communication_service.provider.model_id,
                                      wording_provider=communication_service.provider, synthetic_only=synthetic_only)
     evidence_service = EvidenceViewService(service)
+    agent_service = agent_service or AgentService(service, synthetic_only=synthetic_only)
     # CDN-backed Swagger conflicts with the patient UI's strict same-origin CSP.
     app = FastAPI(title="AURA prototype application API", version="milestone-7",
                   docs_url=None, redoc_url=None, openapi_url="/openapi.json" if docs_enabled else None)
     app.state.service = service
     app.state.communication_service = communication_service
+    app.state.agent_service = agent_service
 
     @app.middleware("http")
     async def presentation_headers(request, call_next):
@@ -152,6 +165,14 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def evidence_view(patient_id: str):
         return evidence_service.get(patient_id)
 
+    @app.post("/patients/{patient_id}/agent/{role}")
+    def agent_run(patient_id: str, role: AgentRole, body: AgentIn):
+        return agent_service.execute(patient_id, role, **body.model_dump())
+
+    @app.get("/patients/{patient_id}/agent-runs/{run_id}")
+    def agent_trace(patient_id: str, run_id: str):
+        return agent_service.trace(patient_id, run_id)
+
     @app.post("/patients/{patient_id}/context-explanations")
     def explain(patient_id: str, body: ExplanationIn):
         event = ApplicationEvent(body.event_id, patient_id, EventType.CONTEXT_EXPLANATION,
@@ -192,7 +213,7 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     ui = Path(__file__).resolve().parent.parent / "aura_ui"
     @app.get("/assets/{asset_name}", include_in_schema=False)
     def patient_asset(asset_name: str):
-        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js"}:
+        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "agent.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)
 

@@ -30,7 +30,7 @@ async function main(){
     async function navigate(name){await page.evaluate(value=>location.hash=value,name);await page.waitForSelector("#"+name+"-view:not([hidden])");}
     await check("DV1_CLINICIAN_FIRST",async()=>{
       assert.equal(await page.locator("#scenario").inputValue(),id("B"));
-      assert.equal(await page.locator(".chart-card").count(),4);
+      assert.equal(await page.locator("#evidence-charts .chart-card").count(),4);
       assert.ok(await page.locator("#changes-overview>section").count()<=3);
       assert.match(await page.locator("#clinician-disclosure").innerText(),/In real use you would see only what the patient approves/);
       assert.equal(await page.locator("#talk").isVisible(),false);
@@ -102,7 +102,7 @@ async function main(){
     await check("DV9_CASES_A_F_SHARED_EVIDENCE",async()=>{
       await page.setViewportSize({width:1280,height:900});
       for(const key of "ABCDEF"){
-        await choose(key);await role("clinician");assert.equal(await page.locator(".chart-card").count(),4);
+        await choose(key);await role("clinician");assert.equal(await page.locator("#evidence-charts .chart-card").count(),4);
         const evidence=await page.locator("#evidence-charts").innerHTML();
         await role("patient");await navigate("patterns");assert.equal(await page.locator("#evidence-charts").innerHTML(),evidence);
         await navigate("review");assert.match(await page.locator(".sharing-note").innerText(),/not saved as approval/);

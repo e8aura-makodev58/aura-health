@@ -3,6 +3,12 @@
 Operator API-key configuration: [AI provider settings](docs/SYSTEM_SETTINGS.md)
 (header gear; OpenRouter, OpenAI, DeepSeek, Tencent; synthetic demo only).
 
+[AURA agent and five skills](docs/AURA_AGENT_IMPLEMENTATION.md): read-only
+clinician briefs, record investigation, optional patient recaps, appointment
+drafts and approved-question ranking. Hosted GPT-6 Luna uses real tool calling
+on synthetic records; ordinary development entry points use labelled offline
+extraction. Safety and longitudinal policy remain deterministic.
+
 ## Project planning
 
 **aura-health** is a wearable-first, patient-controlled companion for adults on stable antidepressant maintenance treatment (hackathon challenge: *AI Healthier Every Day*). It is a synthetic-data research prototype, not a diagnostic or clinical service.
@@ -49,7 +55,8 @@ Anchor changes use only `/patients/{id}/anchors/provisional`, `/trust`, and `/re
 
 Responsive, calm patient web application at `/`: check-in, medication routine,
 personal patterns/provenance, explicit explanations, review preview, and pinned
-safety resources. No frontend domain policy or live model. Use synthetic data only.
+safety resources. No frontend domain policy. The local example below has no live
+model; hosted operator settings may enable one for synthetic data only.
 
 ```sh
 .venv/bin/python -m aura_app.demo --db aura-m6-demo.sqlite3

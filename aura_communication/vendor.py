@@ -74,3 +74,22 @@ class VendorProvider:
             return json.loads(choice["message"]["content"])
         except (KeyError,IndexError,TypeError,ValueError) as exc:
             raise ProviderUnavailable("Invalid provider output") from exc
+
+    def agent_step(self, messages, tools):
+        """Native function calling, separate from unchanged M5 candidate wording."""
+        payload = {"model": self.model, "messages": messages, "tools": tools,
+                   "tool_choice": "auto", "parallel_tool_calls": False, "stream": False}
+        if self.provider == "openai":
+            payload.update(max_completion_tokens=2048, store=False, reasoning_effort="none")
+        else:
+            payload.update(max_tokens=2048)
+        result = self._request("POST", "/chat/completions", payload)
+        try:
+            choice = result["choices"][0]
+            message = choice["message"]
+            if choice["finish_reason"] not in {"stop", "tool_calls"} or message.get("refusal"):
+                raise ValueError()
+            return {"role": "assistant", "content": message.get("content"),
+                    "tool_calls": message.get("tool_calls", [])}
+        except (KeyError, IndexError, TypeError, ValueError) as exc:
+            raise ProviderUnavailable("Invalid agent provider output") from exc

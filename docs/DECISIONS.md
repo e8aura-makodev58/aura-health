@@ -1,6 +1,6 @@
 # AURA Health — Canonical Decisions
 
-Status date: 2026-10-07.
+Status date: 2026-10-08.
 
 These are settled cross-cutting decisions. Reopen one only for a concrete contradiction, safety issue, implementation failure, or explicit new user decision.
 
@@ -197,3 +197,22 @@ has Claude's support after required revisions. User approved implementation with
 "Proceed" on 2026-10-07. The synthetic dual-view scope is implemented; product/UX
 acceptance and Claude implementation review are still outstanding. No production
 sharing or new domain policy was authorized.
+
+## 38. Read-only aura-agent and skills
+
+User decision, 2026-10-07 (implementation continued 2026-10-08): implement aura-agent using Claude's handover proposal;
+the project needs genuine AI-agent tasks beyond deterministic fallback wording.
+This approves bounded record investigation/synthesis, the five proposed skills
+and additive append-only agent trace storage, not new clinical scope.
+
+“Signals propose. Rules dispose. The LLM phrases” remains the safety rule.
+Outside safety decisions, the agent may investigate read-only evidence and
+draft source-linked summaries/questions. It never disposes: no safety, anchor,
+drift, treatment, credibility, interruption or sharing authority. Accepted
+safety/longitudinal algorithms stay unchanged. A stricter initial NORMAL-only
+agent guard leaves higher modes with the accepted safety interaction.
+
+Live generation remains hosted synthetic-only through protected provider settings.
+Offline extraction is explicitly not AI. Record questions are selected templates;
+unassessed text cannot bypass safety. Source-linked drafting is not clinically
+validated reasoning. Details: `docs/AURA_AGENT_IMPLEMENTATION.md`.

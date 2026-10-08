@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir -r requirements-demo.lock \
 COPY aura_safety /app/aura_safety
 COPY aura_longitudinal /app/aura_longitudinal
 COPY aura_communication /app/aura_communication
+COPY aura_agent /app/aura_agent
 COPY aura_app /app/aura_app
 COPY aura_simulation /app/aura_simulation
 COPY aura_ui /app/aura_ui

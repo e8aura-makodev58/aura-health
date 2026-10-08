@@ -47,6 +47,14 @@ daily-task cards or risk score occupy the ordinary home. About and the protected
 remain in the shell. Quiet is not an assessment of health. Patient full data and
 Clinician use the **same** read-only evidence projection and chart DOM.
 
+The [read-only aura-agent](../docs/AURA_AGENT_IMPLEMENTATION.md) adds explicit
+**Draft a brief**, selected record questions and source-linked trace inspection.
+Patient home offers a collapsed **Your month at a glance** only when retained
+observations exist, with four mini-charts and an on-demand short explanation.
+Review offers removable temporary assistant draft lines, still **Not sent**.
+No automatic generation occurs on page load or view toggle. Model failure/off
+is labelled rule-based extraction, not AI. Safety interactions pause the agent.
+
 - **My day:** optional Good/Okay/Rough check-in, separate optional note, neutral
   acknowledged/missed/unknown medication record, always-available patient entry.
 - **Full data / clinician workspace:** at most three source-linked descriptive
@@ -134,3 +142,6 @@ details, held/review state, gap/return, keyboard-scrollable safety at 390×500, 
 For a fresh, isolated hosted server instead of the deployed container, use
 `tests/browser/run.py --hosted --suite dual_view.cjs milestone7.cjs settings.cjs redesign.cjs`.
 See the implementation notes for this machine's existing Chromium installation.
+Agent browser checks: `tests/browser/run.py --hosted --suite agent.cjs settings.cjs`.
+Run `milestone6.cjs` **without** `--hosted`: it intentionally tests development
+held-input behavior, whereas hosted input rejects non-fixtures before persistence.
