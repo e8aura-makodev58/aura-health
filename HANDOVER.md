@@ -54,6 +54,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
+- **Claude review of aura-agent + user requests (2026-10-08):** user wants disclaimers removed from the app into one demo Disclaimer page, user input enabled, human-readable agent assessment, and maximum agent value. See `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md` (findings, disclaimer rule, input plan, ranked agent features, 5 user decisions). Free text needs a safety gate that does not exist; the raise-only LLM detector proposal needs explicit user approval.
+
 - **Agent review:** user authorized implementation of Claude's plan; approval is no longer blocked. Claude should review guard/scoping, grounding limitations, trace/race behavior and actual usefulness before acceptance. Safety doctrine remains unchanged; read-only synthesis sits outside policy ownership. Clinical/content governance remains open, not silently delegated to AI.
 
 - **Experience acceptance / Claude implementation review:** scope is approved and implemented; review GP usefulness, minimal patient burden and source/chart fidelity before more features. No extra concern categories, ordinary deferral or persisted sharing were added. Five concern paths, saved approval and production clinician authorization still do not exist.
@@ -146,6 +148,7 @@ public-link gate remains open. No new clinical scope is authorized.
 
 ## Next steps
 
+000. **Codex: review `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md`**, answer feasibility (claim verification vs lexical whitelist, parametrized tools, structured input, import), then implement only what the user approves. Suggested order in its §6.
 00. **Claude: review aura-agent**, `docs/AURA_AGENT_IMPLEMENTATION.md`, `aura_agent/`, `aura_app/agent.py`, native settings adapter and AG1–AG20. Check zero write tools/held-text access, live vs scripted disclosure, source/number/date/vocabulary validation (not semantic proof), required retained findings, race discard, append-only trace and synthetic-label isolation. Check brief usefulness, selected Q&A, patient burden, temporary visit editing and question suggestions not authorizing interruptions. Live smoke artifacts are in `/tmp/aura-agent-live-smoke.json` and `/tmp/aura-agent-live-qa.json`; browser artifacts `/tmp/aura-agent-final-browser`. No automatic CodeBuddy or extra synthetic-data work.
 1. **Claude: review the approved dual-view implementation**, `docs/DUAL_VIEW_IMPLEMENTATION.md`, `aura_app/evidence.py`, repository read method and UI/tests. Check no engine replay/mutation or hidden truth; exact source/anchor values and gaps; same-patient zero-write toggle; active/degraded/offline safety independent of episode presence; honest sharing/temporary preview; clinician read-only and protected gear. User should review the live experience (start B, then D; switch Patient, open full data). Do not expand scope until feedback. No automatic CodeBuddy run.
 2. Obtain the live hostname from the user and verify HTTPS/public Cases A–F/isolation/fallback. User reports it is live and requested `0.0.0.0:8017` publishing. Record the URL only after verification; then seek M7 acceptance. Do not invent clinical policy to smooth the demo.
@@ -206,6 +209,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-08 — Claude — aura-agent review, disclaimer plan, agent feature proposals
+- Reviewed `aura_agent/*`, `aura_app/agent.py`, `hosted.py`, UI strings. Wrote `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md`: lexical whitelist blocks readable output; zero-arg tools make the loop non-agentic (~12 s); Q&A is 4 canned questions; disclaimers live in fact text; whole-history held block too broad; provider/model discrepancy (handover says gpt-6-luna, user says DeepSeek flash).
+- Verified: `tests.test_agent` 20 PASS. Not verified: live calls, browser UI, full suite. Docs only; not user-approved.
 
 ### 2026-10-08 — Codex Sol — Read-only aura-agent and five skills
 - Implemented Claude's proposal following user authorization: `aura_agent/`, five versioned skill files, `aura_app/agent.py`, native function calling through existing synthetic provider settings, API, additive append-only trace table and audit. Explicit UI brief/Q&A/recap/visit/ranking controls with source links, step inspection and honest fallback. Docs/architecture/decision §38 updated; no accepted engine/dependency changes, real detectors, sharing, additional scenarios or CodeBuddy.
