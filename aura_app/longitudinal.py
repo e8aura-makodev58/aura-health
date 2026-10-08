@@ -10,9 +10,10 @@ from aura_longitudinal.context import EvidenceEvent, EvidenceKind, HeldDriftRegi
 from aura_longitudinal.domain import (
     ActivityObservation, CheckinState, ContextCategory, ContextEvent, MedicationEvent,
     MedicationStatus, ObservationPoint, PatientCheckin, RestingHeartRateObservation,
-    Signal, SignalKey, SleepObservation,
+    ScalarObservation, Signal, SignalKey, SleepObservation,
 )
 from aura_longitudinal.drift import assess_drift
+from aura_longitudinal.registry import LEGACY_SIGNALS, SignalRegistry, load_registry
 
 from .models import EventType, INTERRUPTIONS
 
@@ -29,7 +30,8 @@ def key_from(raw: dict) -> SignalKey:
     return SignalKey(Signal(raw["signal"]), raw["source"], raw.get("metric"))
 
 
-def points_from_payload(payload: dict) -> tuple[ObservationPoint, ...]:
+def points_from_payload(payload: dict, registry: SignalRegistry | None = None) -> tuple[ObservationPoint, ...]:
+    registry = registry or load_registry()
     points = []
     for raw in payload.get("observations", []):
         kind = raw["kind"]
@@ -46,6 +48,23 @@ def points_from_payload(payload: dict) -> tuple[ObservationPoint, ...]:
         elif kind == "resting_hr":
             observation = RestingHeartRateObservation(date.fromisoformat(raw["date"]),
                                                       float(raw["value"]), float(raw["coverage"]), raw["source"])
+        elif kind == "scalar":
+            if set(raw) != {"kind", "signal", "date", "value", "coverage", "data_quality", "source", "unit"}:
+                raise ValueError("scalar observation requires exact typed measurement fields")
+            signal = Signal(raw["signal"])
+            definition = registry.definition(signal)
+            if signal in LEGACY_SIGNALS or raw["unit"] != definition.unit:
+                raise ValueError("use the existing observation type or the registry's exact scalar unit")
+            if (type(raw["value"]) not in {int, float}
+                    or type(raw["coverage"]) not in {int, float}
+                    or type(raw["data_quality"]) not in {int, float}
+                    or not isinstance(raw["source"], str)):
+                raise ValueError("scalar values and coverage must be numbers; source must be text")
+            value = float(raw["value"])
+            if (signal != Signal.SKIN_TEMPERATURE_DEVIATION and value <= 0) or (signal == Signal.SPO2 and value > 100):
+                raise ValueError("invalid scalar measurement representation")
+            observation = ScalarObservation(signal, date.fromisoformat(raw["date"]), value,
+                                            raw["coverage"], raw["data_quality"], raw["source"])
         else:
             raise ValueError("unsupported observation kind")
         points.extend(observation.points())
@@ -89,20 +108,23 @@ class Projection:
     checkins: list[dict]
     medication: list[dict]
     explanation_status: str | None = None
+    registry_reference: dict | None = None
 
     def public(self) -> dict:
         return {"decision": self.decision, "reason": self.reason, "drifts": self.drifts,
                 "baselines": self.baselines, "held": self.held,
                 "active_contexts": self.active_contexts,
-                "explanation_status": self.explanation_status}
+                "explanation_status": self.explanation_status,
+                "registry_reference": self.registry_reference}
 
 
 class LongitudinalProjector:
     """No drift or communication policy here: orchestration calls production modules."""
 
-    def __init__(self):
-        self.manager = BaselineManager()
-        self.communicator = CommunicationEngine()
+    def __init__(self, registry: SignalRegistry | None = None):
+        self.registry = registry or load_registry()
+        self.manager = BaselineManager(registry=self.registry)
+        self.communicator = CommunicationEngine(self.registry.communication_config)
         self.held = HeldDriftRegistry()
         self.points: dict[SignalKey, list[ObservationPoint]] = {}
         self.contexts: list[tuple[str, ContextEvent]] = []
@@ -130,7 +152,9 @@ class LongitudinalProjector:
         medication_event = None
         explanation_status = None
         if kind == EventType.WEARABLE_OBSERVATION:
-            for point in points_from_payload(raw):
+            for point in points_from_payload(raw, self.registry):
+                if not self.registry.definition(point.key.signal).enabled_in_engine:
+                    continue  # Persisted/displayed upstream; never becomes decision evidence.
                 self.manager.ingest(point)
                 self.points.setdefault(point.key, []).append(point)
         elif kind == EventType.PATIENT_CHECKIN:
@@ -150,14 +174,15 @@ class LongitudinalProjector:
             start = date.fromisoformat(raw["reference_start"]) if raw.get("reference_start") else date.min
             end = date.fromisoformat(raw["reference_end"]) if raw.get("reference_end") else day
             refs = tuple(point for point in self.points.get(key, []) if start <= point.day <= end)
-            self.manager.apply_anchor_command(AnchorCommand(action, key, at, refs, raw.get("reviewed_by")))
+            if self.registry.definition(key.signal).enabled_in_engine:
+                self.manager.apply_anchor_command(AnchorCommand(action, key, at, refs, raw.get("reviewed_by")))
 
         contextualized = []
         baselines = []
         for key in sorted(self.points, key=key_name):
             rolling = self.manager.rolling(key, day)
             anchor = self.manager.anchor(key)
-            drift = assess_drift(rolling, anchor, self.manager.config, self.manager.trust_state(key))
+            drift = assess_drift(rolling, anchor, self.manager.config_for(key), self.manager.trust_state(key))
             contextualized.append(apply_context(drift, tuple(c for _, c in self.contexts), at))
             baselines.append({
                 **key_dict(key), "anchor": ({"center": anchor.center,
@@ -237,4 +262,5 @@ class LongitudinalProjector:
                            if context.start <= at and (context.end is None or at <= context.end)]
         return Projection(decision.outcome.value, decision.reason,
                           [drift_dict(item) for item in contextualized], baselines,
-                          held, active_contexts, list(self.checkins), list(self.medication), explanation_status)
+                          held, active_contexts, list(self.checkins), list(self.medication), explanation_status,
+                          {"version": self.registry.version, "fingerprint": self.registry.fingerprint})

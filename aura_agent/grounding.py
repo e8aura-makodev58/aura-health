@@ -53,6 +53,16 @@ def validate(raw, tools, role):
         for label, signal in (("sleep timing", "SLEEP_MIDPOINT"), ("sleep duration", "SLEEP_DURATION"), ("activity", "ACTIVITY"), ("heart rate", "RESTING_HEART_RATE")):
             if label in text.lower() and not any(tools.delivered[fid]["signal"] == signal for fid in claim.fact_ids):
                 raise ValueError("UNSUPPORTED_SIGNAL")
+        for pattern, signal in ((r"\bhrv\b|\brmssd\b", "HRV"),
+                                (r"respiratory rate", "RESPIRATORY_RATE"),
+                                (r"skin.temperature", "SKIN_TEMPERATURE_DEVIATION"),
+                                (r"\bspo2\b", "SPO2"),
+                                (r"systolic", "BLOOD_PRESSURE_SYSTOLIC"),
+                                (r"diastolic", "BLOOD_PRESSURE_DIASTOLIC"),
+                                (r"thermometer temperature|body temperature", "BODY_TEMPERATURE"),
+                                (r"body weight|\bweight\b", "WEIGHT")):
+            if re.search(pattern, text, re.I) and not any(tools.delivered[fid]["signal"] == signal for fid in claim.fact_ids):
+                raise ValueError("UNSUPPORTED_SIGNAL")
         # Prevent polarity reversals for categorical facts. Broader natural-language
         # inference is not claimed to be verified by this deterministic validator.
         for word in ("Good", "Okay", "Rough", "acknowledged", "missed", "unknown", "UNOBSERVED", "REESTABLISHING"):

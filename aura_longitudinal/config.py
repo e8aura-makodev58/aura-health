@@ -18,6 +18,7 @@ class EngineeringConfig:
     trend_spread_per_day: float
     relative_spread_floor: float
     communication_cooldown_days: int
+    absolute_spread_floor: float = 0.0
 
 
 def parse_config(raw: dict) -> EngineeringConfig:
@@ -35,6 +36,9 @@ def parse_config(raw: dict) -> EngineeringConfig:
             raise ValueError("invalid fraction")
     if config.deviation_spread_multiplier <= 0 or config.trend_spread_per_day < 0:
         raise ValueError("invalid drift multiplier")
+    from math import isfinite
+    if not isfinite(config.absolute_spread_floor) or config.absolute_spread_floor < 0:
+        raise ValueError("invalid absolute spread floor")
     return config
 
 

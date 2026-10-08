@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .baseline import AnchoredBaseline, RollingBaseline
-from .config import EngineeringConfig, load_config
+from .config import EngineeringConfig
 from .domain import BaselineTrustState, Signal, SignalKey
+from .registry import load_registry
 
 
 class DriftKind(str, Enum):
@@ -52,7 +53,7 @@ def _describe(key: SignalKey, delta: float | None, kind: DriftKind) -> str:
 def assess_drift(rolling: RollingBaseline, anchor: AnchoredBaseline | None,
                  config: EngineeringConfig | None = None,
                  trust_state: BaselineTrustState | None = None) -> DriftAssessment:
-    config = config or load_config()
+    config = config or load_registry().config_for(rolling.key.signal)
     if trust_state == BaselineTrustState.REESTABLISHING:
         return DriftAssessment(rolling.key, DriftKind.INSUFFICIENT_DATA, None, None,
                                TrendDirection.UNKNOWN, None, rolling.coverage_ratio,
@@ -71,7 +72,8 @@ def assess_drift(rolling: RollingBaseline, anchor: AnchoredBaseline | None,
         raise ValueError("anchor and rolling signal/source must match")
     current_delta = rolling.latest_value - rolling.median
     anchor_delta = rolling.median - anchor.center
-    scale = max(anchor.robust_spread, abs(anchor.center) * config.relative_spread_floor, 1e-9)
+    scale = max(anchor.robust_spread, abs(anchor.center) * config.relative_spread_floor,
+                config.absolute_spread_floor, 1e-9)
     deviation = scale * config.deviation_spread_multiplier
     slope = rolling.slope_per_day
     slope_floor = scale * config.trend_spread_per_day

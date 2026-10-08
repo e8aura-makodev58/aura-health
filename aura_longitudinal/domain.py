@@ -11,6 +11,14 @@ class Signal(str, Enum):
     SLEEP_DURATION = "SLEEP_DURATION"
     ACTIVITY = "ACTIVITY"
     RESTING_HEART_RATE = "RESTING_HEART_RATE"
+    HRV = "HRV"
+    RESPIRATORY_RATE = "RESPIRATORY_RATE"
+    SKIN_TEMPERATURE_DEVIATION = "SKIN_TEMPERATURE_DEVIATION"
+    SPO2 = "SPO2"
+    BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
+    BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
+    BODY_TEMPERATURE = "BODY_TEMPERATURE"
+    WEIGHT = "WEIGHT"
 
 
 class SensingState(str, Enum):
@@ -142,6 +150,25 @@ class RestingHeartRateObservation:
     def points(self) -> tuple[ObservationPoint, ...]:
         return (ObservationPoint(SignalKey(Signal.RESTING_HEART_RATE, self.source),
                                  self.day, self.value, self.coverage, self.coverage),)
+
+
+@dataclass(frozen=True)
+class ScalarObservation:
+    """One actually measured scalar. Unit/cadence policy lives in the registry.
+
+    No resampling, interpolation, clinical classification or inferred measurements.
+    Blood-pressure components are independent, explicitly named scalar channels.
+    """
+    signal: Signal
+    day: date
+    value: float
+    coverage: float
+    data_quality: float
+    source: str
+
+    def points(self) -> tuple[ObservationPoint, ...]:
+        return (ObservationPoint(SignalKey(self.signal, self.source), self.day,
+                                 self.value, self.coverage, self.data_quality),)
 
 
 @dataclass(frozen=True)

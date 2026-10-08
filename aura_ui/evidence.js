@@ -31,8 +31,10 @@
     const heading = node("div", null, "chart-heading");
     heading.append(node("h2", signal.label), node("span", signal.key.signal === "SLEEP_MIDPOINT" ? "Source-local sleep clock" : signal.unit, "chart-unit"));
     card.append(heading);
-    const current = signal.current;
-    card.append(node("p", current ? `${current.sensing_state === "UNOBSERVED" ? "Data unavailable" : "Data observed"} · ${current.trust_state === "REESTABLISHING" ? "Reference being re-established" : current.trust_state === "TRUSTED" ? "Governed personal reference" : "Provisional reference"}` : "Current reference unavailable", "chart-status"));
+    const enabled = signal.registry?.enabled_in_engine !== false;
+    const current = enabled ? signal.current : null;
+    card.append(node("p", !enabled ? "Display only · recorded measurements" : current ? `${current.sensing_state === "UNOBSERVED" ? "Data unavailable" : "Data observed"} · ${current.trust_state === "REESTABLISHING" ? "Reference being re-established" : current.trust_state === "TRUSTED" ? "Governed personal reference" : "Provisional reference"}` : "Current reference unavailable", "chart-status"));
+    if (signal.registry?.evidence_tier === "E3_RESEARCH") card.append(node("p", `Research tier · ${signal.registry.cadence_class.toLowerCase().replaceAll("_", " ")}`, "fine"));
     const inside = stamp => stamp >= start && stamp <= end;
     const raw = signal.observations.filter(row => inside(day(row.day)) && !row.deferred);
     // Last committed snapshot per record-date, for drawing only. Full snapshots stay in the API.

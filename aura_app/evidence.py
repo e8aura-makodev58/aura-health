@@ -10,14 +10,6 @@ from datetime import datetime
 from .service import PatientEventService
 
 
-SIGNALS = {
-    "SLEEP_MIDPOINT": ("Sleep timing", "minutes since sleep-start midnight"),
-    "SLEEP_DURATION": ("Sleep duration", "hours"),
-    "ACTIVITY": ("Activity", None),
-    "RESTING_HEART_RATE": ("Resting heart rate", "beats/min"),
-}
-
-
 def identity(row):
     return row["signal"], row["source"], row.get("metric") or ""
 
@@ -27,6 +19,8 @@ class EvidenceViewService:
         self.events = events
 
     def get(self, patient_id: str) -> dict:
+        registry = self.events.signals()
+        definitions = {item["name"]: item for item in registry["signals"]}
         with self.events.repositories.transaction() as repo:
             patient = self.events._patient(repo, patient_id)
             snapshots = repo.committed_results(patient_id)
@@ -47,10 +41,13 @@ class EvidenceViewService:
             def signal_for(key):
                 key_id = identity(key)
                 if key_id not in signals:
-                    label, unit = SIGNALS.get(key_id[0], (key_id[0], None))
+                    definition = definitions[key_id[0]]
+                    unit = key_id[2] if key_id[0] == "ACTIVITY" else definition["unit"]
                     signals[key_id] = {
                         "key": {"signal": key_id[0], "source": key_id[1], "metric": key_id[2]},
-                        "label": label, "unit": unit or key_id[2] or "recorded units",
+                        "label": definition["label"], "unit": unit or "recorded units",
+                        "registry": {key: definition[key] for key in ("evidence_tier", "cadence_class",
+                            "source_type", "enabled_in_engine", "display", "expected_measurements_per_week")},
                         "current": None, "observations": [], "history": [],
                         "contexts": [], "findings": [], "anchor_commands": [], "gaps": [],
                     }
@@ -111,13 +108,15 @@ class EvidenceViewService:
             references = [{**row, "at": timestamps.get(row["event_id"])} for row in references]
             stamps = [row["occurred_at"] for row in snapshots]
             ordered = sorted(signals.values(), key=lambda row: (
-                list(SIGNALS).index(row["key"]["signal"]) if row["key"]["signal"] in SIGNALS else 99,
+                list(definitions).index(row["key"]["signal"]),
                 row["key"]["source"], row["key"]["metric"]))
             return {
                 "version": "read-only-evidence-v1", "patient": patient,
                 "period": {"start": min(stamps, key=datetime.fromisoformat) if stamps else None,
                            "end": max(stamps, key=datetime.fromisoformat) if stamps else None},
-                "snapshot_count": len(snapshots), "signals": ordered,
+                "snapshot_count": len(snapshots),
+                "signals": [row for row in ordered if row["registry"]["display"]],
+                "signal_registry": {"version": registry["version"], "fingerprint": registry["fingerprint"]},
                 "checkins": [{"event_id": row["event_id"], "at": row["occurred_at"],
                     "state": row["detail"]["state"], "deferred": row["event_id"] in deferred}
                     for row in timeline if row["record_type"] == "PATIENT_CHECKIN"],

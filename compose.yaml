@@ -9,6 +9,7 @@ services:
     volumes:
       - demo-data:/data
     environment:
+      AURA_SIGNAL_REGISTRY: ${AURA_SIGNAL_REGISTRY:-}
       AURA_SECURE_COOKIE: ${AURA_SECURE_COOKIE:-true}
       AURA_HTTP_DEMO_HOSTS: ${AURA_HTTP_DEMO_HOSTS:-}
       AURA_MAX_DEMO_SESSIONS: ${AURA_MAX_DEMO_SESSIONS:-16}

@@ -49,6 +49,7 @@ class AgentService:
         signature = digest({"events": [r["event_id"] for r in rows], "state": state,
                             "baselines": repo.baselines(patient_id), "held": repo.held(patient_id),
                             "agent_config": asdict(self.config),
+                            "signal_registry": self.events.signal_registry.fingerprint,
                             "references": references, "model": self.provider.model_id, "blocked": reason})
         return signature, reason, (rows[-1] if rows else None), state
 

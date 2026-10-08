@@ -30,8 +30,11 @@ class RecordTools:
         for signal in evidence["signals"]:
             key, label = signal["key"], signal["label"]
             current = signal["current"] or {}
+            enabled = signal.get("registry", {}).get("enabled_in_engine", True)
             add("get_status", f"baseline:{key['signal']}:{key['source']}:{key['metric']}",
-                f"{label}: sensing {current.get('sensing_state', 'UNOBSERVED')}; reference trust {current.get('trust_state', 'PROVISIONAL')}.", signal=key["signal"])
+                (f"{label}: sensing {current.get('sensing_state', 'UNOBSERVED')}; reference trust {current.get('trust_state', 'PROVISIONAL')}."
+                 if enabled else f"{label}: display-only measurements; no current engine baseline or drift decision."),
+                signal=key["signal"])
             for finding in signal["findings"]:
                 if finding["last_seen"][:10] < cutoff:
                     continue

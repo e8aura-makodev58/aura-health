@@ -179,7 +179,7 @@ class HostedDemo:
         if scope["path"] == "/health":
             await JSONResponse({"status":"ok", "synthetic_only":True, "seed":self.seed})(scope, receive, send)
             return
-        if scope["path"] == "/" or scope["path"].startswith("/assets/"):
+        if scope["path"] in {"/", "/signals"} or scope["path"].startswith("/assets/"):
             await self.presentation_app(scope, receive, send)
             return
         if not (scope["path"].startswith("/patients") or

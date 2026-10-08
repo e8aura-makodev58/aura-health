@@ -123,6 +123,10 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def health():
         return {"status": "ok", "prototype": True}
 
+    @app.get("/signals")
+    def signals():
+        return service.signals()
+
     @app.post("/patients")
     def create_patient(body: PatientIn):
         return service.create_patient(patient_id=body.patient_id, display_name=body.display_name,

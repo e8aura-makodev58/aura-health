@@ -11,8 +11,9 @@ from aura_safety.domain import Outcome
 from aura_safety.engine import POLICY_VERSION
 from aura_safety.output import output_plan
 from aura_safety.resources import ResourceRegistry
+from aura_longitudinal.registry import SignalRegistry, load_registry
 
-from .longitudinal import LongitudinalProjector, Projection, points_from_payload
+from .longitudinal import LongitudinalProjector, Projection, key_from, points_from_payload
 from .models import AppError, ApplicationEvent, ApplicationResult, EventType
 from .repositories import RepositoryConflict, RepositoryFactory, UnitOfWork
 from .safety import ResolvedSafetyGate, SafetyGateUnavailable, UnconfiguredSafetyGate
@@ -49,11 +50,16 @@ class PatientEventService:
     def __init__(self, repositories: RepositoryFactory, *,
                  safety_gate: ResolvedSafetyGate | None = None,
                  safety_engine: SafetyEngine | None = None,
-                 resource_registry: ResourceRegistry | None = None):
+                 resource_registry: ResourceRegistry | None = None,
+                 signal_registry: SignalRegistry | None = None):
         self.repositories = repositories
         self.safety_gate = safety_gate or UnconfiguredSafetyGate()
         self.safety_engine = safety_engine or SafetyEngine()
         self.resource_registry = resource_registry or ResourceRegistry()
+        self.signal_registry = signal_registry or load_registry()
+
+    def signals(self) -> dict:
+        return self.signal_registry.public()
 
     def create_patient(self, *, patient_id: str, display_name: str, age: int,
                        timezone_name: str, onboarding_status: str = "PROTOTYPE",
@@ -148,7 +154,7 @@ class PatientEventService:
                 else:
                     eligible = [item for item in repo.events(event.patient_id)
                                 if not item["longitudinal_deferred"]]
-                    projection = LongitudinalProjector().run(eligible, safety_relevant_ids)
+                    projection = LongitudinalProjector(self.signal_registry).run(eligible, safety_relevant_ids)
                     self._persist_projection(repo, event, projection)
                 decision = projection.decision
                 safety_state = safety["state"] if safety else repo.safety_state(event.patient_id)
@@ -191,8 +197,11 @@ class PatientEventService:
         if event.event_type == EventType.WEARABLE_OBSERVATION:
             if not any(row["consent_type"] == "WEARABLE" and row["granted"] for row in repo.consents(event.patient_id)):
                 raise AppError("CONSENT_REQUIRED", "wearable consent is required", 403)
-            points_from_payload(event.payload)
+            points_from_payload(event.payload, self.signal_registry)
         elif event.event_type == EventType.ANCHOR_COMMAND:
+            key = key_from(event.payload)
+            if not self.signal_registry.definition(key.signal).enabled_in_engine:
+                raise AppError("INVALID_ANCHOR_COMMAND", "display-only signals cannot receive new engine anchors")
             if event.payload.get("action") not in {"CREATE_PROVISIONAL_ANCHOR", "TRUST_ANCHOR", "CLINICAL_REVIEW_REANCHOR"}:
                 raise AppError("INVALID_ANCHOR_COMMAND", "named anchor command required")
             if event.payload["action"] != "CREATE_PROVISIONAL_ANCHOR" and not event.payload.get("reviewed_by"):
@@ -208,7 +217,7 @@ class PatientEventService:
         detail: dict[str, Any] = {"source": event.source}
         if kind == EventType.WEARABLE_OBSERVATION:
             detail["signals"] = []
-            for point in points_from_payload(event.payload):
+            for point in points_from_payload(event.payload, self.signal_registry):
                 normalized = {"event_id": event.event_id, "patient_id": event.patient_id,
                               "signal": point.key.signal.value, "source": point.key.source,
                               "metric": point.key.metric, "day": point.day.isoformat(),
@@ -447,13 +456,18 @@ class PatientEventService:
             self._patient(repo, patient_id)
             events = repo.events(patient_id)
             latest = repo.prior_result(patient_id, events[-1]["idempotency_key"]) if events else None
-            return {"patient_id": patient_id, "signals": repo.baselines(patient_id),
-                    "active_longitudinal_observations": latest["longitudinal"]["drifts"] if latest else [],
+            enabled = {item["name"] for item in self.signals()["signals"] if item["enabled_in_engine"]}
+            current_baselines = [row for row in repo.baselines(patient_id) if row["signal"] in enabled]
+            return {"patient_id": patient_id, "signals": current_baselines,
+                    "active_longitudinal_observations": [row for row in latest["longitudinal"]["drifts"]
+                        if row["key"]["signal"] in enabled] if latest else [],
                     "held_for_review": repo.held(patient_id),
                     "latest_communication_decision": latest["communication_decision"] if latest else "STAY_QUIET",
                     "safety": repo.safety_state(patient_id),
                     "data_coverage": {f"{row['signal']}:{row['source']}:{row['metric']}": row["rolling"]["coverage_ratio"]
-                                      for row in repo.baselines(patient_id)}}
+                                      for row in current_baselines},
+                    "signal_registry": {"version": self.signal_registry.version,
+                                        "fingerprint": self.signal_registry.fingerprint}}
 
     def review_snapshot(self, patient_id: str) -> dict:
         with self.repositories.transaction() as repo:

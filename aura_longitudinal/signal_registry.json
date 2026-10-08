@@ -1,0 +1,18 @@
+{
+  "version": "m7-signal-registry-v1-not-clinically-validated",
+  "communication_overrides": {},
+  "signals": [
+    {"name":"SLEEP_MIDPOINT","label":"Sleep timing","unit":"minutes since sleep-start midnight","cadence_class":"DAILY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E2","enabled_in_engine":true,"display":true,"engineering_overrides":{}},
+    {"name":"SLEEP_DURATION","label":"Sleep duration","unit":"hours","cadence_class":"DAILY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E2","enabled_in_engine":true,"display":true,"engineering_overrides":{}},
+    {"name":"ACTIVITY","label":"Activity","unit":"metric-defined","cadence_class":"DAILY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E2","enabled_in_engine":true,"display":true,"engineering_overrides":{}},
+    {"name":"RESTING_HEART_RATE","label":"Resting heart rate","unit":"beats/min","cadence_class":"DAILY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E2","enabled_in_engine":true,"display":true,"engineering_overrides":{}},
+    {"name":"HRV","label":"Nightly HRV (RMSSD)","unit":"ms","cadence_class":"NIGHTLY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E3_RESEARCH","enabled_in_engine":true,"display":true,"engineering_overrides":{}},
+    {"name":"RESPIRATORY_RATE","label":"Nocturnal respiratory rate","unit":"breaths/min","cadence_class":"NIGHTLY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E3_RESEARCH","enabled_in_engine":true,"display":true,"engineering_overrides":{}},
+    {"name":"SKIN_TEMPERATURE_DEVIATION","label":"Skin-temperature deviation","unit":"degC deviation","cadence_class":"NIGHTLY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E3_RESEARCH","enabled_in_engine":true,"display":true,"engineering_overrides":{"absolute_spread_floor":0.1}},
+    {"name":"SPO2","label":"Nightly SpO2","unit":"percent","cadence_class":"SPARSE_NIGHTLY","expected_measurements_per_week":7,"source_type":"wearable","evidence_tier":"E3_RESEARCH","enabled_in_engine":false,"display":true,"engineering_overrides":{}},
+    {"name":"BLOOD_PRESSURE_SYSTOLIC","label":"Blood pressure — systolic","unit":"mmHg","cadence_class":"INTERMITTENT","expected_measurements_per_week":2.5,"source_type":"cuff","evidence_tier":"E3_RESEARCH","enabled_in_engine":false,"display":true,"engineering_overrides":{}},
+    {"name":"BLOOD_PRESSURE_DIASTOLIC","label":"Blood pressure — diastolic","unit":"mmHg","cadence_class":"INTERMITTENT","expected_measurements_per_week":2.5,"source_type":"cuff","evidence_tier":"E3_RESEARCH","enabled_in_engine":false,"display":true,"engineering_overrides":{}},
+    {"name":"BODY_TEMPERATURE","label":"Thermometer temperature","unit":"degC","cadence_class":"INTERMITTENT","expected_measurements_per_week":1,"source_type":"manual_thermometer","evidence_tier":"E3_RESEARCH","enabled_in_engine":false,"display":true,"engineering_overrides":{}},
+    {"name":"WEIGHT","label":"Body weight","unit":"kg","cadence_class":"INTERMITTENT","expected_measurements_per_week":1,"source_type":"scale_or_manual","evidence_tier":"E3_RESEARCH","enabled_in_engine":false,"display":true,"engineering_overrides":{}}
+  ]
+}

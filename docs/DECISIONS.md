@@ -260,3 +260,10 @@ clinical and regulatory suitability is for the sponsor to assess; (5) no clinica
 validation is claimed; (6) the pinned safety panel and resources stay as a matter of
 responsible design. This supersedes the earlier "do not add engine signals" caution
 in the simulator plan.
+
+Implementation checkpoint, 2026-10-08: the signal-registry foundation is implemented
+in `aura_longitudinal/signal_registry.json`; see `docs/SIGNAL_REGISTRY_IMPLEMENTATION.md`.
+Existing four-channel defaults are retained. New-channel calendar-coverage checks
+and a configurable absolute spread floor are engineering safeguards, not sponsor
+clinical approval. The full patient simulator, Disclaimer consolidation and other
+§39 improvements remain unfinished; this checkpoint does not claim their acceptance.
