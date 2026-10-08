@@ -14,6 +14,7 @@ extraction. Safety and longitudinal policy remain deterministic.
 **aura-health** is a wearable-first, patient-controlled companion for adults on stable antidepressant maintenance treatment (hackathon challenge: *AI Healthier Every Day*). It is a synthetic-data research prototype, not a diagnostic or clinical service.
 
 - [Agent handover](HANDOVER.md) — current state, next steps, and update instructions for agents working on this repo.
+- [Product vision (current statement)](docs/PRODUCT_VISION.md)
 - [Roadmap](docs/ROADMAP.md), [decisions](docs/DECISIONS.md), [milestone specs](docs/milestones/), and [demo script](docs/DEMO_SCRIPT.md) — canonical plan (M1–M8).
 - [aura-health framework v1.0](aura_health_framework_v1.0.md) — canonical product, safety, and governance framework.
 - [Deterministic safety policy v1.2](aura_deterministic_safety_policy_state_machine_v1.2.md) — safety state machine specification.
