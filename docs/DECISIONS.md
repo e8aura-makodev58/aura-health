@@ -245,3 +245,18 @@ synthetic telemetry (heart rate, blood pressure, sleep, temperature, etc.) and i
 character patient feedback, with injectable abnormal life events (e.g. 3-day flu with
 raised temperature). It is not part of the product. Users can always enter data
 manually. All telemetry remains synthetic. Plan: `docs/PATIENT_SIMULATOR_AGENT_PLAN.md`.
+
+## 41. Project posture: technical proposal for the sponsor
+
+User statement, 2026-10-08: the user is a developer; the sponsor of the problem statement
+wants technical ideas and solutions and will own clinical and regulatory assessment,
+including which signals and thresholds may be used. Consequences: (1) the user may
+authorize engine changes, including new signals; (2) clinical choices are exposed as
+sponsor-editable configuration (signal registry with evidence tier and enable flags,
+thresholds, safety resources, question and wording catalogues) rather than hard-coded;
+(3) the demo must be realistic about what wearables measure (continuous vs intermittent
+channels); (4) the Disclaimer page states that this is a technical demonstration whose
+clinical and regulatory suitability is for the sponsor to assess; (5) no clinical
+validation is claimed; (6) the pinned safety panel and resources stay as a matter of
+responsible design. This supersedes the earlier "do not add engine signals" caution
+in the simulator plan.

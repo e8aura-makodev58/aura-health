@@ -22,27 +22,43 @@ any time; the simulator only supplies telemetry and optional simulated feedback.
 | Ingest | **Existing event service** (idempotent keys, safety-first) | Simulator is just another source; no DB shortcuts |
 | Decide safety, drift, trust, anchors | **Accepted engines, unchanged** | Simulator must not influence decisions except through observable events |
 
-## 3. Telemetry channels (scope decision flagged)
+## 3. Telemetry channels: a configurable signal registry
 
-The accepted longitudinal engine handles four signals only: sleep timing, sleep duration,
-activity, resting heart rate (framework §6 primary signals). Adding signals to drift
-detection is a clinical-configuration change nobody has authorized. Proposal:
+User direction (2026-10-08): the user is a developer proposing technical ideas to a
+sponsor, who owns clinical and regulatory judgment and will decide which signals are
+usable. So signals are **sponsor-configurable engineering defaults**, not hard-coded
+clinical choices, and the demo stays realistic about what consumer wearables measure.
 
-- **Engine-fed (unchanged):** sleep midpoint, sleep duration, activity, resting HR.
-- **Display-only telemetry (new, never feeds drift/trust/safety):** skin/body temperature
-  (deviation from personal norm for wearables; absolute °C for manual thermometer),
-  HRV, respiratory rate, SpO2, blood pressure (sparse, cuff-style: a few readings per week,
-  not continuous), and optionally steps detail. Stored as observations, charted in the
-  clinician and "full data" views, available to the agent as cited facts, clearly absent
-  from decisions. Needs a new observation event type and projection; Codex to design,
-  keeping accepted engine/schema behaviour otherwise unchanged.
-- Realism note: consumer wearables do not measure blood pressure continuously; model BP as
-  periodic readings.
+Add a **signal registry** (config file, one entry per channel): `name`, `unit`,
+`cadence_class`, `source_type`, `evidence_tier`, `enabled_in_engine`, `display`,
+and the engine's existing per-signal settings (baseline windows, thresholds, minimum
+coverage). The sponsor changes a flag or number, not code. The four current signals
+keep today's values.
+
+| Channel | Realistic source | Cadence class | Default in demo |
+|---|---|---|---|
+| Sleep midpoint, duration (stages optional) | wearable | continuous, daily | engine (as today) |
+| Activity (steps / active minutes) | wearable | continuous, daily | engine (as today) |
+| Resting heart rate | wearable | continuous, daily | engine (as today) |
+| HRV (nightly RMSSD) | wearable | continuous, nightly | engine, tier "research" |
+| Respiratory rate (nocturnal) | wearable | continuous, nightly | engine, tier "research" |
+| Skin-temperature deviation | wearable (wrist/ring, shown as deviation from own norm) | continuous, nightly | engine, tier "research" |
+| SpO2 (nocturnal average) | wearable | nightly, sometimes sparse | display + agent; engine optional |
+| Blood pressure (sys/dia) | cuff or calibrated device | **intermittent** (2-3 readings/week) | display + agent; engine optional |
+| Body temperature (thermometer) | manual | **intermittent**, mostly when unwell | display + agent |
+| Body weight | smart scale / manual | **intermittent**, weekly | display + agent |
+
+Rules: continuous channels carry realistic daily noise and occasional gaps; intermittent
+channels are generated sparsely and never interpolated; the engine's existing coverage and
+"insufficient data" handling decides whether a sparse channel can contribute, so Codex
+should confirm that sparse series do not distort baselines (add a sparse-aware rule only
+if needed, as a registry flag). Manual user entries can add to any channel.
 
 ## 4. Life-event catalogue (initial, illustrative effect sizes)
 
-Effects are engineering values for plausible-looking demos, **not clinical parameters**;
-document them in a config file and label them as such. Each event has start day, duration,
+Effects are engineering defaults for plausible-looking demos; keep them in a config file
+so the sponsor can adjust or replace them, and state on the Disclaimer page that they are
+demo values. Each event has start day, duration,
 severity (mild/moderate/strong) and a recovery tail.
 
 | Event | Typical duration | Effects |
@@ -120,9 +136,10 @@ generated values reproducible from seed + plan.
 
 ## 10. Risks and open questions
 
-- Adding display-only channels needs a new observation type and projection; confirm it
-  does not touch accepted engine behaviour or the existing schema guarantees.
-- Illustrative effect sizes must not be presented as physiology or clinical truth.
+- New channels need a new observation type, registry-driven engine configuration and
+  tests; Codex should confirm accepted behaviour for the existing four signals is
+  unchanged (regression gate).
+- Effect sizes are illustrative; never present them as measured physiology.
 - A simulator that fills the record can make AURA look validated; keep the Disclaimer page
   explicit that results are on synthetic, simulator-generated data.
 - Long simulated horizons interact with the known replay-per-event cost issue.

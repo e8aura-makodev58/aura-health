@@ -54,7 +54,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **User approvals 2026-10-08 ("I approve all"):** all five items in `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md` §7 are approved (see `docs/DECISIONS.md` §39). DeepSeek `deepseek-flash` is active (public `/system/status` confirmed it, live). Also approved: show provider+model in the settings dialog without unlock (endpoint already public; UI-only change), and a demo-only **patient simulator agent** (§40, plan `docs/PATIENT_SIMULATOR_AGENT_PLAN.md`). Open for Codex/user: display-only telemetry channels (temperature, BP, SpO2, HRV, respiratory rate) are NOT in the accepted engine; plan keeps them out of drift/safety decisions.
+- **User approvals 2026-10-08 ("I approve all"):** all five items in `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md` §7 are approved (see `docs/DECISIONS.md` §39). DeepSeek `deepseek-flash` is active (public `/system/status` confirmed it, live). Also approved: show provider+model in the settings dialog without unlock (endpoint already public; UI-only change), and a demo-only **patient simulator agent** (§40, plan `docs/PATIENT_SIMULATOR_AGENT_PLAN.md`). User posture (2026-10-08, DECISIONS §41): developer proposal for a sponsor who owns clinical/regulatory judgment; new signals may enter the engine via a sponsor-editable **signal registry** (continuous wearable channels vs intermittent BP/thermometer/weight), see simulator plan §3.
 
 - **Claude review of aura-agent + user requests (2026-10-08):** user wants disclaimers removed from the app into one demo Disclaimer page, user input enabled, human-readable agent assessment, and maximum agent value. See `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md` (findings, disclaimer rule, input plan, ranked agent features, 5 user decisions). Free text needs a safety gate that does not exist; the raise-only LLM detector proposal needs explicit user approval.
 
@@ -212,6 +212,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-08 — Claude — Posture clarified: technical proposal for sponsor
+- User: wearables must be realistic (BP etc. intermittent); user is a developer, sponsor owns clinical/regulatory decisions. Added DECISIONS §41; rewrote simulator plan §3 as a config-driven signal registry with cadence classes and engine/display flags. Retracted my earlier 'unauthorized' framing. Docs only; Codex implements.
 
 ### 2026-10-08 — Claude — User approvals recorded; patient simulator plan
 - User approved all proposals, switched to DeepSeek, asked for provider/model in the settings dialog without unlock, and a demo-only patient simulator agent (synthetic telemetry incl. flu with raised temperature; manual inputs always allowed). Added DECISIONS §39–40 and `docs/PATIENT_SIMULATOR_AGENT_PLAN.md` (LLM life director + deterministic seeded generator, display-only extra channels, safety-gated notes, acceptance criteria).
