@@ -216,3 +216,32 @@ Live generation remains hosted synthetic-only through protected provider setting
 Offline extraction is explicitly not AI. Record questions are selected templates;
 unassessed text cannot bypass safety. Source-linked drafting is not clinically
 validated reasoning. Details: `docs/AURA_AGENT_IMPLEMENTATION.md`.
+
+## 39. Agent readability, input, disclaimers and model visibility
+
+User decision, 2026-10-08 ("I approve all"), on Claude's `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md`:
+
+1. Replace the lexical vocabulary whitelist with claim-level verification (structured
+   fields checked against stored engine values, an independent verifier pass, and the
+   existing numeric/date/signal/category/citation/prohibited-claim checks).
+   Parametrized read tools and server-side descriptive analysis tools are approved.
+2. Disclaimers leave the app and are summarized on one demo Disclaimer page. Kept in
+   the app: pinned safety panel/resources, a small Demo tag, a brief "AI-written ·
+   sources" chip, and functional state chips (e.g. Not sent, Offline extraction).
+3. Structured data entry, wearable-export import and free-form record questions are
+   approved. Free text is approved **only** behind a layered safety gate: curated
+   risk rules plus a raise-only LLM detector (no model may lower concern); timeout or
+   invalid output holds the text; held text never reaches the agent. Demo-only and
+   unvalidated until adversarially tested; no clinical validation claim.
+4. DeepSeek (`deepseek-flash`) is the active provider. Provider and model are shown in
+   the settings dialog **without** admin unlock (the public status endpoint already
+   returns them; keys and settings stay protected).
+5. A demo-only patient-simulator agent is approved (see §40).
+
+## 40. Patient simulator agent (demo only, not product)
+
+User decision, 2026-10-08: build an aura-health patient-simulator agent that generates
+synthetic telemetry (heart rate, blood pressure, sleep, temperature, etc.) and in-
+character patient feedback, with injectable abnormal life events (e.g. 3-day flu with
+raised temperature). It is not part of the product. Users can always enter data
+manually. All telemetry remains synthetic. Plan: `docs/PATIENT_SIMULATOR_AGENT_PLAN.md`.
