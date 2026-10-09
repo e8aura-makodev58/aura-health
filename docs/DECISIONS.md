@@ -281,3 +281,8 @@ the generic core (personal baseline, drift, trust, held-for-review, read-only ag
 claim verification) when it costs little; (3) the safety state machine is mental-health
 specific, and another condition would need its own policy; (4) do not build or test
 for other conditions now.
+
+Addendum, 2026-10-09 (user): patients often manage several conditions at once, and a tool
+that tracks only one has limited utility. Treat the person's whole record as the unit.
+This is a design consideration for the architecture, not an approved feature: no
+multi-condition scope, signals or safety policy are built or claimed now.
