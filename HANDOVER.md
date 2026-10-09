@@ -26,6 +26,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - Don't record secrets, tokens, or real patient data here.
 - Record user decisions and preferences as they are given, with the date.
 - **Updates are asynchronous.** Claude and Codex may work and edit this file at the same time, so it can change under you. Before editing, `git pull --rebase` and re-read the sections you will touch. Make small, targeted edits (add your own Log entry; edit only the lines you own) instead of rewriting the file. On a conflict, keep both sides' entries and resolve by hand; never overwrite another agent's entry. Order Log entries by when they were written, and treat a Current state line as possibly stale until you check the repo.
+- **Review asynchronous updates with the human in the loop (HIL).** Another agent's entries made since your last session (decisions, specs, DECISIONS sections) were recorded from separate chats. Before building on them, list what changed (`git log`, newest Log entries) and confirm with the user anything that changes scope or behaviour. Do not treat a recorded decision as approved for implementation just because it is written here; the user has the final say.
 
 ---
 
@@ -215,6 +216,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-09 — Claude — Note for Codex: review these async updates with HIL
+- Since your last session Claude recorded, from chat with the user: `docs/PRODUCT_VISION.md` (diagnosis), `docs/IMPRESSION_SPEC.md` I1–I8, DECISIONS §42 (focus stays antidepressant; architecture open to other conditions; patients may have several conditions, not approved scope) and §43 (patient home = layperson text recap, no charts). Please confirm with the user before implementing, and tell them if anything conflicts with your in-progress work.
 ### 2026-10-09 — Claude — Patient recap decision
 - User: clinician-first is about analytics depth; the patient is not lower. Default patient home gets a short layperson recap written by aura-agent, no charts; charts on demand. Recorded `docs/DECISIONS.md` §43 and rewrote `docs/IMPRESSION_SPEC.md` I6 (supersedes mini-charts in `AURA_AGENT_PLAN.md` §7). Docs only. Suggest moving I6 up in the order; not yet re-ranked.
 ### 2026-10-09 — Claude — Recorded architecture-openness constraint
