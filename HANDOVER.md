@@ -153,7 +153,7 @@ claims. Safety doctrine is unchanged. Full simulator and input paths remain unfi
 ## Next steps
 
 1. **Claude: review registry foundation**, `docs/SIGNAL_REGISTRY_IMPLEMENTATION.md` and SR1–SR16. Check original defaults, sparse coverage/anchor guard, zero-centered floor, disabled-channel isolation and retained history. Configuration archive/migration and sponsor settings UI are not implemented. This dependency was built first in response to the user's latest registry direction.
-2. **Codex: remaining approved items:** clean facts + structured claim verification/verifier + parametrized tools; Disclaimer page; provider/model line before unlock; structured entry/import; layered free-text gate; patient simulator/life director/seeded flu generator and demo controls. Use `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md` and `docs/PATIENT_SIMULATOR_AGENT_PLAN.md`. Claude reviews each step. Do not claim any of these is finished from the registry work.
+2. **Codex: remaining approved items** (then `docs/IMPRESSION_SPEC.md` I1–I8, order I1→I2→I5→I3→I4→I6→I7→I8): clean facts + structured claim verification/verifier + parametrized tools; Disclaimer page; provider/model line before unlock; structured entry/import; layered free-text gate; patient simulator/life director/seeded flu generator and demo controls. Use `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md` and `docs/PATIENT_SIMULATOR_AGENT_PLAN.md`. Claude reviews each step. Do not claim any of these is finished from the registry work.
 3. Verify full public Cases A–F/isolation/fallback at the now-known HTTPS hostname, obtain user UX feedback, then seek M7 acceptance. Read-only agent remains conservative/lexical until approved replacement is built. No automatic CodeBuddy.
 4. The user controls CodeBuddy timing. After product agreement, prepare the detailed rebuild SOW and capture actual evidence during the user-run rebuild.
 5. Preserve known issues from `MILESTONE4_REVIEW.md` §13 and M6 limits:
@@ -213,6 +213,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-09 — Claude — Impression spec for Codex
+- User agreed with the `docs/PRODUCT_VISION.md` diagnosis and fixes. Wrote `docs/IMPRESSION_SPEC.md` (I1–I8: assessment on arrival, story on charts, living demo, always-visible Q&A, plain language, patient benefit, 3-minute story, before/after). Docs only; Codex implements, Claude reviews.
 ### 2026-10-08 — Claude — Current product statement and diagnosis
 - User asked for up-to-date documentation and said the app does not impress. Wrote `docs/PRODUCT_VISION.md` after viewing live clinician/patient pages (Playwright with `LD_LIBRARY_PATH=~/rendertest/libs/usr/lib/x86_64-linux-gnu`). Main findings: AI hidden behind a button, demo is a replay, no narrative synthesis, fine print/engineering vocabulary, empty patient screen. Ranked fixes in §8. Docs only.
 - Not seen: live agent output, phone layout.
