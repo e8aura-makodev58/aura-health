@@ -1,7 +1,7 @@
 /* Presentation only: all observations, decisions and safety permissions come from APIs. */
 "use strict";
 const $ = (id) => document.getElementById(id);
-const labels = {SLEEP_MIDPOINT: "Sleep timing", SLEEP_DURATION: "Sleep duration", ACTIVITY: "Activity", RESTING_HEART_RATE: "Resting heart rate"};
+const labels = {SLEEP_MIDPOINT: "Sleep time", SLEEP_DURATION: "Sleep duration", ACTIVITY: "Activity", RESTING_HEART_RATE: "Resting heart rate"};
 const trustLabels = {PROVISIONAL: "Provisional reference", TRUSTED: "Governed reference", REESTABLISHING: "Re-establishing reference"};
 const sensingLabels = {OBSERVED: "Data available", UNOBSERVED: "Data unavailable"};
 const recordLabels = {PATIENT_CHECKIN: "Check-in", MEDICATION_EVENT: "Medication routine", CONTEXT_EVENT: "Context added", CONTEXT_EXPLANATION: "Explanation added", HELD_FOR_REVIEW: "Held for review", SENSING_GAP: "Wearable data unavailable", SENSING_RETURN: "Wearable data returned", SAFETY_BOUNDARY: "Safety boundary", CLINICIAN_REVIEW_ITEM: "Review item prepared", INPUT_HELD_FOR_SAFETY: "Input held for safety evaluation", ANCHOR_COMMAND: "Governed reference event", PATIENT_FREE_TEXT: "Patient note", REVIEW_COMMAND: "Review preparation"};

@@ -34,8 +34,9 @@ There is no production authentication: use synthetic data only, on loopback.
 ## Patient flows
 
 The approved 2026-10-07 audience split has a **Patient / Clinician** demo toggle.
-The synthetic walkthrough starts in Clinician on Case B. Toggle performs no API write
-and keeps the selected patient, records, references, resources and policy unchanged.
+The synthetic walkthrough starts in Clinician on Case B. Toggle keeps the selected
+patient, records, references, resources and policy unchanged; it can request the visible
+audience's read-only assessment, persisted once per server fingerprint.
 Clinician is a read-only demonstration, not an authenticated portal. The full-record
 synthetic disclosure distinguishes demo access from future patient-approved sharing.
 See [implementation](../docs/DUAL_VIEW_IMPLEMENTATION.md).
@@ -47,13 +48,14 @@ daily-task cards or risk score occupy the ordinary home. About and the protected
 remain in the shell. Quiet is not an assessment of health. Patient full data and
 Clinician use the **same** read-only evidence projection and chart DOM.
 
-The [read-only aura-agent](../docs/AURA_AGENT_IMPLEMENTATION.md) adds explicit
-**Draft a brief**, selected record questions and source-linked trace inspection.
-Patient home offers a collapsed **Your month at a glance** only when retained
-observations exist, with four mini-charts and an on-demand short explanation.
-Review offers removable temporary assistant draft lines, still **Not sent**.
-No automatic generation occurs on page load or view toggle. Model failure/off
-is labelled rule-based extraction, not AI. Safety interactions pause the agent.
+The [assessment-first experience](../docs/IMPRESSION_IMPLEMENTATION.md) opens with a
+sourced clinician assessment and visible record Q&A. An immediate extraction is replaced
+by checked model wording where permitted; persisted fingerprint caching avoids duplicate
+calls on unchanged opens/toggles. Patient home shows a short plain recap above the fold
+when retained observations exist, **without charts**. Full charts remain one tap away.
+Review offers removable temporary draft lines, still **Not sent**. Model failure/off
+is labelled extraction, not AI. Safety and offline states pause generation and clear
+ordinary cached prose; pinned resources remain separate.
 
 - **My day:** optional Good/Okay/Rough check-in, separate optional note, neutral
   acknowledged/missed/unknown medication record, always-available patient entry.
@@ -79,9 +81,11 @@ is labelled rule-based extraction, not AI. Safety interactions pause the agent.
 
 The demo's finite adapter supplies resolved fixtures for known structured taps,
 the prepared D explanation, `fixture ordinary message`, and `fixture safety concern`.
-Unknown text fails closed. These are not real detectors. Synthetic checkpoint dates
-remain fixed when interacting and are shown in the page header. Neither latent truth
-nor evaluation windows reach decision payloads.
+Unknown text fails closed when no detector is available. The configured hosted demo
+also has an unvalidated raise-only semantic gate for arbitrary **synthetic** questions
+and notes; held text never reaches the agent. Life controls advance synthetic dates;
+checkpoint switches are labelled. Neither latent truth nor evaluation windows reach
+decision payloads.
 
 ## Privacy and boundaries
 
@@ -89,7 +93,7 @@ Ordinary patient API/demo factory entry points disable live models, regardless o
 gateway environment variables. The fixture-restricted hosted service can opt into
 live synthetic-only wording through [operator settings](../docs/SYSTEM_SETTINGS.md).
 Real-patient model use is deferred until informed consent is governed. Hosted patient entry
-offers labelled synthetic examples and a read-only exact-input field, not arbitrary
+offers bounded synthetic notes and record questions through the safety gate, not unrestricted
 chat. Numeric reference provenance, review groups and timeline use progressive
 disclosure. Review checkboxes state their temporary-preview-only meaning locally.
 All current wording/resources require review; no crisis contact is invented.

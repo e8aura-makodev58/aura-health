@@ -79,12 +79,13 @@
 
   // Demo guide is the ONLY home of the life director controls.
   const sim=el('section',null,'simulator-controls');sim.id='life-director';sim.append(el('h2','Advance this synthetic life'));
-  const auto=input('checkbox','auto-assessment');auto.checked=true;const autoLabel=el('label');autoLabel.append(auto,el('span','Refresh AI brief after a committed input'));sim.append(autoLabel);
-  window.addEventListener('aura-input-committed',()=>{if(auto.checked){const role=window.auraAgentContext().role==='clinician'?'clinician_brief':'patient_insight';document.querySelector(`[data-agent-role="${role}"]`)?.click();}});
+  sim.append(el('p','The assessment refreshes after committed inputs.','fine'));
+  // Arrival uses the committed record fingerprint; never launch a second random-ID run.
+  window.addEventListener('aura-input-committed',()=>window.refreshAuraAssessment?.());
   const request=labelled(sim,'What happens next?',el('textarea'));request.rows=2;request.maxLength=2000;request.placeholder='e.g. three days of flu, or a week away from the wearable';
   const seed=labelled(sim,'Random seed',input('number','sim-seed'));seed.value='7';seed.min='0';seed.max='2147483647';
   const notes=input('checkbox','sim-feedback');notes.checked=true;const notesLabel=el('label');notesLabel.append(notes,el('span','Simulated feedback: check-ins, routine and safety-gated notes'));sim.append(notesLabel);
-  const quick=el('div',null,'settings-actions');for(const theme of ['Flu','Travel','Work stress','Alcohol','Missed medication','Wearable off','Exercise'])quick.append(button(theme,async()=>{request.value=theme;}));sim.append(quick);
+  const quick=el('div',null,'settings-actions');for(const theme of ['Flu','Travel','Work stress','Alcohol','Missed medication','Wearable off','Exercise'])quick.append(button(theme==='Flu'?'Simulate: flu 3 days':`Simulate: ${theme.toLowerCase()}`,async()=>{request.value=theme;report('Generating synthetic events; first use may prepare reference history…');lastRun=await call('advance',{days:3,seed:Number(seed.value),request:theme,notes:notes.checked});await reload();report(`${theme}: ${lastRun.event_ids.length} committed events. Assessment refreshed from the new record.`);}));sim.append(quick);
   const advances=el('div',null,'settings-actions');const trace=el('details');trace.append(el('summary','Inspect last simulator run'));const traceBody=el('pre');trace.append(traceBody);
   for(const days of [1,3,7])advances.append(button(`Advance ${days} day${days>1?'s':''}`,async()=>{
     report('Planning synthetic life events and generating measurements…');lastRun=await call('advance',{days,seed:Number(seed.value),request:request.value,notes:notes.checked});
@@ -94,4 +95,32 @@
   sim.append(button('Verify deterministic replay',async()=>{if(!lastRun)throw new Error('Advance the life first');const response=await fetch(`/patients/${encodeURIComponent(window.auraAgentContext().patientId)}/simulator-runs/${lastRun.run_id}/replay`);const result=await response.json();if(!response.ok)throw new Error(result.error?.message||'Replay failed');report(result.matched?`Replay matched all ${result.days} generated days exactly; no state written.`:'Replay mismatch',!result.matched);}),button('Save trace',async()=>{if(!lastRun)throw new Error('Advance the life first');const blob=new Blob([JSON.stringify(lastRun,null,2)],{type:'application/json'});const a=el('a');a.href=URL.createObjectURL(blob);a.download='aura-simulator-trace.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}));byId('demo-panel').append(sim);
   const print=button('Print / save visit pack',async()=>{location.hash='review';document.body.classList.add('printing-review');window.print();document.body.classList.remove('printing-review');});print.id='print-visit-pack';byId('review-view').append(print);
   window.addEventListener('aura-record-view',()=>{const ctx=window.auraAgentContext();if(ctx.patientId!==loadedPatient){loadedPatient=ctx.patientId;proposal=contextProposal=lastRun=null;contextConfirm.hidden=true;mapping.hidden=confirm.hidden=true;traceBody.textContent='';}if(ctx.record?.period.end)day.value=ctx.record.period.end.slice(0,10);});
+
+  // Assessment first; one visible record-question input rather than an accordion.
+  const workspace=byId('agent-workspace');workspace.querySelector('h2').textContent='AURA assessment';
+  workspace.querySelector('[data-agent-role="clinician_brief"]').textContent='Refresh assessment';
+  const patterns=byId('patterns-view');patterns.querySelector('.workspace-heading').after(workspace);
+  const qa=byId('agent-query').closest('details');const qaPanel=el('section',null,'record-questions');
+  while(qa.firstChild){const child=qa.firstChild;if(child.tagName==='SUMMARY')child.remove();else qaPanel.append(child);}qa.replaceWith(qaPanel);
+  const suggestions=el('div',null,'suggested-questions');suggestions.setAttribute('aria-label','Suggested record questions');
+  for(const [id,label] of [['sleep_change','When did sleep change?'],['recorded_context','What context was reported?'],['wearable_gaps','Any missing data?']]){const b=el('button',label,'text-button');b.addEventListener('click',()=>{question.value='';byId('agent-query').value=id;byId('agent-workspace').querySelector('[data-agent-role="record_qa"]').click();});suggestions.append(b);}question.after(suggestions);
+  question.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();workspace.querySelector('[data-agent-role="record_qa"]').click();}});
+  const evidenceGroup=el('details',null,'card workspace-disclosure');evidenceGroup.id='workspace-evidence';evidenceGroup.append(el('summary','Evidence'));
+  const complete=el('section');complete.id='assessment-complete';evidenceGroup.append(complete);
+  const contextGroup=el('details',null,'card workspace-disclosure');contextGroup.id='workspace-context';contextGroup.append(el('summary','Context'));
+  const detailsGroup=el('details',null,'card workspace-disclosure');detailsGroup.id='workspace-details';detailsGroup.append(el('summary','Details'));
+  for(const entry of [patterns.querySelector('.findings-overview')])evidenceGroup.append(entry);
+  for(const entry of [byId('held-section'),byId('context-list').parentElement,contextDetails])contextGroup.append(entry);
+  for(const entry of [byId('workspace-review'),byId('workspace-safety'),byId('recorded-details')])detailsGroup.append(entry);
+  patterns.append(evidenceGroup,contextGroup,detailsGroup);
+  // Existing IDs remain, but extra nested '+' sections become ordinary inspectable sections.
+  function simplify(){for(const d of patterns.querySelectorAll('details')){if(d.classList.contains('workspace-disclosure'))continue;const section=el('section',null,d.className);if(d.id)section.id=d.id;for(const child of [...d.childNodes]){if(child.tagName==='SUMMARY'){const heading=el('h3',child.textContent);section.append(heading);}else section.append(child);}d.replaceWith(section);}}
+  simplify();window.addEventListener('aura-record-view',simplify);
+  // Keep manual intake available, without another permanently expanded form.
+  const intakePanel=byId('manual-intake');const intakeToggle=el('button','Record or import measurements','text-button');intakeToggle.id='manual-intake-toggle';intakeToggle.setAttribute('aria-expanded','false');intakePanel.hidden=true;intakeToggle.addEventListener('click',()=>{intakePanel.hidden=!intakePanel.hidden;intakeToggle.setAttribute('aria-expanded',String(!intakePanel.hidden));});intakePanel.before(intakeToggle);
+  const story=el('section',null,'guided-story');story.id='guided-story';story.append(el('h2','A three-minute story'));const narration=el('p','Each checkpoint is labelled; nothing is sent.');narration.id='story-narration';story.append(narration);
+  const selectCase=async wanted=>{const checkpoint=catalog.find(row=>row.id===wanted);if(!checkpoint)throw new Error('Story checkpoint unavailable');byId('scenario').value=checkpoint.patient_id;await loadPatient(checkpoint.patient_id);};
+  story.append(button('1 · Quiet month',async()=>{await selectCase('stable');byId('patient-role').click();narration.textContent='Open a labelled stable record: no extra question is needed.';}),button('2 · A life event',async()=>{narration.textContent='Generate three synthetic flu days in this record; first use may prepare reference history.';lastRun=await call('advance',{days:3,seed:Number(seed.value),request:'Flu',notes:notes.checked});await reload();narration.textContent='The new synthetic flu events are committed, and the assessment now reads the changed record.';}),button('3 · AURA asks',async()=>{await selectCase('B');byId('patient-role').click();location.hash='home';narration.textContent='Switch to the labelled slow-change checkpoint: the actual communication result decides whether a question is useful.';}),button('4 · Clinician assessment',async()=>{byId('clinician-role').click();location.hash='patterns';narration.textContent='Inspect the sourced assessment and its linked observation dates.';}),button('5 · Visit note',async()=>{byId('patient-role').click();location.hash='review';narration.textContent='A prepared visit preview is ready to inspect and remains Not sent.';}));byId('demo-panel').prepend(story);
+  document.querySelector('.patient-links a[data-page="review"]').append(el('span','Not sent','badge'));
+  byId('home-view').querySelector('.page-intro').after(byId('month-recap'));
 })();

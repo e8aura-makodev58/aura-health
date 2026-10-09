@@ -64,6 +64,18 @@ class AgentService:
         except Exception:
             raise AppError("AGENT_UNAVAILABLE", "Assistant could not complete this read-only request", 503) from None
 
+    def record_tools(self, patient_id, role, window_days):
+        """Shared, safety-assessed fact preparation for preview and checked generation."""
+        evidence = EvidenceViewService(self.events).get(patient_id)
+        with self.events.repositories.transaction() as repo:
+            assessed = {ref['event_id'] for ref in repo.safety_references(patient_id)
+                if not ref['state']['degraded'] and ref['outcome'] not in {'DEFER_EVENT', 'REJECT_EVENT', 'SET_DEGRADED'}}
+            evidence['agent_assessed_context_ids'] = sorted(assessed)
+            evidence['assessed_notes'] = [{'event_id': row['event_id'], 'at': row['occurred_at'], 'text': row['payload']['text']}
+                for row in repo.events(patient_id) if row['event_type'] == 'PATIENT_FREE_TEXT'
+                and row['event_id'] in assessed and not row['longitudinal_deferred']]
+        return RecordTools(evidence, role, window_days=window_days), evidence
+
     def _execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False):
         try:
             role = AgentRole(role)
@@ -91,6 +103,10 @@ class AgentService:
                     at, self.clock(), 'synthetic_patient_ui', {'text': question}, question_id, question_id))
             with self.events.repositories.transaction() as repo:
                 signature, blocked, latest, state = self._approval(repo, patient_id, client_offline)
+                if run_id.startswith('arrival-'):
+                    from .assessment import arrival_id
+                    if role not in {AgentRole.CLINICIAN_BRIEF, AgentRole.PATIENT_INSIGHT} or run_id != arrival_id(role, window_days, signature):
+                        raise AppError('STALE_ASSESSMENT', 'Record changed; reload the current assessment', 409)
                 cached = repo.agent_run(patient_id, run_id)
                 if cached:
                     if cached["request_fingerprint"] != options:
@@ -106,18 +122,17 @@ class AgentService:
                       "reason": blocked, "generation_used": False, "elapsed_ms": 0,
                       "prompt_version": "aura-agent-v1", "config_version": self.config.version}
             if not blocked:
-                evidence = EvidenceViewService(self.events).get(patient_id)
+                tools, evidence = self.record_tools(patient_id, role, window_days)
                 with self.events.repositories.transaction() as repo:
-                    evidence["agent_assessed_context_ids"] = [ref["event_id"] for ref in repo.safety_references(patient_id)
-                        if not ref["state"]["degraded"] and ref["outcome"] not in {"DEFER_EVENT", "REJECT_EVENT", "SET_DEGRADED"}]
-                    assessed=set(evidence['agent_assessed_context_ids'])
-                    evidence['assessed_notes']=[{'event_id':row['event_id'],'at':row['occurred_at'],'text':row['payload']['text']}
-                        for row in repo.events(patient_id) if row['event_type']=='PATIENT_FREE_TEXT' and row['event_id'] in assessed and not row['longitudinal_deferred']]
                     if self._approval(repo, patient_id, client_offline)[0] != signature:
                         blocked = "STATE_CHANGED_BEFORE_GENERATION"
                 if not blocked:
-                    tools = RecordTools(evidence, role, window_days=window_days)
                     result = run(role, question or QUERIES.get(query_id), tools, self.provider, self.config)
+                    if role == AgentRole.PATIENT_INSIGHT:
+                        import re
+                        if re.search(r'\b(?:baseline|drift|anchor|reestablishing)\b', json.dumps(result['draft']).lower()):
+                            from aura_agent.templates import fallback
+                            result.update(draft=fallback(tools, role), generation_used=False, reason='PLAIN_LANGUAGE_EXTRACTION')
                     # Patient recap is optional; no new interruption authorization.
                     if role == AgentRole.PATIENT_INSIGHT and not tools.required:
                         result["draft"] = {"claims": [], "question_ids": []}

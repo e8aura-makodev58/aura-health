@@ -112,11 +112,15 @@ def run(role, query, tools, provider, config=None):
                     messages.append({"role": "tool", "name": function["name"], "tool_call_id": call["id"], "content": json.dumps(result)})
             else:
                 stage='DRAFT_VALIDATION'
-                needed='get_series' if role.value=='patient_insight' else 'get_decisions' if role.value=='question_ranker' else None
-                if needed and needed not in completed_reads:
+                required_reads = (['get_series'] if role.value in {'patient_insight', 'clinician_brief'} else
+                                  ['get_decisions'] if role.value == 'question_ranker' else [])
+                if role.value == 'clinician_brief' and tools.required.intersection(tools.groups['get_review_snapshot']):
+                    required_reads.append('get_review_snapshot')
+                needed = next((name for name in required_reads if name not in completed_reads), None)
+                if needed:
                     trace.append({'action':'READ_REQUIRED','tool':needed,'fact_ids':[]})
                     messages.append({'role':'assistant','content':reply.get('content')})
-                    messages.append({'role':'user','content':f'Server contract: retrieve {needed} before finalizing. No retrieved evidence is not evidence of no change.'})
+                    messages.append({'role':'user','content':f'Server contract: retrieve {needed} before finalizing. Read all keys for retained history; use {{}} for this retrieval. No retrieved evidence is not evidence of no change. This does not relax output grounding.'})
                     continue
                 output = validate(json.loads(reply["content"]), tools, role)
                 if provider.live and (output['claims'] or output['headline']):

@@ -19,6 +19,7 @@ from .service import PatientEventService
 from .patient_view import PatientViewService
 from .evidence import EvidenceViewService
 from .agent import AgentService
+from .assessment import AssessmentService
 from aura_agent.roles import AgentRole
 from .workflows import WorkflowService
 
@@ -76,7 +77,7 @@ class CommunicationIn(BaseModel):
 
 class AgentIn(BaseModel):
     model_config = {"extra": "forbid", "strict": True}
-    run_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    run_id: str = Field(pattern=r"^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|arrival-[0-9a-f]{64})$")
     query_id: str | None = None
     question: str | None = Field(default=None, min_length=1, max_length=2000)
     window_days: int = Field(default=56, ge=1, le=180)
@@ -186,6 +187,10 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def agent_trace(patient_id: str, run_id: str):
         return agent_service.trace(patient_id, run_id)
 
+    @app.get('/patients/{patient_id}/assessment/{role}')
+    def arrival_assessment(patient_id: str, role: AgentRole, client_offline: bool = False):
+        return AssessmentService(agent_service).get(patient_id, role, client_offline=client_offline)
+
     @app.post('/patients/{patient_id}/workflows/{action}')
     def workflow(patient_id: str, action: str, body: WorkflowIn):
         actions = {'manual':workflows.manual, 'import-proposal':workflows.import_proposal,
@@ -243,7 +248,7 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     ui = Path(__file__).resolve().parent.parent / "aura_ui"
     @app.get("/assets/{asset_name}", include_in_schema=False)
     def patient_asset(asset_name: str):
-        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "agent.js", "features.js"}:
+        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "evidence.css", "agent.js", "features.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)
 

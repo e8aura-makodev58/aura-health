@@ -16,9 +16,35 @@ def fallback(tools, role, query=None):
         }.get(query, tuple(tools.groups))
         ids = [fid for name in selected_tools for fid in tools.groups[name] if fid in tools.delivered][:6]
     if role == AgentRole.PATIENT_INSIGHT:
-        ids = ids[:2]
+        # Display selection only: one latest retained finding per exact channel,
+        # in the existing signal/source order, never a severity ranking.
+        latest = {}
+        held = []
+        for fid in ids:
+            fact = tools.facts[fid]
+            if not fact.get('finding'):
+                held.append(fid)
+                continue
+            key = fact['key_id']
+            prior = latest.get(key)
+            if prior is None or (fact.get('at') or '') > (tools.facts[prior].get('at') or ''):
+                latest[key] = fid
+        ids = [*latest.values(), *held][:2]
     # Group all retained findings into bounded factual lines, never silently drop
     # them because a short brief has a smaller preferred number of sentences.
-    claims = [{"text": tools.facts[fid]["text"][:600], "fact_ids": [fid], "section": "review" if fid in tools.groups['get_review_snapshot'] else "changes",
+    def wording(fid):
+        fact = tools.facts[fid]
+        if role != AgentRole.PATIENT_INSIGHT:
+            return fact['text'][:600]
+        finding = fact.get('finding')
+        labels = {'SLEEP_MIDPOINT': 'Your sleep time', 'SLEEP_DURATION': 'Your sleep duration',
+                  'ACTIVITY': 'Your activity', 'RESTING_HEART_RATE': 'Your resting heart rate'}
+        if finding:
+            direction = {'LATER': 'later', 'EARLIER': 'earlier', 'HIGHER': 'higher', 'LOWER': 'lower'}[finding['direction']]
+            return f"{labels.get(finding['signal'], 'Your ' + tools.keys[fact['key_id']]['label'].lower())} was {direction} than your usual, recorded from {finding['since']} to {fact['at']}."
+        if fid in tools.groups['get_review_snapshot']:
+            return 'Your explanation is saved for your next review. Your usual has not been changed.'
+        return fact['text'][:600]
+    claims = [{"text": wording(fid), "fact_ids": [fid], "section": "review" if fid in tools.groups['get_review_snapshot'] else "changes",
                "findings": [{"fact_id": fid, **tools.facts[fid]['finding']}] if tools.facts[fid].get('finding') else []} for fid in ids]
     return {"claims": claims, "question_ids": [], "headline": "Recorded changes" if claims else ""}

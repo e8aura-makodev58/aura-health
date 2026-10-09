@@ -18,7 +18,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8016)
     parser.add_argument("--artifacts", default="/tmp/aura-m6-browser-artifacts")
-    parser.add_argument("--suite", nargs="+", choices=["milestone6.cjs", "milestone7.cjs", "settings.cjs", "redesign.cjs", "dual_view.cjs", "agent.cjs", "registry.cjs", "workflows.cjs"], default=["milestone6.cjs"])
+    parser.add_argument("--suite", nargs="+", choices=["milestone6.cjs", "milestone7.cjs", "settings.cjs", "redesign.cjs", "dual_view.cjs", "agent.cjs", "registry.cjs", "workflows.cjs", "impression.cjs", "story_charts.cjs"], default=["milestone6.cjs"])
     parser.add_argument("--hosted", action="store_true", help="isolated local hosted synthetic session server")
     args = parser.parse_args()
     base = f"http://127.0.0.1:{args.port}"

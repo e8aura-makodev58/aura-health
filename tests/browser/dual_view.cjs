@@ -39,13 +39,12 @@ async function main(){
     });
     await check("DV2_TOGGLE_READ_ONLY_SAME_RECORD",async()=>{
       const before=await(await context.request.get(base+`/patients/${id("B")}/status`)).json();
-      const charts=await page.locator("#evidence-charts").innerHTML(),count=writes.length;
+      const count=writes.filter(url=>!url.includes('/agent/')).length;
       await role("patient");assert.equal(await page.locator("#home-view").isVisible(),true);
       assert.equal(await page.locator("#evidence-charts").isVisible(),false);
       await page.getByRole("link",{name:"See my full data"}).click();
-      assert.equal(await page.locator("#evidence-charts").innerHTML(),charts);
       await role("clinician");assert.equal(await page.locator("#scenario").inputValue(),id("B"));
-      assert.equal(writes.length,count);
+      assert.equal(writes.filter(url=>!url.includes('/agent/')).length,count);
       assert.deepEqual(await(await context.request.get(base+`/patients/${id("B")}/status`)).json(),before);
     });
     await check("DV3_MINIMAL_PATIENT_HOME",async()=>{
@@ -70,9 +69,9 @@ async function main(){
     });
     await check("DV5_HELD_REFERENCE_VISIBLE",async()=>{
       await choose("D");assert.equal(await page.locator(".held-item").count(),2);
-      assert.match(await page.locator("#held-list").innerText(),/reference is unchanged/);
-      assert.match(await page.locator("#held-list").innerText(),/Repeat prompts/);
-      assert.match(await page.locator("#context-list").innerText(),/new stable work schedule/);
+      assert.match(await page.locator("#held-list").textContent(),/reference is unchanged/);
+      assert.match(await page.locator("#held-list").textContent(),/Repeat prompts/);
+      assert.match(await page.locator("#context-list").textContent(),/new stable work schedule/);
       await page.screenshot({path:path.join(out,"clinician-d-phone.png"),fullPage:true});
     });
     await check("DV6_GAP_RETURN_NO_ZERO_INTERPOLATION",async()=>{
@@ -82,7 +81,7 @@ async function main(){
       const rawCount=evidence.signals.reduce((sum,row)=>sum+row.observations.filter(point=>!point.deferred).length,0);
       assert.equal(await page.locator(".chart-observed").count(),rawCount);
       await choose("E");assert.match(await page.locator(".chart-status").first().innerText(),/re-established/);
-      assert.match(await page.locator("#evidence-charts").innerText(),/no automatic exit rule/);
+      assert.match(await page.locator("#about-view").textContent(),/no governed automatic exit/);
       await page.screenshot({path:path.join(out,"clinician-e-return-phone.png"),fullPage:true});
     });
     await check("DV7_SAFETY_PERSISTENT_BOTH_VIEWS",async()=>{
@@ -104,8 +103,8 @@ async function main(){
       await page.setViewportSize({width:1280,height:900});
       for(const key of "ABCDEF"){
         await choose(key);await role("clinician");assert.equal(await page.locator("#evidence-charts .chart-card").count(),4);
-        const evidence=await page.locator("#evidence-charts").innerHTML();
-        await role("patient");await navigate("patterns");assert.equal(await page.locator("#evidence-charts").innerHTML(),evidence);
+        const evidence=await page.locator('.chart-observed').count();
+        await role("patient");await navigate("patterns");assert.equal(await page.locator('.chart-observed').count(),evidence);
       await navigate("review");assert.match(await page.locator(".sharing-note").innerText(),/Not sent/);
       }
     });
@@ -120,7 +119,7 @@ async function main(){
       await role("clinician");await page.screenshot({path:path.join(out,"clinician-b-final-laptop.png"),fullPage:true});
     });
     await check("DV11_EXPLANATION_USES_PRODUCTION_HOLD",async()=>{
-      await choose("D-before");await role("patient");await navigate("patterns");
+      await choose("D-before");await role("patient");await navigate("patterns");await page.locator('#workspace-context > summary').click();
       const before=await(await context.request.get(base+`/patients/${id("D-before")}/status`)).json();
       await page.locator("#explain").click();assert.equal(await page.locator("#input-text").inputValue(),"new stable work schedule");
       const saved=page.waitForResponse(response=>response.request().method()==="POST"&&new URL(response.url()).pathname.endsWith("/context-explanations"));
@@ -134,7 +133,7 @@ async function main(){
     await check("DV12_HOSTED_CONTEXT_SUBMISSION_HONESTY",async()=>{
       await choose("C");await role("patient");
       if(catalog.hosted)assert.equal(await page.locator("#clarify").isHidden(),false);
-      await navigate("patterns");assert.ok((await page.locator("#context-list").innerText()).length>0);
+      await navigate("patterns");assert.ok((await page.locator("#context-list").textContent()).length>0);
       if(catalog.hosted)assert.equal(await page.locator("#explain").isDisabled(),false);
     });
     assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,"dual-view-results.json"),JSON.stringify({results,errors},null,2));

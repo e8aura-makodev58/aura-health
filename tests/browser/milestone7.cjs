@@ -43,7 +43,7 @@ async function main() {
       await page.waitForFunction(()=>!document.getElementById('notice').hidden ? false : !document.getElementById('home-view').hidden);
     }
     async function navigate(name){await page.evaluate(value=>location.hash=value,name);await page.waitForSelector('#'+name+'-view:not([hidden])');}
-    await check('HOSTED_NOTICE',async()=>{assert.equal(catalog.hosted,true); await page.locator('#demo-toggle').click(); assert.equal(await page.locator('#hosted-notice').isVisible(),true); assert.equal(await page.locator('#connect').isVisible(),false);});
+    await check('HOSTED_NOTICE',async()=>{assert.equal(catalog.hosted,true); await page.locator('#demo-toggle').click(); assert.equal(await page.locator('.demo-bar>a').innerText(),'Demo'); assert.match(await page.locator('#about-view').textContent(),/synthetic data only/); assert.match(await page.locator('#about-view').textContent(),/Hosted workspaces are separate demonstration sessions/); assert.equal(await page.locator('#connect').isVisible(),false);});
     await check('CASES_A_F',async()=>{for(const key of 'ABCDEF'){await choose(key); await navigate('patterns'); assert.equal(await page.locator('.signal-card').count(),4); await navigate('review'); assert.ok(await page.locator('.review-group').count()>=8); assert.equal((await (await context.request.get(`${base}/patients/${patient(key)}/review-snapshot`)).json()).automatically_sent,false);}});
     await check('SAFETY_PRECEDENCE',async()=>{await choose('F'); assert.equal(await page.locator('#safety-panel').isVisible(),true); assert.equal((await status(context.request,'F')).latest_communication_decision,'SAFETY_REVIEW_REQUIRED');});
     await check('PRIVATE_RESET',async()=>{
@@ -65,8 +65,15 @@ async function main() {
       assert.equal((await context.request.post(`${base}/patients`,{data:{patient_id:'real',display_name:'Synthetic blocked intake',age:35}})).status(),403);
       const before=await (await context.request.get(`${base}/patients/${patient('stable')}/timeline`)).json();
       const id=require('node:crypto').randomUUID();
-      assert.equal((await context.request.post(`${base}/patients/${patient('stable')}/events`,{data:{event_id:id,correlation_id:id,idempotency_key:id,event_type:'PATIENT_FREE_TEXT',occurred_at:'2026-01-01T12:00:00+00:00',source:'patient',payload:{text:'unapproved arbitrary input'}}})).status(),403);
-      assert.deepEqual(await (await context.request.get(`${base}/patients/${patient('stable')}/timeline`)).json(),before);
+      // Approved synthetic free text now reaches the layered gate. With this
+      // no-key fixture provider it is held, never passed to the read-only agent.
+      const held=await context.request.post(`${base}/patients/${patient('stable')}/events`,{data:{event_id:id,correlation_id:id,idempotency_key:id,event_type:'PATIENT_FREE_TEXT',occurred_at:'2026-01-01T12:00:00+00:00',source:'patient',payload:{text:'unapproved arbitrary input'}}});
+      assert.equal(held.status(),200);
+      const result=await held.json();assert.equal(result.longitudinal.deferred,true);assert.equal(result.safety.state.degraded,true);assert.equal(result.communication_decision,'SAFETY_REVIEW_REQUIRED');
+      const after=await (await context.request.get(`${base}/patients/${patient('stable')}/timeline`)).json();
+      assert.ok(after.length>before.length);assert.ok(after.some(row=>row.event_id===id&&row.record_type==='INPUT_HELD_FOR_SAFETY'));
+      const assessment=await (await context.request.get(`${base}/patients/${patient('stable')}/assessment/clinician_brief`)).json();
+      assert.equal(assessment.generation_allowed,false);assert.equal(assessment.preview.draft.claims.length,0);
     });
     await check('SURFACE_RESTRICTION',async()=>{for(const route of ['/docs','/redoc','/openapi.json','/assets/README.md']) assert.equal((await context.request.get(base+route)).status(),404);});
     assert.deepEqual(errors,[]);

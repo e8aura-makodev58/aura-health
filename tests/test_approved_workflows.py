@@ -236,4 +236,37 @@ class ApprovedWorkflowTests(unittest.TestCase):
         self.assertFalse(result['generation_used']);self.assertTrue(result['draft']['claims'])
         self.assertTrue(any(t.get('action')=='READ_REQUIRED' for t in result['trace']))
 
+    def test_aw28_premature_brief_must_read_findings_and_retained_explanations(self):
+        class Premature:
+            live=True;model_id='premature-brief-mock'
+            def __init__(self):self.calls=0
+            def step(self,messages,specs):
+                self.calls+=1
+                if not specs:
+                    checks=json.loads(messages[1]['content'])
+                    return {'content':json.dumps({'verdicts':[{'index':i,'supported':True} for i in range(len(checks))]})}
+                last=messages[-1]
+                if last['role']=='user' and last.get('content','').startswith('Server contract: retrieve '):
+                    name=last['content'].split('retrieve ')[1].split(' ')[0]
+                    return {'tool_calls':[{'id':f'required-{self.calls}','function':{'name':name,'arguments':'{}'}}]}
+                reads=[message for message in messages if message['role']=='tool']
+                if {message['name'] for message in reads} != {'get_series','get_review_snapshot'}:
+                    return {'content':json.dumps({'claims':[],'question_ids':[],'headline':''})}
+                facts=[fact for message in reads for fact in json.loads(message['content'])['facts']]
+                selected=[fact for fact in facts if fact.get('finding') or 'EXPLAINED_HELD_FOR_REVIEW' in fact['text']]
+                return {'content':json.dumps({'claims':[{'text':fact['text'],'fact_ids':[fact['fact_id']],
+                    'findings':[{'fact_id':fact['fact_id'],**fact['finding']}] if fact.get('finding') else []}
+                    for fact in selected],'question_ids':[],'headline':'Recorded changes'})}
+        evidence=EvidenceViewService(self.service).get('demo-D-7')
+        tools=RecordTools(evidence,AgentRole.CLINICIAN_BRIEF)
+        result=run(AgentRole.CLINICIAN_BRIEF,None,tools,Premature())
+        self.assertTrue(result['generation_used'],result['reason'])
+        self.assertEqual([t['tool'] for t in result['trace'] if t.get('action')=='READ_REQUIRED'],['get_series','get_review_snapshot'])
+        self.assertTrue(tools.required<={fid for claim in result['draft']['claims'] for fid in claim['fact_ids']})
+        from aura_agent.runtime import AgentConfig
+        provider=Premature()
+        limited=run(AgentRole.CLINICIAN_BRIEF,None,RecordTools(evidence,AgentRole.CLINICIAN_BRIEF),provider,AgentConfig(max_steps=1))
+        self.assertFalse(limited['generation_used']);self.assertEqual(limited['reason'],'STEP_BUDGET');self.assertEqual(provider.calls,1)
+        self.assertTrue(limited['draft']['claims'])
+
 if __name__=='__main__':unittest.main()

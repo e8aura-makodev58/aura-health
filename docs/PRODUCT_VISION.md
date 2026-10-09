@@ -6,6 +6,12 @@ a look at the live demo. This is the current product statement; the framework
 (`aura_deterministic_safety_policy_state_machine_v1.2.md`) remains authoritative for
 safety behaviour. Where this file and an older doc disagree, this file is newer.
 
+**Implementation update, 2026-10-09:** the diagnosis below is the historical starting
+point, not a list of still-pending work. Approved agent/input/simulator work is described
+in `APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`; the subsequently authorized I1–I8
+assessment-first/default patient recap experience is in `IMPRESSION_IMPLEMENTATION.md`.
+Claude/user review remains open. Neither implementation establishes clinical efficacy.
+
 ## 1. One paragraph
 
 **Scope note (DECISIONS §42):** the focus is antidepressant maintenance. The high-level
@@ -56,8 +62,9 @@ wearable / manual input ─▶ safety gate ─▶ longitudinal engines ─▶ st
 | Patient simulator | Generates synthetic telemetry/feedback for demos; not product | planned, approved |
 | Disclaimer page | One place for all demo/limits wording | planned, approved |
 
-Principle: **engines decide what is true and safe; the agent decides what is worth saying,
-to whom, and finds the evidence for it.**
+Principle: **engines decide what is true, safe and permitted; the agent selects how to
+explain the approved record and finds its evidence.** It does not authorize interruptions,
+judge context credibility, change policy, or share information.
 
 ## 4. Journeys (ranked)
 

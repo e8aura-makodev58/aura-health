@@ -1,0 +1,22 @@
+/* Presentation only: no chart-derived patient state or inferred context. */
+.aligned-checkins{display:block;width:100%;margin-top:-.35rem}
+.checkin-point{fill:#467d72;stroke:#fff;stroke-width:1}
+.checkin-okay{fill:#99833c}.checkin-rough{fill:#946b81}
+.context-timing-marker{stroke:#7e8791;stroke-width:1;stroke-dasharray:3 4;opacity:.65}
+.story-finding-band{fill:#719bd0;fill-opacity:.12;stroke:#426da1;stroke-width:1;stroke-dasharray:4 3}
+.story-finding-marker{fill:#275f87;stroke:#fff;stroke-width:1}
+.story-finding-number{fill:#fff;font-size:12px;font-weight:700}
+.story-chart-link{display:inline-block;font-size:.8rem;margin:.4rem 0 0 .7rem;text-underline-offset:3px}
+.chart-card:focus{outline:2px solid #416a89;outline-offset:4px}
+#chart-exact-sources{display:grid;gap:1rem;min-width:0}
+#chart-exact-sources .chart-sources{border-top:1px solid var(--line,#dde4e5);padding-top:.75rem;min-width:0}
+#record-comparison-toggle{margin:0 0 1rem;width:auto}
+.record-comparison{padding:1rem;border:1px solid var(--line,#dde4e5);border-radius:1rem;background:#fff;margin-bottom:1rem;min-width:0}
+.record-comparison[hidden]{display:none}
+.comparison-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.2rem}
+.comparison-columns>section{min-width:0;max-width:100%}
+.comparison-columns .table-scroll{max-height:26rem;overflow:auto}
+.comparison-columns table{font-size:.8rem}
+.comparison-columns td{overflow-wrap:anywhere}
+.comparison-columns .agent-disclosure,.comparison-columns .agent-trace{display:none}
+@media(max-width:700px){.comparison-columns{grid-template-columns:minmax(0,1fr)}.record-comparison{padding:.8rem}#record-comparison-toggle{width:100%}}
