@@ -103,6 +103,7 @@
       const link=svgNode('a',{href:`#${finding.target_id}`,'aria-label':`Finding ${finding.number}: return to sourced assessment`});
       link.append(svgNode('rect',{x:x(a),y:25,width:Math.max(3,x(b)-x(a)),height:140,class:'story-finding-band','data-finding-number':finding.number,'data-since':finding.since,'data-until':finding.until.slice(0,10)}),svgNode('circle',{cx:x(a),cy:17,r:10,class:'story-finding-marker'}),svgNode('text',{x:x(a),y:21,'text-anchor':'middle',class:'story-finding-number'},String(finding.number)));
       link.addEventListener('click',event=>{const target=document.getElementById(finding.target_id);if(target){event.preventDefault();target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});}});chart.append(link);
+      if(finding.callout){const callout=node('a',`${finding.number} · ${finding.callout}`,'chart-callout');callout.href=`#${finding.target_id}`;callout.addEventListener('click',event=>{const target=document.getElementById(finding.target_id);if(target){event.preventDefault();target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});}});card.append(callout);}
     }
     function lineSeries(kind) {
       let previous = null;
@@ -164,11 +165,24 @@
     if (!findings.length) overview.append(node("p","No descriptive change is retained in these records."));
     byId("workspace-decision").textContent = `Current communication: ${evidence.current_decision === "STAY_QUIET" ? "no question pending" : evidence.current_decision === "SAFETY_REVIEW_REQUIRED" ? "safety policy takes priority" : "an approved interaction is available in Patient view"}. Retained changes are history, not a new prompt.`;
     const charts = byId("evidence-charts"); charts.replaceChildren();
+    let timeline=byId('finding-timeline');if(!timeline){timeline=node('section',null,'finding-timeline');timeline.id='finding-timeline';charts.before(timeline);}timeline.replaceChildren();timeline.hidden=true;
     let exact=byId('chart-exact-sources');
     if(!exact){exact=node('div');exact.id='chart-exact-sources';(byId('workspace-evidence')||charts.parentElement).append(exact);}exact.replaceChildren();
     if (evidence.period.end && evidence.period.start) {
       const end = day(evidence.period.end), allStart = day(evidence.period.start);
       const start = byId("chart-range").value === "all" ? allStart : Math.max(allStart,end-55*dayMs);
+      for(const bar of document.querySelectorAll('.finding-span')){
+        const a=Math.max(start,day(bar.dataset.since)),b=Math.min(end,day(bar.dataset.until)),fill=bar.firstElementChild;
+        fill.hidden=a>b;fill.style.marginLeft=`${Math.max(0,Math.min(100,100*(a-start)/Math.max(dayMs,end-start)))}%`;
+        fill.style.width=`${Math.max(1,Math.min(100,100*(b-a)/Math.max(dayMs,end-start)))}%`;
+      }
+      const spans=evidence.signals.flatMap(signal=>storyFor(signal)).filter(item=>day(item.until)>=start&&day(item.since)<=end);
+      if(spans.length){
+        timeline.hidden=false;timeline.append(node('p','Finding dates · same chart window','fine'));
+        const width=640,x=at=>66+(width-90)*(at-start)/Math.max(dayMs,end-start),strip=svgNode('svg',{viewBox:`0 0 ${width} ${spans.length*22+24}`,role:'img','aria-label':'Retained finding dates on the shared chart axis'});
+        spans.forEach((item,index)=>{const y=index*22+8,a=Math.max(start,day(item.since)),b=Math.min(end,day(item.until));const link=svgNode('a',{href:`#${item.target_id}`,'aria-label':`Finding ${item.number}, ${shortDate(a)} to ${shortDate(b)}`});link.append(svgNode('text',{x:56,y:y+10,'text-anchor':'end',class:'chart-axis'},String(item.number)),svgNode('rect',{x:66,y,width:width-90,height:10,rx:5,class:'finding-timeline-track'}),svgNode('rect',{x:x(a),y,width:Math.max(3,x(b)-x(a)),height:10,rx:5,class:'finding-timeline-span','data-finding-number':item.number}));link.addEventListener('click',event=>{const target=document.getElementById(item.target_id);if(target){event.preventDefault();target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});}});strip.append(link);});
+        for(const at of [start,end])strip.append(svgNode('text',{x:x(at),y:spans.length*22+18,'text-anchor':at===start?'start':'end',class:'chart-axis'},shortDate(at)));timeline.append(strip);
+      }
       for (const signal of evidence.signals) charts.append(drawChart(signal,start,end));
     } else charts.append(node("p","No recorded history yet."));
     const strip = byId("evidence-strip"); strip.replaceChildren();

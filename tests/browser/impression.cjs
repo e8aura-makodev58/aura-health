@@ -11,7 +11,9 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
   await page.goto(base);await page.waitForSelector('#agent-clinician_brief .agent-claim');
   assert.ok(await page.locator('#agent-clinician_brief h3').isVisible());assert.ok(await page.locator('#agent-clinician_brief .agent-claim').count()>=2);
   assert.ok(await page.locator('#agent-clinician_brief .agent-claim').count()<=3);
-  assert.match(await page.locator('#agent-clinician_brief').innerText(),/Context recorded.*Data gaps.*Worth asking/is);
+  assert.equal(await page.locator('#agent-clinician_brief .finding-card').count(),await page.locator('#agent-clinician_brief .agent-claim').count());
+  assert.doesNotMatch(await page.locator('#agent-clinician_brief').innerText(),/\d+\.\d{3}\b/);
+  assert.equal(await page.locator('#agent-query').isVisible(),false);
   await page.waitForTimeout(800);assert.equal(posts.filter(p=>p.run_id.startsWith('arrival-')).length,1);console.log('I1_ARRIVAL_IMMEDIATE_CACHED_ASSESSMENT PASS');
   assert.equal(await page.locator('#agent-question-text').isVisible(),true);assert.equal(await page.locator('.suggested-questions button').count(),3);
   assert.equal(await page.locator('#patterns-view details').count(),3);
@@ -19,7 +21,7 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
   await page.locator('#patient-role').click();await page.waitForSelector('#month-recap:not([hidden]) .agent-claim');
   assert.equal(await page.locator('#home-view svg').count(),0);assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/\b(?:baseline|drift|anchor)\b/i);
   const recapHeading=await page.locator('#recap-heading').boundingBox();assert.ok(recapHeading.y>=0&&recapHeading.y+recapHeading.height<844);
-  assert.ok(await page.locator('#agent-patient_insight .agent-claim').count()<=2);await page.screenshot({path:`${out}/impression-patient-390.png`,fullPage:true});
+  assert.ok(await page.locator('#agent-patient_insight .agent-claim').count()<=3);assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/\d{4}-\d{2}-\d{2}|Recorded changes/);await page.screenshot({path:`${out}/impression-patient-390.png`,fullPage:true});
   await page.locator('#clinician-role').click();await page.waitForSelector('#agent-clinician_brief .agent-claim');await page.waitForTimeout(300);
   assert.equal(posts.filter(p=>p.run_id.startsWith('arrival-')&&p.window_days===56).length,1);console.log('I6_DEFAULT_TEXT_RECAP_NO_HOME_CHARTS PASS');
   for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`${out}/impression-clinician-${width}.png`,fullPage:true});}

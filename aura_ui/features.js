@@ -40,7 +40,7 @@
   const qaLabel=el('label','Ask about this record');qaLabel.htmlFor='agent-question-text';byId('agent-query').before(qaLabel,question);
   byId('agent-query').after(el('p','Or choose a quick question','fine'));
   for(const p of byId('agent-workspace').querySelectorAll('p.fine'))if(p.textContent.includes('Selected record'))p.remove();
-  byId('agent-workspace').querySelector(':scope>p:not(.eyebrow)').textContent='What changed, what was reported, and what remains worth asking.';
+  byId('agent-workspace').querySelector(':scope>p:not(.eyebrow)').remove();
   byId('dialog-privacy').textContent='Safety evaluation comes first. An unavailable evaluation holds the note.';
   byId('why-dialog').querySelector(':scope>p.fine').remove();
   const copy=el('p','Synthetic input only','fine');byId('input-text').before(copy);
@@ -105,10 +105,17 @@
   const suggestions=el('div',null,'suggested-questions');suggestions.setAttribute('aria-label','Suggested record questions');
   for(const [id,label] of [['sleep_change','When did sleep change?'],['recorded_context','What context was reported?'],['wearable_gaps','Any missing data?']]){const b=el('button',label,'text-button');b.addEventListener('click',()=>{question.value='';byId('agent-query').value=id;byId('agent-workspace').querySelector('[data-agent-role="record_qa"]').click();});suggestions.append(b);}question.after(suggestions);
   question.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();workspace.querySelector('[data-agent-role="record_qa"]').click();}});
+  // Keep the selected-query transport internal; one input and chips are the UI.
+  byId('agent-query').hidden=true;byId('agent-query').nextElementSibling?.remove();
+  qaPanel.querySelector('label[for="agent-query"]')?.remove();
+  const ask=qaPanel.querySelector('[data-agent-role="record_qa"]');ask.textContent='Ask';ask.classList.add('question-submit');
+  qaPanel.querySelector('p.fine')?.remove();
+  workspace.querySelector('[data-agent-role="clinician_brief"]').hidden=true;
   const evidenceGroup=el('details',null,'card workspace-disclosure');evidenceGroup.id='workspace-evidence';evidenceGroup.append(el('summary','Evidence'));
   const complete=el('section');complete.id='assessment-complete';evidenceGroup.append(complete);
   const contextGroup=el('details',null,'card workspace-disclosure');contextGroup.id='workspace-context';contextGroup.append(el('summary','Context'));
   const detailsGroup=el('details',null,'card workspace-disclosure');detailsGroup.id='workspace-details';detailsGroup.append(el('summary','Details'));
+  const ranking=byId('agent-question_ranker').closest('details');detailsGroup.append(ranking);
   for(const entry of [patterns.querySelector('.findings-overview')])evidenceGroup.append(entry);
   for(const entry of [byId('held-section'),byId('context-list').parentElement,contextDetails])contextGroup.append(entry);
   for(const entry of [byId('workspace-review'),byId('workspace-safety'),byId('recorded-details')])detailsGroup.append(entry);

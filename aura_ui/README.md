@@ -147,5 +147,12 @@ For a fresh, isolated hosted server instead of the deployed container, use
 `tests/browser/run.py --hosted --suite dual_view.cjs milestone7.cjs settings.cjs redesign.cjs`.
 See the implementation notes for this machine's existing Chromium installation.
 Agent browser checks: `tests/browser/run.py --hosted --suite agent.cjs settings.cjs`.
+
+Card presentation and chart linkage checks:
+`tests/browser/run.py --hosted --suite cards.cjs impression.cjs story_charts.cjs`.
+Clinician cards show approximate display units; Why?/Evidence retains exact records.
+Patient home uses plain dated cards, with repeated-check-in "steady · reports" only when
+supported by recorded answers—not a new health classification. See
+`docs/IMPRESSION_IMPLEMENTATION.md` I9 for the presentation/evidence boundary.
 Run `milestone6.cjs` **without** `--hosted`: it intentionally tests development
 held-input behavior, whereas hosted input rejects non-fixtures before persistence.

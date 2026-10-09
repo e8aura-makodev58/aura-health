@@ -51,6 +51,43 @@ conversation endpoint was added.
 
 ## Verification and limitations
 
+### I9 — cards and evidence layering (2026-10-09)
+
+User explicitly authorized Claude's `c1f598b` card spec. Presentation-only changes:
+
+- Clinician finding cards resolve verified claim fields against **one exact committed
+  signal/source/event/date finding**. Magnitude comes from that stored drift, never
+  parsing generated prose or recomputing a baseline. Minutes display as rounded minutes
+  or half-hours; steps as approximate hundreds; other units to one decimal. Exact stored
+  deviations, original claim facts, method and event references remain behind **Why?**.
+- Neutral signal icons/chips, two-column desktop / one-column phone grid, human dates,
+  existing numbered chart links, matching chart callouts and a shared-window timeline.
+  No scores or severity ranking. All original claims remain in collapsed Evidence.
+- Empty context/gap/question sections are omitted. Record Q&A has one input, suggestion
+  chips and an Ask submit control; the old transport select is hidden, optional ranking
+  moved to Details. Approved Worth asking chips copy their exact approved question;
+  insecure/unavailable clipboard falls back to selecting the input, without sending it.
+- Patient cards use everyday relative dates, no home charts or ISO dates in their default
+  text. Tap or **Why? / Sources** opens the plain explanation and exact sources.
+  A "steady · reports" card is shown **only** for at least two identical, non-held check-in
+  answers within the last 30 recorded days. It describes repeated reports (including
+  Okay/Rough if applicable), not overall mental health or physiological stability. It is
+  omitted when unsupported; missingness never supplies a reassuring card.
+
+The current evidence interface omits STABLE drift records; adding a generic "steady"
+wearable card would require inventing a classification. That part of the visual example
+is therefore represented by explicit repeated reports only, with no engine change.
+Arrival/generation guards, cached run IDs, provider configuration and exact validation
+are unchanged. No paid model calls are needed to test these presentation changes.
+
+I9 verification: full Python **248 PASS** (345.953 s); Chromium card fixtures 3,
+impression 5, agent 5, chart story 3, dual-view 12 and hosted 7 PASS (35 total).
+Exact magnitude/unit handling, no default raw three-decimal/ISO text, source/date
+isolation, shared timeline clearing and guarded-state clearing are asserted. Phone
+320/390 and laptop 1280 screenshots/layout checked. These automated presentation checks
+do not prove the human ten-second reading target; user/Claude review remains necessary.
+Deployed HTTPS health OK; provider settings unchanged, no paid calls this turn.
+
 `tests/test_impression.py` covers immediate numerical preview with zero provider calls,
 durable exact cache, stale-ID rejection, provider revision, unsafe/offline clearing,
 mid-read race, non-demo live containment, plain/quiet recap and retained evidence.
