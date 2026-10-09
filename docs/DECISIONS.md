@@ -268,15 +268,16 @@ and a configurable absolute spread floor are engineering safeguards, not sponsor
 clinical approval. The full patient simulator, Disclaimer consolidation and other
 §39 improvements remain unfinished; this checkpoint does not claim their acceptance.
 
-## 42. Condition-agnostic intent; antidepressant maintenance is the proof of concept (2026-10-09)
+## 42. Antidepressant maintenance is the focus; architecture stays open to other conditions (2026-10-09)
 
-User direction: AURA is meant to become a general, medical-condition-agnostic longitudinal
-context tool. Antidepressant maintenance is only the proof-of-concept scenario, and an
-agnostic framing keeps the work viable if the tool proves unsuitable for that scenario.
+User direction: the product focus is adults on stable antidepressant maintenance
+treatment. The high-level architecture should not preclude other medical conditions in
+the future, which also keeps the work viable if this scenario proves unsuitable. This is
+an architectural constraint, not a change of scope or a promise of other conditions.
 Consequences: (1) keep condition-specific content (signals, drift thresholds, safety tiers
 and resources, question and wording catalogues, prohibited-claim lists) in sponsor-editable
-configuration, as §41 already directs; (2) the generic core is the personal baseline,
-drift, trust, held-for-review, read-only agent and claim verification; (3) new work should
-not hard-code depression assumptions into that core; (4) the safety state machine is
-currently mental-health specific, and a second condition would need its own policy.
-Earlier docs that describe the product as antidepressant-only describe the POC scope.
+configuration, as §41 already directs; (2) avoid hard-coding depression assumptions into
+the generic core (personal baseline, drift, trust, held-for-review, read-only agent,
+claim verification) when it costs little; (3) the safety state machine is mental-health
+specific, and another condition would need its own policy; (4) do not build or test
+for other conditions now.

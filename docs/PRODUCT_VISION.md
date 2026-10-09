@@ -8,10 +8,9 @@ safety behaviour. Where this file and an older doc disagree, this file is newer.
 
 ## 1. One paragraph
 
-**Scope note (DECISIONS §42):** AURA is intended as a general, condition-agnostic
-longitudinal context tool. Adults on stable antidepressant maintenance treatment is the
-proof-of-concept scenario, chosen to narrow the work. If it does not fit that scenario,
-the core should still apply to other conditions. Read "antidepressant" below as the POC.
+**Scope note (DECISIONS §42):** the focus is antidepressant maintenance. The high-level
+architecture should stay open to other medical conditions later, but nothing is built or
+claimed for them now.
 
 AURA is a **longitudinal, wearable-first context layer for adults on stable antidepressant
 maintenance treatment**. Wearable signals, check-ins, medication routine and life context are
