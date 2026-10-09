@@ -25,6 +25,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - State facts you verified. Mark anything unverified as *(unverified)*.
 - Don't record secrets, tokens, or real patient data here.
 - Record user decisions and preferences as they are given, with the date.
+- **Updates are asynchronous.** Claude and Codex may work and edit this file at the same time, so it can change under you. Before editing, `git pull --rebase` and re-read the sections you will touch. Make small, targeted edits (add your own Log entry; edit only the lines you own) instead of rewriting the file. On a conflict, keep both sides' entries and resolve by hand; never overwrite another agent's entry. Order Log entries by when they were written, and treat a Current state line as possibly stale until you check the repo.
 
 ---
 
