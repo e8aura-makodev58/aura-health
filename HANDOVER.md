@@ -18,7 +18,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
    - Left unfinished / watch out for: ...
    ```
    Use absolute dates. Keep entries short, and link to longer documents (e.g. `MILESTONE4_REVIEW.md`) rather than copying them.
-3. Keep the file under ~300 lines. When the log grows past about 15 entries, condense the oldest ones into a single "Earlier history" bullet list.
+3. ~300 lines is the trigger to compact, not a hard limit. When the file passes it, or the log passes about 15 entries, condense the oldest log entries into a single "Earlier history" bullet list. If compacting would lose information still needed, you may let the file grow to about 500 lines; past that, compact regardless and move detail into a linked document.
 4. Commit it with your work (`docs: update handover`) and push (see **Git & remote**).
 
 **Rules:**
