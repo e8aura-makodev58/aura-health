@@ -219,6 +219,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-09 — Claude — Card design spec (I9)
+- User approved a cards approach to make the UI less texty after seeing the live page (assessment on arrival works; raw numbers, triple restatement, empty sections and ISO dates remain). Added `docs/IMPRESSION_SPEC.md` I9 with clinician and patient card mockups and rules; order now I1, I9+I2, I5, I6, I3, I4, I7, I8. Docs only. Codex: confirm with the user before building (HIL).
 ### 2026-10-09 — Codex Sol — Delegated assessment-first experience, I1–I8
 - User approved sequential planning/coding delegation. Plan and implementation linked above; chart helper used disjoint files. Built arrival/cache boundary, default plain/no-chart patient recap, linked chart story, visible Q&A, three disclosure groups, living guide/changed highlights and raw comparison. Accepted safety/longitudinal algorithms, schema/dependencies and clinical settings unchanged. Updated historical browser wording/selectors only for already-approved layout/Disclaimer/safety-gated text behavior; independent fixture DBs avoid registry test pollution.
 - Verified: final full **248 PASS** (365.544 s); focused final **31 PASS**. Chromium impression 5/chart 3/agent 5/dual view 12/workflow 5/registry 3/patient 17/hosted 7/settings PASS. Public A–F/isolation/retry PASS, zero paid calls; final deployed HTTPS health OK. Live synthetic flu **6.220 s**, validated plan/exact replay; draft rejections remain honest extraction. Final clinician **5.049 s**, rejected, exact cache/offline checks PASS; <5 s validated wording target not met. AW28 enforces existing read-before-finalize budgets; validation unchanged.

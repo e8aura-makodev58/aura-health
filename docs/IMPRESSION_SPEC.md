@@ -62,8 +62,57 @@ degraded or offline modes; held text never reaches the agent; the agent never wr
   table/export for the same period; right the AURA assessment. Static copy, no claims
   about outcomes.
 
+## I9. Findings as cards, less prose (user approved cards 2026-10-09)
+Problem seen on the live page: raw numbers ("195.423 minutes"), each finding stated three
+times, empty sections taking space, uniform sentences with no hierarchy, ISO dates on the
+patient card. Keep the necessary text; layer it and give it shape.
+
+**Clinician finding card** (one per finding, rendered from the structured claim fields
+`signal`, `direction`, `magnitude`, `since`, `until`, `fact_ids`, not from prose):
+```text
+┌──────────────────────────────────────────────┐
+│ ☾ Sleep timing              ● 1   ⌃ Why?     │
+│ ↑ about 3 h later                            │  <- big, rounded, human units
+│ ▕░░░░░░░▓▓▓▓▓▓▓▓▓▓▕  23 Feb → 11 Mar        │  <- thin span bar, shared axis
+│ Later than usual for 3 weeks.   See on chart │  <- one line, no raw numbers
+└──────────────────────────────────────────────┘
+```
+- "Why?" opens a popover: method line, exact values (`195.4 min`), "compared with your
+  usual", and Sources. Nothing is deleted, only layered.
+- The number marker links to the numbered span already drawn on the chart. Also show the
+  one-liner as the chart's callout so the words sit next to the evidence.
+- Signal icon and a neutral colour chip per category. No good/bad colour, no scores.
+- Round to sensible units (minutes→hours, steps→"about 2,000 fewer a day"); exact value only
+  in the popover. Relative dates ("since 23 Feb", "last 3 weeks").
+- Arrange cards in a responsive grid (2 up on desktop, 1 up on phone) under the headline.
+- Collapse empty sections ("Context", "Data gaps") into a single muted line, or hide.
+- "Worth asking" becomes tap-to-copy chips. Record-question block collapses to one input
+  with suggestion chips (drop the dropdown and extra buttons).
+- Add a thin timeline strip above the charts showing the cards' spans on the shared axis.
+
+**Patient card** (home, no charts; DECISIONS §43):
+```text
+┌──────────────────────────────────┐
+│ ☾  Sleeping later than usual     │
+│    since late February           │
+│ ● shifted                        │
+└──────────────────────────────────┘
+```
+- One short sentence per card with an icon and a "steady" / "shifted" chip (not a chart,
+  no colours that imply good or bad). Include one "steady" card so the screen is not all
+  changes. Replace "Recorded changes" and ISO dates with relative, everyday wording.
+- Tap a card for the plain explanation and Sources; "See my data" still opens the charts.
+
+**Constraints**
+- Render deterministically from the verified structured fields; the agent's prose is
+  limited to the headline, the one-liner and "worth asking". Offline extraction fills the
+  same card fields.
+- Keep the AI chip, Sources, state chips and pinned safety panel visible and small.
+- Done when: a viewer can read the three findings in ten seconds without opening
+  anything, and no raw 3-decimal numbers appear outside the popover.
+
 ## Order
-I1 → I2 → I5 → I3 → I4 → I6 → I7 → I8. I1+I2+I5 alone should change the first impression;
+I1 → I9 (cards, with I2) → I5 → I6 → I3 → I4 → I7 → I8. I1+I2+I5 alone should change the first impression;
 I3 needs the simulator.
 
 ## Review criteria (Claude checks each)
