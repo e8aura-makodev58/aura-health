@@ -40,10 +40,17 @@ degraded or offline modes; held text never reaches the agent; the agent never wr
   fine print; keep the pinned safety panel, Demo tag, AI chip, state chips.
 - Collapse the ~15 "+" sections to at most 3 (Evidence, Context, Details).
 
-## I6. Patient benefit by default
-- Patient home shows "Your month at a glance" (one or two plain sentences plus four
-  mini-charts of own history) and a one-tap visit note ("Not sent" chip). Hide the card
-  only when the agent returns nothing noteworthy. Full data stays one tap away.
+## I6. Patient recap by default (decided 2026-10-09, DECISIONS §43)
+- Patient home shows a short, plain-language recap written by aura-agent: what has been
+  steady, what has shifted, what the patient told us. **No charts on the home screen.**
+  Aim for everyday words, short sentences and no jargon (no "baseline", "drift", "anchor");
+  the patient_insight role's prompt and template target this reading level.
+- Same grounding rules as every agent output (cited facts, exact numbers and dates, no
+  diagnosis, prediction or treatment advice). Rule-based template fallback in the same
+  plain style when no model is available or the guard blocks.
+- Charts and full data stay one tap away ("See my data"), which preserves the patient's
+  entitlement to analytics on demand. Also show the one-tap visit note ("Not sent" chip).
+- Hide the recap only when the agent has nothing noteworthy to say.
 
 ## I7. Three-minute guided story
 - Demo guide runs a scripted path: quiet month, trigger an event, AURA asks one question,

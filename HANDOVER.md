@@ -215,6 +215,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-09 — Claude — Patient recap decision
+- User: clinician-first is about analytics depth; the patient is not lower. Default patient home gets a short layperson recap written by aura-agent, no charts; charts on demand. Recorded `docs/DECISIONS.md` §43 and rewrote `docs/IMPRESSION_SPEC.md` I6 (supersedes mini-charts in `AURA_AGENT_PLAN.md` §7). Docs only. Suggest moving I6 up in the order; not yet re-ranked.
 ### 2026-10-09 — Claude — Recorded architecture-openness constraint
 - User clarified: focus remains antidepressant maintenance; the high-level architecture should allow other conditions in future. I first overstated this as "condition-agnostic product" and corrected it. `docs/DECISIONS.md` §42, `docs/PRODUCT_VISION.md` scope note, README line, Current state bullet. Docs only; no code audit done.
 ### 2026-10-09 — Claude — Impression spec for Codex

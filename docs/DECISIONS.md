@@ -286,3 +286,13 @@ Addendum, 2026-10-09 (user): patients often manage several conditions at once, a
 that tracks only one has limited utility. Treat the person's whole record as the unit.
 This is a design consideration for the architecture, not an approved feature: no
 multi-condition scope, signals or safety policy are built or claimed now.
+
+## 43. Patient is a full participant; default recap is text, not charts (2026-10-09)
+
+User direction: "clinician first" refers to the depth of analytics, not to a lesser
+patient experience, because without the patient there is no data. The patient home screen
+shows a short recap written by aura-agent in layperson language, without charts. Charts
+and full analytics remain available on demand. This supersedes the "four mini-charts"
+in `docs/AURA_AGENT_PLAN.md` §7 and the chart wording in earlier patient-home plans.
+Quiet still means no alarms, scores, daily tasks or guilt, not an absence of value.
+Safety panel and resources are unchanged.
