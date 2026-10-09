@@ -20,6 +20,7 @@ from .patient_view import PatientViewService
 from .evidence import EvidenceViewService
 from .agent import AgentService
 from aura_agent.roles import AgentRole
+from .workflows import WorkflowService
 
 
 class PatientIn(BaseModel):
@@ -77,8 +78,14 @@ class AgentIn(BaseModel):
     model_config = {"extra": "forbid", "strict": True}
     run_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
     query_id: str | None = None
+    question: str | None = Field(default=None, min_length=1, max_length=2000)
     window_days: int = Field(default=56, ge=1, le=180)
     client_offline: bool = False
+
+class WorkflowIn(BaseModel):
+    model_config = {'extra':'forbid'}
+    run_id: str = Field(pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+    data: dict = Field(default_factory=dict)
 
 
 def create_app(db_path: str | Path | None = None, service: PatientEventService | None = None,
@@ -101,6 +108,8 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     app.state.service = service
     app.state.communication_service = communication_service
     app.state.agent_service = agent_service
+    workflows = WorkflowService(service, agent_service.provider, synthetic_only=synthetic_only)
+    app.state.workflow_service = workflows
 
     @app.middleware("http")
     async def presentation_headers(request, call_next):
@@ -177,6 +186,23 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def agent_trace(patient_id: str, run_id: str):
         return agent_service.trace(patient_id, run_id)
 
+    @app.post('/patients/{patient_id}/workflows/{action}')
+    def workflow(patient_id: str, action: str, body: WorkflowIn):
+        actions = {'manual':workflows.manual, 'import-proposal':workflows.import_proposal,
+                   'import-confirm':workflows.confirm_import, 'context-proposal':workflows.propose_context,
+                   'context-confirm':workflows.confirm_context, 'advance':workflows.advance}
+        if action not in actions: raise AppError('INVALID_EVENT','Unknown workflow')
+        try: return actions[action](patient_id,run_id=body.run_id,**body.data)
+        except TypeError: raise AppError('INVALID_EVENT','Invalid workflow fields') from None
+
+    @app.get('/patients/{patient_id}/workflow-runs/{run_id}')
+    def workflow_trace(patient_id: str, run_id: str):
+        return workflows.trace(patient_id,run_id)
+
+    @app.get('/patients/{patient_id}/simulator-runs/{run_id}/replay')
+    def simulator_replay(patient_id: str, run_id: str):
+        return workflows.replay(patient_id,run_id)
+
     @app.post("/patients/{patient_id}/context-explanations")
     def explain(patient_id: str, body: ExplanationIn):
         event = ApplicationEvent(body.event_id, patient_id, EventType.CONTEXT_EXPLANATION,
@@ -217,7 +243,7 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     ui = Path(__file__).resolve().parent.parent / "aura_ui"
     @app.get("/assets/{asset_name}", include_in_schema=False)
     def patient_asset(asset_name: str):
-        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "agent.js"}:
+        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "agent.js", "features.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)
 

@@ -31,11 +31,17 @@ from .system_settings import SystemSettings, SyntheticSettingsProvider, settings
 
 
 class SyntheticOnlyService(PatientEventService):
-    """Allowlisted demo inputs, not a safety detector or context-credibility classifier."""
+    """Synthetic catalog records with bounded intake; no credibility classifier."""
 
-    def __init__(self, factory, seed=7):
+    def __init__(self, factory, seed=7, *, settings=None):
         self.allowed = frozenset(item["patient_id"] for item in demo_catalog(seed))
-        super().__init__(factory, safety_gate=DemoFixtureGate(self.allowed))
+        gate = DemoFixtureGate(self.allowed)
+        self.open_input = settings is not None
+        if settings is not None:
+            from aura_detectors.layered import LayeredSafetyGate
+            gate = LayeredSafetyGate(SyntheticAgentProvider(settings), fixtures=gate)
+        from .sponsor import resources
+        super().__init__(factory, safety_gate=gate,resource_registry=resources())
 
     def _patient(self, repo, patient_id):
         if patient_id not in self.allowed:
@@ -76,16 +82,52 @@ class SyntheticOnlyService(PatientEventService):
                          and payload.get("relevant_drift_ref") is None)
         elif event.event_type == EventType.REVIEW_COMMAND:
             permitted = payload == {"action":"ADD_QUESTION", "question":"fixture review question"}
+        if self.open_input:
+            if event.event_type == EventType.PATIENT_FREE_TEXT:
+                permitted = set(payload) == {"text"} and isinstance(payload["text"], str) and 0 < len(payload["text"].strip()) <= 4000
+            elif event.event_type == EventType.REVIEW_COMMAND:
+                permitted = (set(payload) == {"action", "question"} and payload["action"] == "ADD_QUESTION"
+                             and isinstance(payload["question"], str) and 0 < len(payload["question"].strip()) <= 2000)
+            elif event.event_type == EventType.WEARABLE_OBSERVATION:
+                permitted = set(payload) == {"observations"} and isinstance(payload["observations"], list) and 0 < len(payload["observations"]) <= 16
+            elif event.event_type == EventType.CONTEXT_EVENT:
+                permitted = (set(payload) == {"start", "end", "category", "affected_signals", "source", "explanation"}
+                             and payload["category"] in {"BENIGN_CONTEXT", "RISK_CONTEXT"}
+                             and isinstance(payload["explanation"], str) and 0 < len(payload["explanation"].strip()) <= 2000)
+                from .workflows import risk_context_terms
+                if permitted and payload['category']=='BENIGN_CONTEXT' and any(term in payload['explanation'].lower() for term in risk_context_terms()):
+                    raise AppError('INVALID_EVENT','Known risk context cannot be submitted as benign context')
+            elif event.event_type == EventType.CONTEXT_EXPLANATION:
+                permitted = (set(payload) <= {"context_event_id", "relevant_drift_ref", "explanation", "affected_signals"}
+                             and payload.get("context_event_id") in contexts
+                             and isinstance(payload.get("explanation"), str) and 0 < len(payload["explanation"].strip()) <= 2000
+                             and isinstance(payload.get("affected_signals"), list)
+                             and bool(payload["affected_signals"]) and all(isinstance(signal, str) for signal in payload["affected_signals"])
+                             and set(payload["affected_signals"]) <= set(contexts[payload["context_event_id"]]["affected_signals"]))
         if not permitted:
             raise AppError("SYNTHETIC_ONLY", "Only the labelled synthetic inputs are accepted; do not enter real information", 403)
+        if self.open_input and event.event_type == EventType.WEARABLE_OBSERVATION:
+            allowed_fields={'sleep':{'kind','date','sleep_start','sleep_end','coverage','data_quality','source'},
+                            'activity':{'kind','date','metrics','coverage','source'},
+                            'resting_hr':{'kind','date','value','coverage','source'},
+                            'scalar':{'kind','signal','date','value','coverage','data_quality','source','unit'}}
+            for observation in payload['observations']:
+                if not isinstance(observation,dict) or observation.get('kind') not in allowed_fields or set(observation)-allowed_fields[observation['kind']]:
+                    raise AppError('INVALID_EVENT','Only typed measurement fields are accepted')
+                if observation['kind']=='activity' and (not isinstance(observation.get('metrics'),dict) or set(observation['metrics'])!={'steps'}):
+                    raise AppError('INVALID_EVENT','Hosted activity accepts numeric steps only')
+                observation['source']='synthetic_wearable'
         # Never store client-controlled metadata as a covert free-text intake channel.
         from uuid import UUID
         try:
             identifiers = [str(UUID(value)) for value in (event.event_id, event.idempotency_key, event.correlation_id)]
         except (ValueError, AttributeError, TypeError) as exc:
             raise AppError("INVALID_EVENT", "Hosted event identifiers must be UUIDs") from exc
+        occurred = event.occurred_at if self.open_input else at
+        if self.open_input and (occurred.tzinfo is None or abs((occurred - at).total_seconds()) > 365 * 86400):
+            raise AppError("INVALID_EVENT", "Demo input date is outside the supported year")
         return super().process(replace(event, event_id=identifiers[0], idempotency_key=identifiers[1],
-                                       correlation_id=identifiers[2], occurred_at=at, source="synthetic_patient_ui"))
+                                       correlation_id=identifiers[2], occurred_at=occurred, source="synthetic_patient_ui"))
 
 
 class HostedDemo:
@@ -124,8 +166,9 @@ class HostedDemo:
         shutil.copyfile(self.baseline, destination)
         factory = SQLiteRepositoryFactory(destination)
         factory.initialize()  # Additive agent trace table for pre-agent baselines.
-        service = SyntheticOnlyService(factory, self.seed)
-        app = create_app(service=service, communication_service=PatientCommunicationService(service, provider=SyntheticSettingsProvider(self.settings)),
+        service = SyntheticOnlyService(factory, self.seed, settings=self.settings)
+        from .sponsor import policy_question
+        app = create_app(service=service, communication_service=PatientCommunicationService(service, provider=SyntheticSettingsProvider(self.settings),policy_question=policy_question()),
                          agent_service=AgentService(service, provider=SyntheticAgentProvider(self.settings), synthetic_only=True),
                          synthetic_only=True)
 
@@ -133,7 +176,7 @@ class HostedDemo:
         def scenarios():
             return {"synthetic_only": True, "hosted": True, "can_reset": True,
                     "scenarios": demo_catalog(self.seed),
-                    "notice": "Private synthetic session. Only labelled fixtures are accepted; no real-data intake."}
+                    "notice": "Private synthetic session. Bounded synthetic input is accepted; no real-patient intake."}
 
         @app.post("/demo/reset")
         async def reset(request: Request):
@@ -194,7 +237,7 @@ class HostedDemo:
             if message["type"] == "http.disconnect":
                 return
             size += len(message.get("body", b""))
-            if size > 8192:
+            if size > (131072 if '/workflows/' in scope['path'] else 8192):
                 await JSONResponse({"error":{"code":"INVALID_EVENT","message":"Demo input is too large"}}, status_code=413)(scope, receive, send)
                 return
             chunks.append(message.get("body", b""))

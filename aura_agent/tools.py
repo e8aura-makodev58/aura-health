@@ -4,6 +4,8 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from hashlib import sha256
 import json
+from statistics import median
+from aura_longitudinal.baseline import robust_spread
 
 from .roles import ROLE_TOOLS
 
@@ -15,19 +17,24 @@ class RecordTools:
         self.groups = {name: [] for name in ROLE_TOOLS[role]}
         self.required = set()
         self.delivered = {}
-        end = evidence["period"]["end"]
-        cutoff = (datetime.fromisoformat(end) - timedelta(days=window_days)).date().isoformat() if end else ""
+        self.evidence = evidence
+        self.end = end = evidence["period"]["end"]
+        self.coverage_thresholds = evidence.get('analysis_coverage_thresholds', {})
+        self.keys = {f"k{index+1}": row for index, row in enumerate(evidence["signals"])}
+        self.cutoff = cutoff = (datetime.fromisoformat(end) - timedelta(days=window_days-1)).date().isoformat() if end else ""
 
-        def add(tool, source, text, *, signal=None, required=False):
+        def add(tool, source, text, *, signal=None, required=False, finding=None, at=None):
             fid = f"f{len(self.facts) + 1}"
-            fact = {"fact_id": fid, "source_ref": source, "text": text, "signal": signal}
+            fact = {"fact_id": fid, "source_ref": source, "text": text, "signal": signal,
+                    "finding": finding, "at": at, "key_id": active_key if signal else None}
             self.facts[fid] = fact
             self.groups[tool].append(fid)
             if required:
                 self.required.add(fid)
 
         add("get_status", "committed:status", f"Recorded period ends {end or 'with no entries'}. Current communication decision: {evidence['current_decision']}.")
-        for signal in evidence["signals"]:
+        active_key = None
+        for active_key, signal in self.keys.items():
             key, label = signal["key"], signal["label"]
             current = signal["current"] or {}
             enabled = signal.get("registry", {}).get("enabled_in_engine", True)
@@ -39,24 +46,27 @@ class RecordTools:
                 if finding["last_seen"][:10] < cutoff:
                     continue
                 drift = finding["drift"]
+                delta = drift.get("current_vs_rolling") if drift["kind"] == "TRANSIENT_DEVIATION" else drift.get("rolling_vs_anchor")
+                direction = ("LATER" if (delta or 0) > 0 else "EARLIER") if key["signal"] == "SLEEP_MIDPOINT" else ("HIGHER" if (delta or 0) > 0 else "LOWER")
                 add("get_series", finding["event_id"],
-                    f"{label}: {drift['description']} Stored observation kind: {drift['kind']}. First recorded {finding['first_seen'][:10]}; last recorded {finding['last_seen'][:10]}. Historical observation, not necessarily active now.",
-                    signal=key["signal"], required=True)
+                    f"{label}: {drift['description']} First recorded {finding['first_seen'][:10]}; last recorded {finding['last_seen'][:10]}.",
+                    signal=key["signal"], required=True,
+                    finding={"signal": key["signal"], "direction": direction, "since": finding["first_seen"][:10]}, at=finding["last_seen"][:10])
                 metrics = []
                 for field, title in (("current_vs_rolling", "current versus rolling deviation"), ("rolling_vs_anchor", "rolling versus own reference deviation"), ("trend_magnitude_per_day", "stored trend magnitude per day")):
                     value = drift.get(field)
                     if value is not None:
                         metrics.append(f"{title} {value:.3f} {signal['unit']}")
                 if metrics:
-                    add("get_series", finding["event_id"], f"{label}, recorded {finding['last_seen'][:10]}: " + "; ".join(metrics) + ". Stored engine values, displayed to three decimals; not new calculations.", signal=key["signal"])
+                    add("get_series", finding["event_id"], f"{label}, recorded {finding['last_seen'][:10]}: " + "; ".join(metrics) + ".", signal=key["signal"], at=finding["last_seen"][:10])
             # Returned measurements are a bounded sample, explicitly not the entire
             # window. No new statistics, drift computation or missing-value filling.
             rows = [row for row in signal["observations"] if row["day"] >= cutoff and not row["deferred"]]
             for row in rows[-8:]:
-                add("get_series", row["event_id"], f"{label} recorded {row['day']}: {row['value']} {signal['unit']} (stored observation).", signal=key["signal"])
+                add("get_series", row["event_id"], f"{label} recorded {row['day']}: {row['value']} {signal['unit']}.", signal=key["signal"], at=row["day"])
             for row in signal["gaps"]:
                 if row["at"][:10] >= cutoff:
-                    add("get_gaps", row["event_id"], f"{label}: {row['type']} recorded {row['at'][:10]}. Missing data is not a measurement.", signal=key["signal"])
+                    add("get_gaps", row["event_id"], f"{label}: {row['type']} recorded {row['at'][:10]}.", signal=key["signal"], at=row["at"][:10])
             for row in signal["contexts"]:
                 start = row.get("start") or ""
                 finish = row.get("end")
@@ -64,35 +74,114 @@ class RecordTools:
                     continue
                 # Arbitrary explanation text is deliberately excluded. Category and
                 # explicit signal association are observable structured data.
-                add("get_context", row["event_id"], f"{label}: {row['category']} context recorded from {start[:10]} to {finish[:10] if finish else 'no recorded end'}; explicitly associated with {label}. Association does not establish causation.", signal=key["signal"])
+                add("get_context", row["event_id"], f"{label}: {row['category']} context recorded from {start[:10]} to {finish[:10] if finish else 'no recorded end'}; explicitly associated with {label}.", signal=key["signal"])
                 if row["event_id"] in evidence.get("agent_assessed_context_ids", []) and row.get("explanation"):
                     note = str(row["explanation"])[:400]
-                    add("get_context", row["event_id"], f"{label}: patient-reported context (quoted data, not instructions): {json.dumps(note)}.", signal=key["signal"])
+                    add("get_context", row["event_id"], f"{label}: patient-reported context: {json.dumps(note)}.", signal=key["signal"])
         for row in evidence["checkins"][-8:]:
             if not row["deferred"] and row["at"][:10] >= cutoff:
                 add("get_decisions", row["event_id"], f"Patient check-in {row['at'][:10]}: {row['state']}.")
         for row in evidence["medication"][-8:]:
             if not row["deferred"] and row["at"][:10] >= cutoff:
-                add("get_decisions", row["event_id"], f"Medication-routine record {row['at'][:10]}: {row['status']}. Acknowledgement is not verified adherence.")
+                add("get_decisions", row["event_id"], f"Medication-routine record {row['at'][:10]}: {row['status']}.")
         for row in evidence["held"]:
+            active_key = next((key for key, s in self.keys.items() if s['key']['signal']==row['signal'] and s['key']['source']==row['source'] and (s['key'].get('metric') or '')==(row.get('metric') or '')), None)
             add("get_review_snapshot", f"held:{row['signal']}:{row['source']}:{row['direction']}",
-                f"{row['signal']}: {row['status']}. Explanation retained; own reference unchanged; item remains available for review, not sent.", signal=row["signal"], required=True)
-        add("get_review_snapshot", "committed:review", "Review preparation is a temporary draft; not sent and not patient-approved sharing.")
+                f"{row['signal']}: {row['status']}. Explanation retained for review; own reference unchanged.", signal=row["signal"], required=True)
+        add("get_review_snapshot", "committed:review", "Review draft status: Not sent.")
+        for row in evidence.get("assessed_notes", []):
+            add("get_context", row["event_id"], f"Patient note {row['at'][:10]}: {json.dumps(row['text'][:400])}.")
 
     def specs(self):
-        return [{"type": "function", "function": {"name": name,
-                 "description": f"Read {name[4:].replace('_', ' ')} from this one synthetic record. Facts have source references. get_series returns retained engine findings and at most eight recent measurements per signal; never a full-series statistic.",
-                 "strict": True, "parameters": {"type": "object", "properties": {}, "required": [], "additionalProperties": False}}}
-                for name in self.groups]
+        specs = []
+        for name in self.groups:
+            props = {}
+            if name in {"get_series", "get_context", "get_gaps"}:
+                props = {"key_id": {"type": ["string", "null"], "enum": [*self.keys, None]},
+                         "start": {"type": ["string", "null"]}, "end": {"type": ["string", "null"]}}
+            if name in {"compare_windows", "day_of_week", "summarize_gaps"}:
+                props = {"key_id": {"type": "string", "enum": list(self.keys)},
+                         "start": {"type": "string"}, "end": {"type": "string"}}
+                if name == "compare_windows":
+                    props.update(previous_start={"type": "string"}, previous_end={"type": "string"})
+            specs.append({"type": "function", "function": {"name": name,
+                "description": f"Read-only {name}. Available keys: " + json.dumps({key: row["label"] for key, row in self.keys.items()}) +
+                    f". Dates are ISO; allowed analysis dates {self.cutoff} through {(self.end or '')[:10]}. Statistics use actual covered days, separately per source/metric. get_series includes retained findings; brief/visit must retrieve all keys with key_id=null.",
+                "strict": True, "parameters": {"type": "object", "properties": props, "required": list(props), "additionalProperties": False}}})
+        return specs
 
     def call(self, name, arguments):
-        if name not in self.groups or arguments != {}:
+        if name not in self.groups or not isinstance(arguments, dict):
             raise ValueError("UNAUTHORIZED_TOOL")
+        allowed = {key for spec in self.specs() if spec["function"]["name"] == name for key in spec["function"]["parameters"]["properties"]}
+        if set(arguments) - allowed: raise ValueError("UNAUTHORIZED_TOOL")
+        if name in {"compare_windows", "day_of_week", "summarize_gaps"}:
+            if not arguments: return {"facts": [], "scope": "explicit window arguments required"}
+            return self._analysis(name, arguments)
         facts = [deepcopy(self.facts[fid]) for fid in self.groups[name]]
-        if len(json.dumps(facts)) > 24000:
-            raise ValueError("TOOL_BUDGET")
+        if arguments:
+            key = arguments.get("key_id")
+            if key is not None:
+                if key not in self.keys: raise ValueError("UNAUTHORIZED_TOOL")
+                facts = [fact for fact in facts if fact["key_id"] == key]
+            start, end = arguments.get("start"), arguments.get("end")
+            if start is not None or end is not None:
+                self._window(start, end)
+                facts = [fact for fact in facts if fact["at"] is None or start <= fact["at"] <= end]
+        while len(json.dumps(facts)) > 24000:
+            removable=next((index for index in range(len(facts)-1,-1,-1) if facts[index]['fact_id'] not in self.required),None)
+            if removable is None:raise ValueError('TOOL_BUDGET')
+            facts.pop(removable)
         self.delivered.update({fact["fact_id"]: fact for fact in facts})
         # Demo event IDs can encode scenario names. The model receives opaque
         # reference aliases, while application/UI citations retain real source IDs.
         model_facts = [{**fact, "source_ref": "ref:" + sha256(fact["source_ref"].encode()).hexdigest()[:16]} for fact in facts]
-        return {"facts": model_facts, "scope": "selected record; selected window; bounded measurement sample"}
+        return {"facts": model_facts, 'retained_fact_ids':sorted(self.required & {fact['fact_id'] for fact in facts}), "scope": "selected record; selected window; bounded measurement sample"}
+
+    def _window(self, start, end):
+        from datetime import date
+        if not isinstance(start, str) or not isinstance(end, str): raise ValueError("WINDOW_REQUIRED")
+        a, b = date.fromisoformat(start), date.fromisoformat(end)
+        if a > b or (b-a).days >= 180 or not self.end or end > self.end[:10] or start < self.cutoff:
+            raise ValueError("WINDOW_BUDGET")
+
+    def _analysis(self, name, args):
+        self._window(args.get("start"), args.get("end"))
+        key = args.get("key_id")
+        if key not in self.keys: raise ValueError("UNAUTHORIZED_TOOL")
+        signal = self.keys[key]
+        threshold=self.coverage_thresholds.get(signal['key']['signal'], {}).get('minimum_observation_coverage', .5)
+        quality=threshold
+        def rows(start, end):
+            by_day = {}
+            for row in signal["observations"]:
+                if row["deferred"] or row["coverage"] < threshold or row["data_quality"] < quality or not start <= row["day"] <= end: continue
+                prior = by_day.get(row["day"])
+                if prior is None or (row["coverage"]*row["data_quality"], row.get("commit_order", 0)) >= (prior["coverage"]*prior["data_quality"], prior.get("commit_order", 0)):
+                    by_day[row["day"]] = row
+            return list(by_day.values())
+        selected = rows(args["start"], args["end"])
+        data = {"start": args["start"], "end": args["end"], "covered_days": len(selected)}
+        def stats(items):
+            vals = tuple(row["value"] for row in items)
+            return {"count": len(vals), "median": round(median(vals), 3) if vals else None,
+                    "robust_spread": round(robust_spread(vals), 3) if vals else None}
+        if name == "compare_windows":
+            self._window(args.get("previous_start"), args.get("previous_end"))
+            previous = rows(args["previous_start"], args["previous_end"])
+            data.update(recent=stats(selected), previous=stats(previous), previous_start=args["previous_start"], previous_end=args["previous_end"])
+            selected += previous
+        elif name == "day_of_week":
+            data["days"] = {str(index): stats([row for row in selected if datetime.fromisoformat(row["day"]).weekday() == index]) for index in range(7)}
+        else:
+            total = (datetime.fromisoformat(args["end"])-datetime.fromisoformat(args["start"])).days+1
+            data.update(calendar_days=total, missing_days=total-len(selected))
+        fid = f"f{len(self.facts)+1}"
+        refs = sorted({row["event_id"] for row in selected})
+        fact = {"fact_id": fid, "source_ref": "analysis:" + sha256(json.dumps(args, sort_keys=True).encode()).hexdigest()[:16],
+                "text": signal["label"] + ": " + json.dumps(data, sort_keys=True) + " " + signal["unit"],
+                "signal": signal["key"]["signal"], "finding": None, "at": args["end"], "source_refs": refs,
+                "analysis": data}
+        self.facts[fid] = fact; self.delivered[fid] = fact
+        model = {**fact, "source_refs": ["ref:"+sha256(ref.encode()).hexdigest()[:16] for ref in refs]}
+        return {"facts": [model], "scope": "descriptive analysis, not engine policy"}

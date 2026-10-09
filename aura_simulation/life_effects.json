@@ -1,0 +1,21 @@
+{
+ "version":"synthetic-life-v1-engineering-not-physiological-validation",
+ "severity":{"MILD":0.7,"MODERATE":1,"STRONG":1.3},
+ "recovery_tail_days":2,
+ "max_session_days":90,
+ "max_session_runs":30,
+ "ramps":{"FLU":1,"TRAVEL":1,"WORK_STRESS":3,"ALCOHOL":1,"MISSED_MEDICATION":1,"WEARABLE_OFF":1,"EXERCISE":7},
+ "clamps":{"SLEEP_MIDPOINT":[900,2400],"SLEEP_DURATION":[3,12],"ACTIVITY":[0,25000],"RESTING_HEART_RATE":[40,110],"HRV":[5,140],"RESPIRATORY_RATE":[8,24],"SKIN_TEMPERATURE_DEVIATION":[-1.5,2],"SPO2":[90,100],"BLOOD_PRESSURE_SYSTOLIC":[90,160],"BLOOD_PRESSURE_DIASTOLIC":[55,100],"BODY_TEMPERATURE":[35.5,39.5],"WEIGHT":[40,150]},
+ "durations":{"FLU":[3,7],"TRAVEL":[3,6],"WORK_STRESS":[5,14],"ALCOHOL":[1,1],"MISSED_MEDICATION":[2,5],"WEARABLE_OFF":[1,10],"EXERCISE":[7,21]},
+ "profile":{"SLEEP_MIDPOINT":1650,"SLEEP_DURATION":7.5,"ACTIVITY":7000,"RESTING_HEART_RATE":62,"HRV":45,"RESPIRATORY_RATE":14,"SKIN_TEMPERATURE_DEVIATION":0,"SPO2":97,"BLOOD_PRESSURE_SYSTOLIC":118,"BLOOD_PRESSURE_DIASTOLIC":76,"BODY_TEMPERATURE":36.7,"WEIGHT":70},
+ "noise":{"SLEEP_MIDPOINT":15,"SLEEP_DURATION":0.25,"ACTIVITY":400,"RESTING_HEART_RATE":1,"HRV":2,"RESPIRATORY_RATE":0.2,"SPO2":0.4,"BLOOD_PRESSURE_SYSTOLIC":3,"BLOOD_PRESSURE_DIASTOLIC":2,"BODY_TEMPERATURE":0.1,"WEIGHT":0.2},
+ "effects":{
+  "FLU":{"BODY_TEMPERATURE":{"operation":"add","value":1.1},"SKIN_TEMPERATURE_DEVIATION":{"operation":"add","value":0.7},"RESTING_HEART_RATE":{"operation":"add","value":9},"HRV":{"operation":"scale","value":-0.3},"RESPIRATORY_RATE":{"operation":"add","value":2},"SPO2":{"operation":"add","value":-1},"SLEEP_DURATION":{"operation":"add","value":0.5},"ACTIVITY":{"operation":"scale","value":-0.55}},
+  "TRAVEL":{"SLEEP_MIDPOINT":{"operation":"add","value":180},"SLEEP_DURATION":{"operation":"add","value":-0.6}},
+  "WORK_STRESS":{"SLEEP_MIDPOINT":{"operation":"add","value":45},"SLEEP_DURATION":{"operation":"add","value":-0.75},"RESTING_HEART_RATE":{"operation":"add","value":3},"HRV":{"operation":"scale","value":-0.15}},
+  "ALCOHOL":{"RESTING_HEART_RATE":{"operation":"add","value":5},"HRV":{"operation":"scale","value":-0.2},"SLEEP_DURATION":{"operation":"add","value":-0.5}},
+  "MISSED_MEDICATION":{},"WEARABLE_OFF":{},
+  "EXERCISE":{"ACTIVITY":{"operation":"scale","value":0.4},"RESTING_HEART_RATE":{"operation":"add","value":-2}}
+ },
+ "note_themes":{"NONE":null,"UNWELL":"I have a physical illness and feel unwell today.","TRAVEL":"I am travelling and my schedule has changed.","BUSY":"Work has been stressful recently.","EXERCISE":"I have been doing more exercise recently."}
+}

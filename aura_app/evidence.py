@@ -28,6 +28,9 @@ class EvidenceViewService:
             observations = repo.observations(patient_id)
             baselines = repo.baselines(patient_id)
             events = repo.events(patient_id)
+            orders = {row['event_id']: row['commit_order'] for row in snapshots}
+            safe_ids = {row['event_id'] for row in repo.safety_references(patient_id)
+                        if not row['state']['degraded'] and row['outcome'] not in {'DEFER_EVENT', 'REJECT_EVENT', 'SET_DEGRADED'}}
             contexts = {row["event_id"]: row["payload"] for row in events
                         if row["event_type"] == "CONTEXT_EVENT"}
             anchor_commands = {row["event_id"]: row["payload"] for row in events
@@ -58,7 +61,7 @@ class EvidenceViewService:
             for row in observations:
                 signal_for(row)["observations"].append({
                     key: row[key] for key in ("event_id", "day", "value", "coverage", "data_quality")
-                } | {"deferred": row["event_id"] in deferred})
+                } | {"deferred": row["event_id"] in deferred, "commit_order": orders.get(row['event_id'], 0)})
             for snapshot in snapshots:
                 projection = (snapshot["result"] or {}).get("longitudinal", {})
                 for baseline in projection.get("baselines", []):
@@ -71,6 +74,8 @@ class EvidenceViewService:
 
             findings = {}
             for row in timeline:
+                if row['event_id'] in deferred:
+                    continue
                 detail = row["detail"]
                 if row["record_type"] == "LONGITUDINAL_DRIFT":
                     if detail["kind"] in {"STABLE", "INSUFFICIENT_DATA"}:
@@ -117,6 +122,7 @@ class EvidenceViewService:
                 "snapshot_count": len(snapshots),
                 "signals": [row for row in ordered if row["registry"]["display"]],
                 "signal_registry": {"version": registry["version"], "fingerprint": registry["fingerprint"]},
+                "analysis_coverage_thresholds":registry['effective_engineering_settings'],
                 "checkins": [{"event_id": row["event_id"], "at": row["occurred_at"],
                     "state": row["detail"]["state"], "deferred": row["event_id"] in deferred}
                     for row in timeline if row["record_type"] == "PATIENT_CHECKIN"],

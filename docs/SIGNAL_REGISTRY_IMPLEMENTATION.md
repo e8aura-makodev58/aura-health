@@ -1,5 +1,9 @@
 # Signal registry — implementation and review
 
+Historical foundation checkpoint. Subsequent approved input/simulator/agent work
+is documented in [current implementation](APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md);
+the fixture-only/pending statements below describe the earlier foundation session.
+
 2026-10-08. Implements the telemetry foundation of DECISIONS §41 and
 `PATIENT_SIMULATOR_AGENT_PLAN.md` §3, **not the full patient simulator**.
 

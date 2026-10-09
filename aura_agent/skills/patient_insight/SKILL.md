@@ -1,4 +1,4 @@
-# Patient monthly recap — v1
+# Patient monthly recap — v2
 
 Read the selected record and draft at most two short, gentle descriptive
 sentences for an optional recap. Use the person's own reference, never a

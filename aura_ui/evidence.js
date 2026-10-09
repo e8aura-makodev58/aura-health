@@ -49,7 +49,7 @@
     }
     const width=window.matchMedia("(max-width:700px)").matches ? 380 : 640;
     const chart = svgNode("svg", {viewBox:`0 0 ${width} 215`,role:"img","aria-label":`${signal.label}: recorded values, stored rolling mean and your own reference; missing days are gaps`});
-    chart.append(svgNode("title", {}, signal.label), svgNode("desc", {}, "Descriptive synthetic records, not a normal range or clinical score. Exact records and sources are available below."));
+    chart.append(svgNode("title", {}, signal.label), svgNode("desc", {}, "Recorded values and personal references. Exact records and sources below."));
     const low = values.length ? Math.min(...values) : 0, high = values.length ? Math.max(...values) : 1;
     const pad = Math.max((high-low)*.15, high === low ? Math.abs(high)*.03 : .1, .1);
     const bottom = low-pad, top = high+pad;
@@ -129,7 +129,7 @@
       const detail = node("details",null,"finding-source"); detail.append(node("summary","Source & context"),node("p",`${finding.drift.key.source} · latest event ${finding.event_id}. ${finding.drift.attenuated ? "Linked benign context attenuates this observation only." : "No benign attenuation recorded for this finding."}`,"fine"));
       const section=node("section"); section.append(text,detail); overview.append(section);
     }
-    if (!findings.length) overview.append(node("p","No descriptive change is retained in these records. This is not an assessment of mental health."));
+    if (!findings.length) overview.append(node("p","No descriptive change is retained in these records."));
     byId("workspace-decision").textContent = `Current communication: ${evidence.current_decision === "STAY_QUIET" ? "no question pending" : evidence.current_decision === "SAFETY_REVIEW_REQUIRED" ? "safety policy takes priority" : "an approved interaction is available in Patient view"}. Retained changes are history, not a new prompt.`;
     const charts = byId("evidence-charts"); charts.replaceChildren();
     if (evidence.period.end && evidence.period.start) {
@@ -155,7 +155,7 @@
     }
     const safety=byId("safety-evidence"); safety.replaceChildren();
     for (const ref of evidence.safety.references) safety.append(node("p",`${ref.at || "Date unavailable"} · episode ${ref.episode_id || "none — degraded overlay"} · ${ref.state.episode_status} · sequence ${ref.sequence} · ${ref.state.degraded ? "degraded" : "not degraded"} · source episode ${ref.source_episode_id || "none"} · previous episode ${ref.previous_episode_id || "none"}. Source event: ${ref.event_id}.`,"fine"));
-    if (!evidence.safety.references.length) safety.append(node("p","No safety episode references recorded. This is not a determination of safety."));
+    if (!evidence.safety.references.length) safety.append(node("p","No safety episode references recorded."));
     safety.append(node("p","No clinician or emergency service is automatically notified. Current policy output and separate resources stay outside this history section.","fine"));
     byId("workspace-safety").open = Boolean(evidence.safety.state?.episode_id || evidence.safety.state?.degraded);
     const review=byId("evidence-review"); review.replaceChildren();

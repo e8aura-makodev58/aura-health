@@ -77,12 +77,21 @@ class VendorProvider:
 
     def agent_step(self, messages, tools):
         """Native function calling, separate from unchanged M5 candidate wording."""
-        payload = {"model": self.model, "messages": messages, "tools": tools,
-                   "tool_choice": "auto", "parallel_tool_calls": False, "stream": False}
+        payload = {"model": self.model, "messages": messages, "stream": False}
+        if tools:
+            payload.update(tools=tools, tool_choice="auto")
+            if self.provider == "openai":
+                payload["parallel_tool_calls"] = True
+        if not (self.provider=='tencent' and self.base.endswith('hunyuan.cloud.tencent.com/v1')):
+            payload["response_format"] = {"type": "json_object"}
+        if self.provider=='deepseek':
+            payload['thinking']={'type':'disabled'}
+            # Stable endpoint: local strict validation remains authoritative.
+            if tools:payload['tools']=[{'type':spec['type'],'function':{key:value for key,value in spec['function'].items() if key!='strict'}} for spec in tools]
         if self.provider == "openai":
-            payload.update(max_completion_tokens=2048, store=False, reasoning_effort="none")
+            payload.update(max_completion_tokens=4096, store=False, reasoning_effort="none")
         else:
-            payload.update(max_tokens=2048)
+            payload.update(max_tokens=4096)
         result = self._request("POST", "/chat/completions", payload)
         try:
             choice = result["choices"][0]

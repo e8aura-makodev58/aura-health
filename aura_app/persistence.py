@@ -131,6 +131,15 @@ CREATE TRIGGER IF NOT EXISTS agent_runs_no_update BEFORE UPDATE ON agent_runs
 BEGIN SELECT RAISE(ABORT, 'agent runs are append-only'); END;
 CREATE TRIGGER IF NOT EXISTS agent_runs_no_delete BEFORE DELETE ON agent_runs
 BEGIN SELECT RAISE(ABORT, 'agent runs are append-only'); END;
+CREATE TABLE IF NOT EXISTS workflow_runs (
+ patient_id TEXT NOT NULL, run_id TEXT NOT NULL, kind TEXT NOT NULL,
+ created_at TEXT NOT NULL, result_json TEXT NOT NULL,
+ PRIMARY KEY(patient_id,run_id), FOREIGN KEY(patient_id) REFERENCES patients(patient_id)
+);
+CREATE TRIGGER IF NOT EXISTS workflow_runs_no_update BEFORE UPDATE ON workflow_runs
+BEGIN SELECT RAISE(ABORT, 'workflow runs are append-only'); END;
+CREATE TRIGGER IF NOT EXISTS workflow_runs_no_delete BEFORE DELETE ON workflow_runs
+BEGIN SELECT RAISE(ABORT, 'workflow runs are append-only'); END;
 """
 
 
@@ -364,6 +373,17 @@ class SQLiteUnitOfWork:
     def append_agent_run(self, row):
         self.conn.execute("INSERT INTO agent_runs VALUES (?,?,?,?,?)",
                           (row["run_id"], row["patient_id"], row["role"], row["created_at"], _json(row)))
+
+    def workflow_run(self, patient_id, run_id):
+        row = self._one('SELECT result_json FROM workflow_runs WHERE patient_id=? AND run_id=?', (patient_id, run_id))
+        return json.loads(row['result_json']) if row else None
+
+    def append_workflow_run(self, row):
+        self.conn.execute('INSERT INTO workflow_runs VALUES (?,?,?,?,?)',
+                          (row['patient_id'], row['run_id'], row['kind'], row['created_at'], _json(row)))
+
+    def workflow_runs(self,patient_id):
+        return [json.loads(row['result_json']) for row in self._all('SELECT result_json FROM workflow_runs WHERE patient_id=? ORDER BY rowid',(patient_id,))]
 
 
 class SQLiteRepositoryFactory:

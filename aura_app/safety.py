@@ -9,7 +9,10 @@ from .models import ApplicationEvent
 
 
 class SafetyGateUnavailable(Exception):
-    pass
+    def __init__(self, message, *, outputs=(), failure_code='UNAVAILABLE'):
+        super().__init__(message)
+        self.outputs = outputs
+        self.failure_code = failure_code
 
 
 class ResolvedSafetyGate(Protocol):

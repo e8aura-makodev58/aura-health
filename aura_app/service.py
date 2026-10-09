@@ -4,6 +4,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
+from contextlib import contextmanager
 
 from aura_safety import Event as SafetyEvent, EventKind, Mode, SafetyEngine, SafetyState
 from aura_safety.codec import state_from_dict, state_to_dict
@@ -120,6 +121,22 @@ class PatientEventService:
         if event.event_type != EventType.ANCHOR_COMMAND:
             raise AppError("INVALID_ANCHOR_COMMAND", "anchor command event required")
         return self._process(event)
+
+    def process_batch(self, events):
+        """Server-validated import/simulation batch; one atomic local transaction.
+
+        Domain processing still uses the exact single-event application path.
+        No controller or generator writes domain records directly.
+        """
+        with self.repositories.transaction() as repo:
+            class SharedTransaction:
+                @contextmanager
+                def transaction(self):
+                    yield repo
+            child = PatientEventService(SharedTransaction(), safety_gate=self.safety_gate,
+                safety_engine=self.safety_engine, resource_registry=self.resource_registry,
+                signal_registry=self.signal_registry)
+            return [child.process(event) for event in events]
 
     def _process(self, event: ApplicationEvent) -> ApplicationResult:
         if not isinstance(event.event_type, EventType) or not event.event_id or not event.idempotency_key or not event.correlation_id:
@@ -305,6 +322,8 @@ class PatientEventService:
             return None
         processed_at = safety_time or event.received_at
         before = state_from_dict(repo.safety_state(event.patient_id) or state_to_dict(SafetyState()))
+        partial_result = None
+        gate_failure_code=None
         kind = (EventKind.FREE_TEXT_RECEIVED if event.event_type in {EventType.PATIENT_FREE_TEXT, EventType.CONTEXT_EXPLANATION, EventType.CONTEXT_EVENT, EventType.REVIEW_COMMAND}
                 else EventKind.STRUCTURED_RESPONSE_RECEIVED if event.event_type == EventType.STRUCTURED_ASSESSMENT_RESPONSE
                 else EventKind.CHECKIN_TAP_RECEIVED if event.event_type == EventType.PATIENT_CHECKIN
@@ -321,7 +340,31 @@ class PatientEventService:
             safety_event = SafetyEvent(EventKind.DETECTORS_COMPLETE, processed_at,
                                        proposed_tier=proposal, detector_outputs=outputs,
                                        episode_id=f"episode-{event.event_id}", input_id=event.event_id)
-        except SafetyGateUnavailable:
+        except SafetyGateUnavailable as failure:
+            gate_failure_code=failure.failure_code
+            if failure.outputs:
+                raised_event = SafetyEvent(EventKind.DETECTORS_COMPLETE, processed_at,
+                    proposed_tier=max(output.proposed_tier for output in failure.outputs),
+                    detector_outputs=failure.outputs, episode_id=f"episode-{event.event_id}", input_id=event.event_id)
+                raised = self.safety_engine.apply(before, raised_event)
+                partial_result = raised
+                if raised.outcome == Outcome.REJECT_EVENT:
+                    raise AppError("SAFETY_UNAVAILABLE", "partial safety evidence rejected", 503)
+                if raised.archived_episode:
+                    repo.save_archived_safety_episode({"patient_id": event.patient_id,
+                        "episode_id": raised.archived_episode.episode_id,
+                        "final_state": state_to_dict(raised.archived_episode),
+                        "archived_by_event_id": event.event_id, "previous_episode_id": raised.previous_episode_id})
+                repo.append_safety_audit({"event_id": event.event_id, "patient_id": event.patient_id,
+                    "episode_id": raised.state.episode_id, "sequence": raised.state.sequence,
+                    "policy_version": POLICY_VERSION, "policy_config_version": self.safety_engine.config.version,
+                    "record": {"previous_state": state_to_dict(before), "event": raised_event.kind.value,
+                        "resulting_state": state_to_dict(raised.state), "outcome": raised.outcome.value,
+                        "proposed_tier": raised_event.proposed_tier.name,
+                        "detector_outputs": [asdict(output) | {"proposed_tier": output.proposed_tier.name}
+                                             for output in failure.outputs],
+                        "clock_timestamp": _iso(processed_at), "partial_evidence_before_failure": True}})
+                before = raised.state
             safety_event = SafetyEvent(EventKind.DETECTOR_TIMEOUT, processed_at,
                                        input_id=event.event_id)
         except Exception:
@@ -342,8 +385,8 @@ class PatientEventService:
                                                 "archived_by_event_id": event.event_id,
                                                 "previous_episode_id": result.previous_episode_id})
         ref = {"event_id": event.event_id, "patient_id": event.patient_id,
-               "episode_id": result.state.episode_id, "source_episode_id": result.source_episode_id,
-               "previous_episode_id": result.previous_episode_id,
+               "episode_id": result.state.episode_id, "source_episode_id": result.source_episode_id or (partial_result.source_episode_id if partial_result else None),
+               "previous_episode_id": result.previous_episode_id or (partial_result.previous_episode_id if partial_result else None),
                "sequence": result.state.sequence, "outcome": result.outcome.value, "state": state}
         repo.save_safety_reference(ref)
         try:
@@ -355,6 +398,8 @@ class PatientEventService:
                                   "policy_version": POLICY_VERSION,
                                   "policy_config_version": self.safety_engine.config.version,
                                   "record": {"source_episode_id": result.source_episode_id,
+                                             "detector_config_version": getattr(self.safety_gate, 'policy', {}).get('version', 'resolved-fixtures'),
+                                             'detector_failure_code':gate_failure_code,
                                              "previous_episode_id": result.previous_episode_id,
                                              "previous_state": state_to_dict(before),
                                              "event": safety_event.kind.value,

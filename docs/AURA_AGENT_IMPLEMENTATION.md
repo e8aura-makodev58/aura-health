@@ -1,5 +1,10 @@
 # aura-agent — read-only investigation and synthesis
 
+Historical v1 checkpoint. Approved v2 replaces vocabulary checks, adds scoped
+analysis/batching, safety-gated free questions and a separate verifier. See
+[current implementation](APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md) for
+current contracts/provider/limits; the sections below describe the earlier state.
+
 Implemented 2026-10-08 following the user's 2026-10-07 instruction to build Claude's
 agent proposal. Engineering prototype; synthetic data only. Reviewer: Claude.
 

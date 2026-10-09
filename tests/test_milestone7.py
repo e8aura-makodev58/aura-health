@@ -90,12 +90,13 @@ class MilestoneSeven(unittest.TestCase):
             self.assertEqual(first.post("/demo/reset",json={"confirm":"RESET_SYNTHETIC_SESSION"}).status_code,200)
             self.assertEqual(first.get("/patients/demo-stable-7/status").json(),before)
 
-    def test_demo7_no_real_data_or_signup(self):
+    def test_demo7_no_signup_and_unassessed_synthetic_text_is_held(self):
         self.assertEqual(self.client.post("/patients",json={"patient_id":"real","display_name":"do not store","age":35}).status_code,403)
         before=self.client.get("/patients/demo-stable-7/timeline").json()
-        response=self.ingest(self.client,"demo-stable-7","PATIENT_FREE_TEXT",{"text":"do not store arbitrary personal information"})
-        self.assertEqual(response.status_code,403)
-        self.assertEqual(self.client.get("/patients/demo-stable-7/timeline").json(),before)
+        response=self.ingest(self.client,"demo-stable-7","PATIENT_FREE_TEXT",{"text":"Synthetic unassessed note"})
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(response.json()['longitudinal']['deferred'])
+        self.assertTrue(response.json()['safety']['state']['degraded'])
 
     def test_demo8_private_assets_and_api_docs_not_served(self):
         for path in ("/assets/README.md","/assets/index.html","/docs","/redoc","/openapi.json"):

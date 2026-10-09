@@ -261,12 +261,14 @@ validation is claimed; (6) the pinned safety panel and resources stay as a matte
 responsible design. This supersedes the earlier "do not add engine signals" caution
 in the simulator plan.
 
-Implementation checkpoint, 2026-10-08: the signal-registry foundation is implemented
-in `aura_longitudinal/signal_registry.json`; see `docs/SIGNAL_REGISTRY_IMPLEMENTATION.md`.
-Existing four-channel defaults are retained. New-channel calendar-coverage checks
-and a configurable absolute spread floor are engineering safeguards, not sponsor
-clinical approval. The full patient simulator, Disclaimer consolidation and other
-§39 improvements remain unfinished; this checkpoint does not claim their acceptance.
+Implementation, 2026-10-09: §39–41 input, verifier/read-tool, Disclaimer, provider
+visibility and life-simulator paths are built; see
+`docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md` for contracts/limits.
+The earlier `docs/SIGNAL_REGISTRY_IMPLEMENTATION.md` is the foundation checkpoint.
+Existing four-channel defaults and accepted domain algorithms remain unchanged.
+New-channel coverage/floor safeguards, signal enablement and synthetic effects
+are engineering settings, not sponsor clinical approval. Implementation is not
+Claude/user acceptance, clinical validation or M7 acceptance.
 
 ## 42. Antidepressant maintenance is the focus; architecture stays open to other conditions (2026-10-09)
 

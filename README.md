@@ -5,9 +5,16 @@ Operator API-key configuration: [AI provider settings](docs/SYSTEM_SETTINGS.md)
 
 [AURA agent and five skills](docs/AURA_AGENT_IMPLEMENTATION.md): read-only
 clinician briefs, record investigation, optional patient recaps, appointment
-drafts and approved-question ranking. Hosted GPT-6 Luna uses real tool calling
+drafts and approved-question ranking. Hosted configured models use real tool calling
 on synthetic records; ordinary development entry points use labelled offline
 extraction. Safety and longitudinal policy remain deterministic.
+
+[Approved agent, input and life simulator](docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md):
+scoped analysis, verified readable drafts, safety-gated free questions, manual
+measurements, confirmed CSV/JSON imports and contextual links, printable visit
+pack and guide-only life director with deterministic replay. Current live provider:
+DeepSeek / deepseek-flash, synthetic data only. Open **Demo guide** to advance
+life events; open full data to record/import measurements. No automatic sharing.
 
 ## Project planning
 
@@ -105,6 +112,8 @@ AURA_SECURE_COOKIE=false docker compose up -d --build app
 .venv/bin/python -m aura_simulation --replay /tmp/aura-d.json
 ```
 
-Hosted inputs are named fixtures only; no sign-up or real-data intake. Use Secure
-cookies for public HTTPS. Cloudflare setup awaits operator hostname/token-file
-configuration; no public link is claimed and M7 is not yet complete.
+Hosted workspaces accept bounded **synthetic** manual/import input and safety-gated
+notes/questions; no sign-up or real-patient intake. Secure cookies are required
+for public HTTPS. The demo is live at https://aura-health.makodev58.com on this
+server (0.0.0.0:8017). LAN HTTP needs the documented explicit private-host cookie
+configuration. M7 remains subject to implementation/user review.

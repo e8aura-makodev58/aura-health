@@ -32,7 +32,8 @@ async function main(){
       assert.equal(await page.locator("#scenario").inputValue(),id("B"));
       assert.equal(await page.locator("#evidence-charts .chart-card").count(),4);
       assert.ok(await page.locator("#changes-overview>section").count()<=3);
-      assert.match(await page.locator("#clinician-disclosure").innerText(),/In real use you would see only what the patient approves/);
+      assert.match(await page.locator("#clinician-disclosure").innerText(),/Clinician view.*Demo/);
+      assert.match(await page.locator('#about-view').textContent(),/real clinician would see only information approved by the patient/);
       assert.equal(await page.locator("#talk").isVisible(),false);
       await page.screenshot({path:path.join(out,"clinician-b-laptop.png"),fullPage:true});
     });
@@ -105,7 +106,7 @@ async function main(){
         await choose(key);await role("clinician");assert.equal(await page.locator("#evidence-charts .chart-card").count(),4);
         const evidence=await page.locator("#evidence-charts").innerHTML();
         await role("patient");await navigate("patterns");assert.equal(await page.locator("#evidence-charts").innerHTML(),evidence);
-        await navigate("review");assert.match(await page.locator(".sharing-note").innerText(),/not saved as approval/);
+      await navigate("review");assert.match(await page.locator(".sharing-note").innerText(),/Not sent/);
       }
     });
     await check("DV10_RESPONSIVE_KEYBOARD",async()=>{
@@ -132,9 +133,9 @@ async function main(){
     });
     await check("DV12_HOSTED_CONTEXT_SUBMISSION_HONESTY",async()=>{
       await choose("C");await role("patient");
-      if(catalog.hosted)assert.equal(await page.locator("#clarify").isHidden(),true);
+      if(catalog.hosted)assert.equal(await page.locator("#clarify").isHidden(),false);
       await navigate("patterns");assert.ok((await page.locator("#context-list").innerText()).length>0);
-      if(catalog.hosted)assert.equal(await page.locator("#explain").isDisabled(),true);
+      if(catalog.hosted)assert.equal(await page.locator("#explain").isDisabled(),false);
     });
     assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,"dual-view-results.json"),JSON.stringify({results,errors},null,2));
   }finally{await browser.close();}

@@ -1,0 +1,8 @@
+{
+  "version": "demo-detector-v1-not-clinically-validated",
+  "semantic_targets": {"none":"NORMAL", "possible":"CLARIFY", "likely":"ELEVATED"},
+  "rules": [
+    {"pattern":"\\b(i want to die|kill myself|hurt myself|end my life|suicid(?:e|al))\\b", "proposal":"ELEVATED"},
+    {"pattern":"\\b(i (?:have |just )?(?:taken|took) an overdose|i cannot keep myself safe|i am going to kill myself now)\\b", "proposal":"IMMEDIATE"}
+  ]
+}

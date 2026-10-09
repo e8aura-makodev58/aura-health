@@ -37,7 +37,7 @@ function dateLabel(at) {
 function signalLabel(key) { return labels[key.signal] || key.signal; }
 function sameSignal(a, b) { return a.signal === b.signal && a.source === b.source && (a.metric || "") === (b.metric || ""); }
 // Finite hosted demo action, not context credibility or a clinical classification.
-function explanationOptions() { return current.view.explanation_options.filter(option => !hosted || option.explanation === "new stable work schedule"); }
+function explanationOptions() { return current.view.explanation_options; }
 function number(value) { return value == null ? "Not available" : new Intl.NumberFormat("en-GB", {maximumFractionDigits: 1}).format(value); }
 function deviation(value, key) {
   if (value == null) return "Not available";
@@ -77,7 +77,7 @@ function showSafety(output) {
 
 function goPage() {
   const requested = location.hash.slice(1) || "home";
-  let page = ["home", "patterns", "review", "about"].includes(requested) ? requested : "home";
+  let page = requested==='disclaimer'?'about':["home", "patterns", "review", "about"].includes(requested) ? requested : "home";
   if (presentationRole === "clinician" && page !== "about") page = "patterns";
   document.body.dataset.role = presentationRole;
   document.body.dataset.page = page;
@@ -132,7 +132,7 @@ function render() {
   setText("home-subtitle", communication?.pinned_resources ? "The policy message and separate resources remain above, on every page." : "You can check in whenever it feels useful.");
   $("talk").disabled = busy;
   setText("communication-message", communication?.message);
-  setText("wording-origin",communication?.generation_used?"Live AI wording · synthetic demo data only.":"Fixed wording · policy or model fallback.");
+  setText("wording-origin",communication?.generation_used?"AI-written":"Fixed wording");
   $("communication-card").hidden = !communication?.message || Boolean(communication.pinned_resources);
   $("clarify").hidden = !["MICRO_CHECKIN", "TARGETED_CLARIFICATION"].includes(status.latest_communication_decision) || !explanationOptions().length;
   setText("routine-name", view.patient.treatment?.medication_name || "Follow your existing clinician-managed routine.");
@@ -143,10 +143,10 @@ function render() {
   // Exact server state labels; no missingness/trust calculation happens in the browser.
   const unavailable = status.signals.some(signal => signal.sensing_state === "UNOBSERVED");
   const rebuilding = status.signals.some(signal => signal.trust_state === "REESTABLISHING");
-  if (!communication?.pinned_resources && unavailable) setText("home-subtitle", "Wearable data is unavailable. Missing data is not a conclusion about you.");
+  if (!communication?.pinned_resources && unavailable) setText("home-subtitle", "Wearable data is unavailable. You can still check in.");
   else if (!communication?.pinned_resources && rebuilding) setText("home-subtitle", "Data is back. Your personal reference is being re-established.");
   setText("data-heading", !status.signals.length ? "No wearable observations yet" : unavailable ? "Wearable data unavailable" : rebuilding ? "Data is back. Reference is re-establishing." : "Personal context, at your pace.");
-  setText("data-summary", !status.signals.length ? "You can still check in or raise a concern without wearable data." : unavailable ? "Missing data is just missing data—not a conclusion about how you are doing." : rebuilding ? "Observations have returned; historical-reference trust is still being re-established." : "Recorded wearable observations are available. Reference status is shown with each signal.");
+  setText("data-summary", !status.signals.length ? "No wearable records available." : unavailable ? "Wearable data unavailable." : rebuilding ? "Reference is being re-established." : "Wearable records available.");
   setText("privacy-notice", view.privacy_notice);
   if(hosted) setText("dialog-privacy",`Synthetic examples only; safety gate first. ${view.privacy_notice}`);
   renderPatterns(); renderReview(); window.renderAuraEvidence(current.evidence); goPage();
@@ -169,7 +169,7 @@ function renderPatterns() {
     const button = element("button", "Reference, coverage & context", "text-button"); button.addEventListener("click", () => showWhy(signal)); body.append(button);card.append(body); container.append(card);
   }
   if (!status.signals.length) container.append(element("p", "No wearable observations yet. You can still check in or raise a concern."));
-  setText("patterns-summary",view.decision_reason || "Inspect recorded signals below. Missing observations are not a conclusion about your health.");
+  setText("patterns-summary",view.decision_reason || "Inspect recorded signals below.");
   $("held-list").replaceChildren();
   $("held-section").hidden = !status.held_for_review.length;
   for (const row of status.held_for_review) {
@@ -223,7 +223,7 @@ function reviewGroup(title, items) {
   summary.append(element("span",`${items.length} recorded item${items.length===1?"":"s"}`,"summary-caption"));group.append(summary);
   group.open=Boolean(items.length && ["Meaningful observations","Explained & held for review","Questions you recorded"].includes(title));
   if (!items.length) body.append(element("p", "None recorded for this review period."));
-  else body.append(element("p","Temporary preview only · selections are not sent or saved as approval.","fine"));
+  else body.append(element("p","Not sent","fine"));
   items.forEach((text, index) => {
     const key = `${title}:${index}`, label = element("label"), box = element("input"); box.type = "checkbox"; box.checked = selections.has(key);
     box.addEventListener("change", () => { if (box.checked) selections.add(key); else selections.delete(key); selectionSummary(); });
@@ -235,12 +235,12 @@ function renderReview() {
   const snapshot = current.snapshot; $("review-list").replaceChildren();
   const preview=$("appointment-preview"); preview.replaceChildren(element("h2","A note to look through"));
   for(const change of snapshot.meaningful_longitudinal_changes.slice(0,3)) preview.append(element("p",`${change.latest.description} Recorded ${dateLabel(change.first_seen)} — ${dateLabel(change.last_seen)}.`));
-  if(!snapshot.meaningful_longitudinal_changes.length)preview.append(element("p","No meaningful longitudinal change is retained in this snapshot. This is not a health assessment."));
+  if(!snapshot.meaningful_longitudinal_changes.length)preview.append(element("p","No meaningful longitudinal change is retained in this snapshot."));
   const last=snapshot.patient_checkin_trend.at(-1);
   if(last)preview.append(element("p",`Latest check-in you recorded: ${last.state}, ${dateLabel(last.at)}.`));
   for(const row of snapshot.explained_held_for_review){const held=row.record||row;preview.append(element("p",`${held.detected_drift.description} Your explanation: ${held.explanation}. The observation and your own reference are retained.`));}
   for(const question of snapshot.patient_selected_questions)preview.append(element("p",`Question you recorded: ${question}`));
-  preview.append(element("p","Temporary preview — not sent, saved as approval or shared. Sources and routine records are available below.","fine"));
+  preview.append(element("p","Not sent · sources below","fine"));
   setText("review-period", `${dateLabel(snapshot.review_period.start)} — ${dateLabel(snapshot.review_period.end)}`);
   reviewGroup("Reference & data availability", current.status.signals.map(signal => `${signalLabel(signal)} · ${sensingLabels[signal.sensing_state]} · ${trustLabels[signal.trust_state]} · coverage ${number(signal.rolling.coverage_ratio)}`));
   reviewGroup("Meaningful observations", snapshot.meaningful_longitudinal_changes.map(change => change.latest.description));
@@ -258,15 +258,15 @@ function renderReview() {
 function openInput(kind = "text") {
   if (!current || busy) return;
   dialogKind = kind; $("input-text").value = ""; $("explanation-fields").hidden = kind !== "explanation";
-  $("input-text").readOnly=hosted;
-  setText("input-text-label",hosted ? kind==="explanation" ? "Linked synthetic explanation" : "Exact synthetic example to be submitted" : "Your note");
-  $("input-text").setAttribute("aria-label",hosted?"Exact synthetic input; choose an example":"Your note");
-  $("send-input").disabled=hosted && kind!=="explanation";
+  $("input-text").readOnly=false;
+  setText("input-text-label",kind==='explanation'?'Your explanation':'Your note');
+  $("input-text").setAttribute("aria-label",'Your note');
+  $("send-input").disabled=false;
   $("fixture-buttons").hidden = !catalog.length || kind === "explanation";
   for (const button of document.querySelectorAll("[data-fixture]")) button.hidden = button.dataset.purpose !== kind;
   for(const button of document.querySelectorAll("[data-fixture]"))button.setAttribute("aria-pressed","false");
   setText("dialog-heading", kind === "explanation" ? "Keep an explanation with this change." : kind === "question" ? "A question for your next review." : hosted ? "Try a conversation example" : "What would you like to share?");
-  setText("dialog-copy", kind === "explanation" ? "This preserves the observation and reference, while keeping your explanation alongside them." : hosted ? "Choose a labelled synthetic example. This prototype does not accept personal information or offer unrestricted chat." : "You can initiate a conversation even when AURA has nothing to ask.");
+  setText("dialog-copy", kind === "explanation" ? "Keep context alongside the recorded change." : "Enter a synthetic note. Safety evaluation comes first.");
   setText("send-input", kind === "explanation" ? "Keep explanation for review" : "Submit note");
   if (kind === "explanation") {
     if (!explanationOptions().length) { tell("No supported linked explanation is available. Arbitrary explanations are not automatically judged credible."); return; }
@@ -301,6 +301,7 @@ async function sendPending() {
     await api(pending.path, pending.body);
     pending = null; $("input-dialog").close();
     await refresh(); tell("Recorded. Nothing has been sent to a clinician.");
+    window.dispatchEvent(new CustomEvent('aura-input-committed'));
   } catch (error) {
     if (error.network || error.status >= 500) {
       offline = true; showSafety(communication);
@@ -368,9 +369,9 @@ async function start() {
   try {
     const result = await api("/demo/scenarios"); catalog = result.scenarios; hosted = Boolean(result.hosted);
     presentationRole = "clinician"; $("role-switch").hidden = false;
-    $("hosted-notice").hidden = !hosted; $("reset-demo").hidden = !result.can_reset;
+    $("hosted-notice").hidden = true; $("reset-demo").hidden = !result.can_reset;
     $("connect-form").hidden = hosted;
-    if (hosted) setText("dialog-privacy","Only labelled synthetic fixtures are accepted. Do not enter real information. Current provider status is shown after loading.");
+    if (hosted) setText("dialog-privacy","Synthetic input only. Unavailable safety evaluation holds the note.");
     $("scenario").replaceChildren();
     $("scenario").disabled = false;
     for (const scenario of catalog) { const option = element("option", scenario.label); option.value = scenario.patient_id; $("scenario").append(option); }

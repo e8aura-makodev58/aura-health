@@ -8,7 +8,7 @@ import threading
 
 from aura_agent.guard import blocked_reason
 from aura_agent.providers import ScriptedAgentProvider
-from aura_agent.roles import AgentRole, QUERIES, QUESTIONS
+from aura_agent.roles import AgentRole, QUERIES, QUESTIONS, QUESTION_CATALOG
 from aura_agent.runtime import load_config, run
 from aura_agent.tools import RecordTools
 from .evidence import EvidenceViewService
@@ -45,24 +45,26 @@ class AgentService:
                     (not ref or ref["state"]["degraded"] or ref["outcome"] in {"DEFER_EVENT", "REJECT_EVENT", "SET_DEGRADED"})):
                 held = True
         state = repo.safety_state(patient_id)
-        reason = blocked_reason(state, self.events.resource_registry, self.clock(), offline=offline, held=held)
+        # Historical held inputs are excluded from facts; current safety still blocks.
+        reason = blocked_reason(state, self.events.resource_registry, self.clock(), offline=offline)
         signature = digest({"events": [r["event_id"] for r in rows], "state": state,
                             "baselines": repo.baselines(patient_id), "held": repo.held(patient_id),
                             "agent_config": asdict(self.config),
                             "signal_registry": self.events.signal_registry.fingerprint,
+                            'question_catalog': QUESTION_CATALOG,
                             "references": references, "model": self.provider.model_id, "blocked": reason})
         return signature, reason, (rows[-1] if rows else None), state
 
-    def execute(self, patient_id, role, *, run_id, query_id=None, window_days=56, client_offline=False):
+    def execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False):
         try:
-            return self._execute(patient_id, role, run_id=run_id, query_id=query_id,
+            return self._execute(patient_id, role, run_id=run_id, query_id=query_id, question=question,
                                  window_days=window_days, client_offline=client_offline)
         except AppError:
             raise
         except Exception:
             raise AppError("AGENT_UNAVAILABLE", "Assistant could not complete this read-only request", 503) from None
 
-    def _execute(self, patient_id, role, *, run_id, query_id=None, window_days=56, client_offline=False):
+    def _execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False):
         try:
             role = AgentRole(role)
         except ValueError:
@@ -70,10 +72,23 @@ class AgentService:
         if (not isinstance(run_id, str) or not 1 <= len(run_id) <= 100 or
                 type(window_days) is not int or not 1 <= window_days <= 180 or type(client_offline) is not bool):
             raise AppError("INVALID_AGENT_REQUEST", "Invalid assistant options")
-        if (role == AgentRole.RECORD_QA and query_id not in QUERIES) or (role != AgentRole.RECORD_QA and query_id is not None):
+        if (question is not None and (role != AgentRole.RECORD_QA or query_id is not None or not isinstance(question, str) or not 1 <= len(question.strip()) <= 2000)):
+            raise AppError('INVALID_AGENT_REQUEST', 'Provide one bounded record question')
+        if (role == AgentRole.RECORD_QA and question is None and query_id not in QUERIES) or (role != AgentRole.RECORD_QA and query_id is not None):
             raise AppError("INVALID_AGENT_REQUEST", "Select an approved record question; free text is not accepted")
-        options = digest({"role": role.value, "query": query_id, "window": window_days, "offline": client_offline})
+        options = digest({"role": role.value, "query": query_id, 'question_hash': digest(question), "window": window_days, "offline": client_offline})
         with self.lock:
+            if question is not None and not client_offline:
+                from uuid import uuid5, NAMESPACE_URL
+                question_id = str(uuid5(NAMESPACE_URL, f'aura-qa:{patient_id}:{run_id}:{digest(question)}'))
+                with self.events.repositories.transaction() as repo:
+                    prior = repo.agent_run(patient_id, run_id)
+                    if prior and prior['request_fingerprint'] != options:
+                        raise AppError('AGENT_RUN_CONFLICT', 'Run ID belongs to different options', 409)
+                    rows = repo.events(patient_id)
+                    at = datetime.fromisoformat(rows[-1]['occurred_at']) if rows else self.clock()
+                self.events.process(ApplicationEvent(question_id, patient_id, EventType.PATIENT_FREE_TEXT,
+                    at, self.clock(), 'synthetic_patient_ui', {'text': question}, question_id, question_id))
             with self.events.repositories.transaction() as repo:
                 signature, blocked, latest, state = self._approval(repo, patient_id, client_offline)
                 cached = repo.agent_run(patient_id, run_id)
@@ -95,11 +110,14 @@ class AgentService:
                 with self.events.repositories.transaction() as repo:
                     evidence["agent_assessed_context_ids"] = [ref["event_id"] for ref in repo.safety_references(patient_id)
                         if not ref["state"]["degraded"] and ref["outcome"] not in {"DEFER_EVENT", "REJECT_EVENT", "SET_DEGRADED"}]
+                    assessed=set(evidence['agent_assessed_context_ids'])
+                    evidence['assessed_notes']=[{'event_id':row['event_id'],'at':row['occurred_at'],'text':row['payload']['text']}
+                        for row in repo.events(patient_id) if row['event_type']=='PATIENT_FREE_TEXT' and row['event_id'] in assessed and not row['longitudinal_deferred']]
                     if self._approval(repo, patient_id, client_offline)[0] != signature:
                         blocked = "STATE_CHANGED_BEFORE_GENERATION"
                 if not blocked:
                     tools = RecordTools(evidence, role, window_days=window_days)
-                    result = run(role, QUERIES.get(query_id), tools, self.provider, self.config)
+                    result = run(role, question or QUERIES.get(query_id), tools, self.provider, self.config)
                     # Patient recap is optional; no new interruption authorization.
                     if role == AgentRole.PATIENT_INSIGHT and not tools.required:
                         result["draft"] = {"claims": [], "question_ids": []}
@@ -117,6 +135,7 @@ class AgentService:
                     model_id=self.provider.model_id, safety_reference={"sequence": (state or {}).get("sequence"), "episode_id": (state or {}).get("episode_id")},
                     question_options=QUESTIONS, share_status="NOT_SENT", automatically_sent=False,
                     disclosure=("Assistant paused: safety interaction or record evaluation comes first." if blocked else
+                                "Checked AI claims; unsupported claims removed. Required history uses labelled source extraction where needed." if result.get('reason')=='VALIDATED_PARTIAL_MODEL_DRAFT' else
                                 "AI draft from synthetic records — check the linked sources." if result["generation_used"] else
                                 "Offline rule-based extraction — no AI-generated draft. Model synthesis unavailable or not validated."))
                 repo.append_agent_run(result)

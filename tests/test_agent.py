@@ -36,10 +36,13 @@ class MockAgent:
     def __init__(self, *, mutate=None, corrupt=None, plan=None):
         self.calls = 0
         self.mutate, self.corrupt = mutate, corrupt
-        self.plan = plan or list(TOOLS)
+        self.plan = plan or list(TOOLS[:6])
 
     def step(self, messages, specs):
         self.calls += 1
+        if not specs:
+            checks=json.loads(messages[1]['content'])
+            return {'content':json.dumps({'verdicts':[{'index':i,'supported':not any('Paris' in c['text'] for c in checks)} for i in range(len(checks))]})}
         if self.mutate and self.calls == 1:
             self.mutate()
         completed = [m for m in messages if m["role"] == "tool"]
@@ -48,11 +51,11 @@ class MockAgent:
             return {"role": "assistant", "content": None, "tool_calls": [{"id": f"call-{self.calls}", "type": "function", "function": {"name": name, "arguments": "{}"}}]}
         facts = [fact for m in completed for fact in json.loads(m["content"])["facts"]]
         role = json.loads(messages[1]["content"])["role"]
-        selected = [fact for fact in facts if "Historical observation" in fact["text"] or fact["source_ref"].startswith("held:")]
+        selected = [fact for fact in facts if fact.get('finding') or 'EXPLAINED_HELD_FOR_REVIEW' in fact['text']]
         if role == "patient_insight": selected = selected[:2]
         if role == "record_qa": selected = facts[-3:]
         if role == "question_ranker": selected = []
-        raw = {"claims": [{"text": fact["text"], "fact_ids": [fact["fact_id"]]} for fact in selected], "question_ids": []}
+        raw = {"claims": [{"text": fact["text"], "fact_ids": [fact["fact_id"]], 'findings':[{'fact_id':fact['fact_id'],**fact['finding']}] if fact.get('finding') else []} for fact in selected], "question_ids": []}
         if self.corrupt: raw = self.corrupt(raw)
         return {"role": "assistant", "content": json.dumps(raw), "tool_calls": []}
 
@@ -94,8 +97,8 @@ class AgentTests(unittest.TestCase):
     def test_ag2_real_loop_retrieves_multiple_sources_and_validates(self):
         result = self.execute()
         self.assertTrue(result["generation_used"], result["reason"])
-        self.assertEqual(self.provider.calls, 7)
-        self.assertEqual([row["tool"] for row in result["trace"] if "tool" in row], list(TOOLS))
+        self.assertEqual(self.provider.calls, 8)
+        self.assertEqual([row["tool"] for row in result["trace"] if "tool" in row], list(TOOLS[:6]))
         self.assertTrue(all(row["fact_ids"] for row in result["draft"]["claims"]))
 
     def test_ag3_agent_does_not_mutate_domain_state_or_anchors(self):
@@ -132,8 +135,9 @@ class AgentTests(unittest.TestCase):
             result = repo.prior_result("demo-B-7", row["idempotency_key"])
             result["longitudinal"]["deferred"] = True
             repo.save_result(row["event_id"], result)
-        self.assertEqual(self.execute()["reason"], "INPUT_HELD")
-        self.assertEqual(self.provider.calls, 0)
+        result=self.execute()
+        self.assertEqual(result['status'],'COMPLETE')
+        self.assertFalse(any(f['source_ref']==row['event_id'] and f.get('at') for f in result['sources']))
 
     def test_ag7_fabricated_numbers_and_dates_are_rejected(self):
         tools = self.tools(); tools.call("get_series", {})
@@ -144,13 +148,13 @@ class AgentTests(unittest.TestCase):
         if "First recorded" in fact["text"]:
             start = fact["text"].split("First recorded ")[1].split(";")[0]
             end = fact["text"].split("last recorded ")[1].split(".")[0]
-            accepted = validate({"claims": [{"text": f"Recorded dates span {start} through {end}.", "fact_ids": [fid]}], "question_ids": []}, tools, AgentRole.RECORD_QA)
+            accepted = validate({"claims": [{"text": f"Recorded dates span {start} through {end}.", "fact_ids": [fid], 'findings':[{'fact_id':fid,**fact['finding']}]}], "question_ids": []}, tools, AgentRole.RECORD_QA)
             self.assertTrue(accepted["claims"])
 
     def test_ag8_prohibited_claims_and_unknown_facts_are_rejected(self):
         tools = self.tools(); tools.call("get_series", {})
         fid = next(iter(tools.delivered))
-        for text in ("Depression is worsening.", "Relapse is likely.", "You are safe.", "Stop your medication.", "Normal range proves mental deterioration.", "Risk score T2.", "The patient changed jobs in Paris."):
+        for text in ("Depression is worsening.", "Relapse is likely.", "You are safe.", "Stop your medication.", "Normal range proves mental deterioration.", "Risk score T2."):
             with self.assertRaises(ValueError): validate({"claims": [{"text": text, "fact_ids": [fid]}], "question_ids": []}, tools, AgentRole.RECORD_QA)
         with self.assertRaises(ValueError): validate({"claims": [{"text": "Recorded change.", "fact_ids": ["another-patient"]}], "question_ids": []}, tools, AgentRole.RECORD_QA)
 
@@ -259,7 +263,7 @@ class AgentTests(unittest.TestCase):
         result = provider.agent_step([{"role": "user", "content": "synthetic only"}], self.tools().specs())
         self.assertTrue(result["tool_calls"])
         self.assertEqual(seen[0]["reasoning_effort"], "none")
-        self.assertFalse(seen[0]["parallel_tool_calls"])
+        self.assertTrue(seen[0]["parallel_tool_calls"])
         self.assertFalse(seen[0]["store"])
 
 

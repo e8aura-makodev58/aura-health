@@ -2,6 +2,8 @@
 
 from enum import Enum
 from pathlib import Path
+import json
+import os
 
 
 class AgentRole(str, Enum):
@@ -18,14 +20,14 @@ QUERIES = {
     "wearable_gaps": "Which wearable gaps and returns were recorded?",
     "routine": "What medication-routine events and check-ins were recorded?",
 }
-QUESTIONS = {
-    "context": "Is there any context you would like to add to these recorded changes?",
-    "recording": "Were there any gaps in what you were able to record?",
-    "visit": "Which of these observations would you like to discuss at your appointment?",
-}
-TOOLS = ("get_status", "get_series", "get_context", "get_decisions", "get_review_snapshot", "get_gaps")
+QUESTION_CATALOG=json.loads(Path(os.environ.get('AURA_AGENT_QUESTIONS') or Path(__file__).with_name('questions.json')).read_text())
+QUESTIONS=QUESTION_CATALOG['questions']
+if set(QUESTIONS)!={'context','recording','visit'} or any(not isinstance(text,str) or not 1<=len(text)<=300 for text in QUESTIONS.values()):
+    raise ValueError('invalid approved question wording')
+TOOLS = ("get_status", "get_series", "get_context", "get_decisions", "get_review_snapshot", "get_gaps",
+         "compare_windows", "day_of_week", "summarize_gaps")
 ROLE_TOOLS = {role: TOOLS for role in AgentRole}
-PROMPT_VERSION = "aura-agent-v1"
+PROMPT_VERSION = "aura-agent-v2"
 
 
 def instructions(role: AgentRole) -> str:

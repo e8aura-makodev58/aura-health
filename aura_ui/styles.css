@@ -303,3 +303,6 @@ caption {text-align:left;padding:8px 0;font-size:.72rem;color:var(--muted)}
 .recap-charts svg { width: 100%; }
 .recap-charts .chart-card > details, .recap-charts .chart-status { display: none; }
 @media(max-width:380px) { .recap-charts { grid-template-columns: 1fr; } }
+/* Confirmed intake and guide controls stay optional on phone-sized layouts. */
+.workflow-card{padding:1rem}.measurement-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}.measurement-fields label{align-self:end}.workflow-card textarea,.simulator-controls textarea{width:100%;max-width:100%}.simulator-controls{border-top:1px solid var(--line,#ddd);padding-top:1rem;margin-top:1rem}.simulator-controls pre{white-space:pre-wrap;overflow-wrap:anywhere}.agent-disclosure summary{font-size:.85rem;color:var(--muted,#667)}.agent-claim{break-inside:avoid}
+@media print{body.printing-review>*{display:none!important}body.printing-review main{display:block!important}body.printing-review main>.view{display:none!important}body.printing-review #review-view{display:block!important}body.printing-review #review-view button,body.printing-review #review-details{display:none!important}body.printing-review #review-view .agent-trace{display:none!important}body.printing-review #review-view .sharing-note{display:block!important}}

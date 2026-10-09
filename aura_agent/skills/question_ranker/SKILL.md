@@ -1,4 +1,4 @@
-# Approved question ranking — v1
+# Approved question ranking — v2
 
 Read the committed communication decision and relevant record. Select or rank
 up to three question IDs from the supplied approved set only. Do not write

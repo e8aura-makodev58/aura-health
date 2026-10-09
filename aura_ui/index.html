@@ -9,6 +9,7 @@
   <script src="/assets/evidence.js" defer></script>
   <script src="/assets/settings.js" defer></script>
   <script src="/assets/agent.js" defer></script>
+  <script src="/assets/features.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -68,6 +69,7 @@
   <dialog id="settings-dialog" aria-labelledby="settings-heading">
     <div class="dialog-top"><p class="eyebrow">SYSTEM · ADMINISTRATOR ONLY</p><button id="close-settings" aria-label="Close settings">×</button></div>
     <h2 id="settings-heading">AI provider settings</h2>
+    <p id="settings-current-model" role="status">Loading current model…</p>
     <p class="fine">Live wording uses synthetic demo data only. Safety and longitudinal policy remain deterministic. Keys are server-side and write-only.</p>
     <form id="settings-unlock"><label for="settings-admin">Administrator access token</label><input id="settings-admin" type="password" autocomplete="off" spellcheck="false" required><button type="submit" class="primary">Unlock settings</button><p class="fine">The operator token is in the server's protected <code>system/admin.token</code> file. See docs/SYSTEM_SETTINGS.md. Use HTTPS or a localhost SSH tunnel; never submit credentials over LAN HTTP.</p></form>
     <section id="settings-editor" hidden>

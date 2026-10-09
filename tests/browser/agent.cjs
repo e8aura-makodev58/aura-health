@@ -14,10 +14,12 @@ if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Lo
   page.on("pageerror",error=>errors.push(error.message));
   try {
     await page.goto(base);
-    await page.waitForSelector("#patterns-view:not([hidden])");
+    await page.waitForSelector("#patterns-view:not([hidden])").catch(async error=>{console.error(errors,await page.locator('#notice').textContent());throw error;});
     await page.waitForFunction(()=>document.getElementById("notice").hidden);
     await page.locator('[data-agent-role="clinician_brief"]').click();
     await page.waitForSelector("#agent-clinician_brief .agent-disclosure");
+    assert.match(await page.locator("#agent-clinician_brief .agent-disclosure summary").innerText(),/Offline extraction/);
+    await page.locator('#agent-clinician_brief .agent-disclosure summary').click();
     assert.match(await page.locator("#agent-clinician_brief").innerText(),/Offline rule-based/);
     assert.ok(await page.locator("#agent-clinician_brief .agent-claim").count()>0);
     await page.locator("#agent-clinician_brief .agent-claim summary").first().click();

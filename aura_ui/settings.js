@@ -31,6 +31,10 @@
   }
   node("system-settings").addEventListener("click",()=>{
     lock();feedback("");dialog.showModal();
+    node('settings-current-model').textContent='Loading current model…';
+    fetch('/system/status',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(s=>{
+      node('settings-current-model').textContent=`${s.provider} / ${s.model} · ${s.live_enabled?'Live model enabled':'Offline fallback'} · synthetic data`;
+    }).catch(()=>{node('settings-current-model').textContent='Current provider unavailable on this entry point.';});
     const secure=window.isSecureContext && (location.protocol==="https:"||["localhost","127.0.0.1","[::1]"].includes(location.hostname));
     node("settings-unlock").querySelector("button").disabled=!secure;
     if(!secure)feedback("Use HTTPS or forward port 8017 over SSH and open localhost. Credentials must not be sent over unencrypted LAN HTTP.");
