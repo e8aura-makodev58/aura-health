@@ -11,7 +11,7 @@ extraction. Safety and longitudinal policy remain deterministic.
 
 ## Project planning
 
-**aura-health** is a wearable-first, patient-controlled companion for adults on stable antidepressant maintenance treatment (hackathon challenge: *AI Healthier Every Day*). It is a synthetic-data research prototype, not a diagnostic or clinical service.
+**aura-health** is a wearable-first, patient-controlled companion intended to be condition-agnostic; the proof of concept targets adults on stable antidepressant maintenance treatment (hackathon challenge: *AI Healthier Every Day*). It is a synthetic-data research prototype, not a diagnostic or clinical service.
 
 - [Agent handover](HANDOVER.md) — current state, next steps, and update instructions for agents working on this repo.
 - [Product vision (current statement)](docs/PRODUCT_VISION.md)
