@@ -69,6 +69,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Experience acceptance / Claude implementation review:** scope is approved and implemented; review GP usefulness, minimal patient burden and source/chart fidelity before more features. No extra concern categories, ordinary deferral or persisted sharing were added. Five concern paths, saved approval and production clinician authorization still do not exist.
 
 - **Asynchronous updates:** Claude added DECISIONS §§42–43 (open architecture/whole-person consideration and default patient text recap). Reported to the user this session; no other-condition implementation or automatic/default generation was silently added. Confirm the home-recap direction before changing that default. Existing optional recap/full analytics remains.
+- **New UX scope read (2026-10-09):** `docs/IMPRESSION_SPEC.md` I1–I8 is separate from the completed §39–41 implementation. Automatic arrival assessment, story-linked chart spans, default patient text recap, guided three-minute story and before/after panel are not implemented. Living inputs/simulator, free Q&A and Disclaimer groundwork exist; this does not mean all impression criteria pass. No blocking design concern identified; automatic generation needs existing guard/cache/budget enforcement.
 - **Public URL:** HTTPS Cases A–F reads/isolation/retry verified; local browser fallback tests pass. Live unavailable-provider fallback and UI remain subject to broader reviewer evaluation. Do not assume repository sidecar is the hosting route.
 - **Tencent Cloud mirror:** whether to also mirror the live demo to Tencent Cloud. The user will decide closer to the 2026-10-16 deadline (M8 window, 13–15 Oct).
 
@@ -216,6 +217,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-09 — Codex Sol — Clarify asynchronous scope versus completed work
+- User asked whether Claude's new scope was read. Re-read HANDOVER, PRODUCT_VISION, IMPRESSION_SPEC I1–I8 and DECISIONS §§42–43. Prior completion d4d99fa covers §39–41, not the whole newer UX scope. Recorded remaining impression work explicitly; no runtime changes or new scope approval inferred from the question.
+- Verified: clean main/current origin before documentation change; prior full gate 238 PASS remains unchanged, not rerun for this scope-read/doc-only turn. No clinical or implementation contradiction identified; default auto-generation must retain existing safety/cache/budget constraints.
 
 ### 2026-10-09 — Codex Sol — Complete approved agent, intake and life simulator
 - Implemented all approved §39–41 paths rather than stopping at the registry dependency. Current contracts, modules/configuration and limits: `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`. Accepted safety/longitudinal algorithms/dependencies unchanged; additive append-only workflow traces. No CodeBuddy, production auth/sharing, real wearables or new-condition policy.
