@@ -209,7 +209,7 @@
     if(byId("workspace-safety")?.tagName==='DETAILS')byId("workspace-safety").open = Boolean(evidence.safety.state?.episode_id || evidence.safety.state?.degraded);
     const review=byId("evidence-review"); review.replaceChildren();
     const treatment=evidence.patient.treatment||{};
-    review.append(node("p",`Recorded treatment context: ${treatment.medication_name || "not recorded"} · schedule ${treatment.medication_schedule || "not recorded"} · stable since ${treatment.stable_since || "not recorded"} · next review ${treatment.next_review || "not configured"}. These are records, not treatment instructions.`,"fine"));
+    review.append(node("p",`Recorded treatment context: ${treatment.medication_name || "not recorded"} · schedule ${treatment.medication_schedule || "not recorded"} · stable since ${treatment.stable_since || "not recorded"} · next review ${treatment.next_review || "not configured"}.`,"fine"));
     for(const row of evidence.questions) review.append(node("p",`${row.question} · ${shortDate(day(row.at))}`,"fine"));
     if(!evidence.questions.length)review.append(node("p","No patient-selected questions recorded.","fine"));
     for(const row of evidence.review_items)review.append(node("p",`${row.summary} · ${row.status} · not shared`,"fine"));
@@ -233,7 +233,7 @@
     panel.hidden=!comparisonOpen;if(!comparisonOpen)return;
     const dates=selectedDates(evidence);panel.replaceChildren();if(!dates)return;
     panel.dataset.start=new Date(dates.start).toISOString().slice(0,10);panel.dataset.end=new Date(dates.end).toISOString().slice(0,10);
-    panel.append(node('h2','Same record, two presentations'),node('p',`${panel.dataset.start}–${panel.dataset.end}. Recorded measurements versus sourced observations, not an efficacy comparison.`,'fine'));
+    panel.append(node('h2','Same record, two presentations'),node('p',`${panel.dataset.start}–${panel.dataset.end}. Recorded measurements and sourced observations.`,'fine'));
     const grid=node('div',null,'comparison-columns'),raw=node('section'),summary=node('section');raw.append(node('h3','Raw measurements'));
     const rows=evidence.signals.flatMap(signal=>signal.observations.filter(row=>day(row.day)>=dates.start&&day(row.day)<=dates.end).map(row=>({date:row.day,signal:signal.label,source:signal.key.source,metric:signal.key.metric||'',value:row.value,unit:signal.unit,coverage:row.coverage,quality:row.data_quality,deferred:row.deferred,event:row.event_id})))
       .sort((a,b)=>a.date.localeCompare(b.date)||a.signal.localeCompare(b.signal)||a.source.localeCompare(b.source)||a.metric.localeCompare(b.metric)||a.event.localeCompare(b.event));

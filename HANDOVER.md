@@ -30,7 +30,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ---
 
-## Current state (as of 2026-10-09)
+## Current state (as of 2026-10-10)
 
 - **Project name:** officially **aura-health** (user, 2026-09-23). Care Plan Bridge (`PRODUCT_FRAMEWORK*.md`, `FRAMEWORK_CRITIQUE.md`) was dropped; those docs are marked superseded and kept for background only.
 - **Product being built:** a longitudinal, wearable-first companion for adults on stable antidepressant maintenance treatment. Spec: `aura_health_framework_v1.0.md`. Safety policy: `aura_deterministic_safety_policy_state_machine_v1.2.md`.
@@ -50,6 +50,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Operator provider settings:** gear supports OpenRouter, OpenAI, DeepSeek and Tencent; provider/model visible before unlock. **DeepSeek / deepseek-flash / live enabled**, public status verified 2026-10-09. Live transports remain hosted synthetic-only; HTTPS/loopback/admin protection and write-only keys unchanged. See [`docs/SYSTEM_SETTINGS.md`](docs/SYSTEM_SETTINGS.md). No secrets in traces or source control.
 - **Not production-ready:** unvalidated demo detectors/verifier, patient authentication/sharing, institutional deployment, real wearable ingestion, sponsor clinical/content review. Ordinary non-demo gate still holds unassessed text. Existing user-managed Cloudflare container is preserved, not provisioned by Codex. Live model inputs remain synthetic only.
 - **Ownership (user, 2026-10-02):** Codex has implementation authority; Claude Sonnet 5.5 is reviewer.
+- **Copy rule (user, 2026-10-09; deployed 2026-10-10):** ordinary cards/explanations report neutral supported facts, without repeated "not an assessment/diagnosis" caveats. Removed the two patient-card remarks and routine/review/comparison repetition; scope stays in Disclaimer. Sources, operational states, Not sent, AI provenance and pinned safety remain. DECISIONS §44 records the rule; future acknowledged onboarding is not implemented here.
 - **CodeBuddy workflow (user, 2026-10-02):** do not run CodeBuddy automatically. Finish and agree on our product first, then prepare a detailed SOW for the user to manually trigger a clean rebuild. Compare the completed apps and reuse reviewed improvements; our version may be submitted. Collect actual evidence during that rebuild; none is claimed yet.
 - **Data:** synthetic only (simulator cases A–F).
 - **Dual-view scope approved / implemented (user, 2026-10-07: "Proceed"):** clinician-first read-only workspace, shared historical evidence projection, Patient / Clinician demo toggle, minimal patient home and optional **See my full data**. Opens Case B; guide retains A–F/checkpoints. Explicit disclosure distinguishes full synthetic inspection from future patient-approved clinician access. `GET /patients/{id}/evidence` exposes committed snapshots/anchor versions without replay, mutation or generation. Quiet home has no default metrics/tasks; check-in/routine are collapsed. Questions/review items and temporary appointment preview remain not sent. Active/degraded/offline safety stays independently visible even without an episode. See `docs/DUAL_VIEW_IMPLEMENTATION.md`. Deployed on 8017; **Claude implementation review and user UX acceptance pending**. Accepted engines/schema/dependencies unchanged; additional data and CodeBuddy deferred.
@@ -159,7 +160,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
-1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Registry archive/migration and sponsor policy-editing UI remain future work.
+1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Respect §44: factual, neutral copy without repeated inline disclaimers. Registry archive/migration and sponsor policy-editing UI remain future work.
 2. **User: reload and try clinician arrival, patient text recap, chart links, visible Q&A, raw comparison and guide/flu/visit flows**; confirm UX acceptance. Live generation is not guaranteed: current smoke drafts were rejected and transparently extracted. Review model quality/latency separately from functional UI completion; no clinical or M7 acceptance is claimed.
 3. Seek M7 acceptance after review and remaining demo rehearsals; do not begin M8 automatically. Public reads/isolation/retry now verified; model quality/adversarial evaluation remains an engineering concern. No automatic CodeBuddy.
 4. The user controls CodeBuddy timing. After product agreement, prepare the detailed rebuild SOW and capture actual evidence during the user-run rebuild.
@@ -219,6 +220,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-10 — Codex Sol — Remove repeated inline caveats
+- User demanded factual/neutral wording without recurring mental-health/health-assessment disclaimers. Removed both patient-card caveats, routine/treatment-record repetition, comparison efficacy aside and stale Why-dialog boilerplate. Disclaimer, pinned safety, exact sources, neutral claim wording and validators unchanged. Recorded DECISIONS §44; no new acknowledgement workflow or domain change. Edits survived the daemon restart; checked state before resuming.
+- Verified: focused assessment **9 PASS** (32.407 s), card rendering **3 PASS** including expanded explanations without caveats and intact source links; hosted impression **5 PASS** (arrival/Q&A/mobile/offline/visit). Prior full 248 PASS remains historical, not rerun for this copy-only change. Public HTTPS health OK. No paid model calls or dependency changes; `git diff --check` clean.
+- Rebuilt/redeployed 0.0.0.0:8017, preserving settings/volume and existing Cloudflare container. User/Claude UX review remains next; do not reintroduce boilerplate into ordinary summaries. Dirty rebase refused; remote fetched without overwriting asynchronous edits.
 
 ### 2026-10-09 — Codex Sol — Execute Claude's I9 card UX spec
 - User explicitly authorized execution of the latest Claude UI/UX improvements. Read c1f598b/I9 and built deterministic finding cards, approximate display units/exact Why? evidence, shared-axis spans/callouts, patient everyday dates and sourced repeated-report card, reduced empty sections and one-input Q&A. UI/browser/docs only; accepted engines/backend/validators/model settings/schema/dependencies unchanged. See `docs/IMPRESSION_IMPLEMENTATION.md` I9; no invented wearable steady/health classification.

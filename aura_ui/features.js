@@ -42,7 +42,7 @@
   for(const p of byId('agent-workspace').querySelectorAll('p.fine'))if(p.textContent.includes('Selected record'))p.remove();
   byId('agent-workspace').querySelector(':scope>p:not(.eyebrow)').remove();
   byId('dialog-privacy').textContent='Safety evaluation comes first. An unavailable evaluation holds the note.';
-  byId('why-dialog').querySelector(':scope>p.fine').remove();
+  byId('why-dialog').querySelector(':scope>p.fine')?.remove();
   const copy=el('p','Synthetic input only','fine');byId('input-text').before(copy);
   // Context proposal and explicit confirmation. No automatic credibility decision.
   const contextActions=el('section',null,'card workflow-card');contextActions.append(el('h2','Add context to a change'));

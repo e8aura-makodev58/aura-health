@@ -51,7 +51,7 @@
       span.append(node('span'));card.append(span,node('p',display.line,'finding-one-liner'));
     }
     const detail=node('section',null,'claim-sources finding-detail');detail.hidden=true;detail.id=`finding-detail-${role}-${number}`;show.setAttribute('aria-controls',detail.id);
-    detail.append(node('p',patient?`${display.wording}, in the recorded dates shown here. This is an observation, not a conclusion about mental health.`:display.method,'finding-method'));
+    detail.append(node('p',patient?`${display.wording}, in the recorded dates shown here.`:display.method,'finding-method'));
     if(!patient&&Number.isFinite(display.delta))detail.append(node('p',`Exact stored deviation: ${display.delta} ${display.unit}. Compared with your usual or recent reference as labelled above.`,'fine'));
     for(const id of claim.fact_ids){const fact=result.sources.find(f=>f.fact_id===id);if(fact)detail.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));}
     show.addEventListener('click',()=>{detail.hidden=!detail.hidden;show.setAttribute('aria-expanded',String(!detail.hidden));});card.append(detail);
@@ -65,7 +65,7 @@
     if(rows.length<2||rows.some(row=>row.state!==rows[0].state))return null;
     const card=node('section',null,'agent-claim finding-card patient-finding steady-report'),header=node('div',null,'finding-card-heading');
     header.append(node('span','◌','signal-icon'),node('h4',`Recent check-ins: ${rows[0].state}`));card.append(header,node('span','steady · reports','badge finding-state'));
-    const detail=node('div',null,'claim-sources');detail.hidden=true;detail.append(node('p',`Your last ${rows.length} recorded check-ins used the same answer. This describes your reports, not an assessment of your health.`));
+    const detail=node('div',null,'claim-sources');detail.hidden=true;detail.append(node('p',`Your last ${rows.length} recorded check-ins used the same answer.`));
     for(const row of rows)detail.append(node('p',`${date(row.at)} · ${row.state}. Source: ${row.event_id}.`,'fine'));
     const show=node('button','Why? / Sources','text-button');show.setAttribute('aria-expanded','false');show.addEventListener('click',()=>{detail.hidden=!detail.hidden;show.setAttribute('aria-expanded',String(!detail.hidden));});card.append(show,detail);return card;
   }

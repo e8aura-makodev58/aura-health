@@ -298,3 +298,15 @@ and full analytics remain available on demand. This supersedes the "four mini-ch
 in `docs/AURA_AGENT_PLAN.md` §7 and the chart wording in earlier patient-home plans.
 Quiet still means no alarms, scores, daily tasks or guilt, not an absence of value.
 Safety panel and resources are unchanged.
+
+## 44. Factual wording without repeated inline disclaimers (2026-10-09)
+
+User direction: stop appending remarks such as "not a conclusion about mental health"
+or "not an assessment of your health" to ordinary findings and reports. Product scope
+belongs in the Disclaimer and, for future deployment, clearly explained/acknowledged
+onboarding. That onboarding is not implemented or claimed here. Routine cards,
+explanations and summaries should state supported facts in neutral language without
+implying diagnosis, prediction or advice. Exact sources, AI provenance, operational
+states (missing/offline/held/Not sent) and the pinned safety panel remain. Claim
+validation and safety policy are unchanged; removal of repetition is not a relaxation
+of factual or clinical boundaries.

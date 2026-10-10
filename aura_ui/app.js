@@ -137,7 +137,7 @@ function render() {
   $("clarify").hidden = !["MICRO_CHECKIN", "TARGETED_CLARIFICATION"].includes(status.latest_communication_decision) || !explanationOptions().length;
   setText("routine-name", view.patient.treatment?.medication_name || "Follow your existing clinician-managed routine.");
   setText("routine-schedule", view.patient.treatment?.medication_schedule || "Record only. No dose or schedule recommendation.");
-  setText("routine-saved", view.latest_medication ? `Latest record: ${view.latest_medication.status}. This does not change your treatment.` : "This records your routine. It does not change your treatment.");
+  setText("routine-saved", view.latest_medication ? `Latest record: ${view.latest_medication.status}.` : "Your recorded routine.");
   const latestCheckin = [...current.timeline].reverse().find(record => record.record_type === "PATIENT_CHECKIN");
   setText("checkin-saved", latestCheckin ? `Latest recorded check-in: ${latestCheckin.detail.state}.` : "");
   // Exact server state labels; no missingness/trust calculation happens in the browser.
