@@ -63,6 +63,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
+- **Final design push (2026-10-10):** user is about 50% sold and requested brainstorming before locking the design. Proposed, not approved: visible verified cross-signal synthesis, a clearer patient recap/action hierarchy, a clinician briefing with one latest retained card per exact channel plus explicit patient/context evidence, and a polished existing Not sent visit note/demo journey. Investigate live draft rejections without weakening validation. No implementation authorized by this discussion; agree scope first. Latest Claude feedback in the synced repo is I9, not a new post-I9 acceptance review.
 - **User approvals 2026-10-08 ("I approve all"):** all five items in `docs/CLAUDE_AGENT_REVIEW_AND_PROPOSALS.md` §7 are approved (see `docs/DECISIONS.md` §39). DeepSeek `deepseek-flash` is active (public `/system/status` confirmed it, live). Also approved: show provider+model in the settings dialog without unlock (endpoint already public; UI-only change), and a demo-only **patient simulator agent** (§40, plan `docs/PATIENT_SIMULATOR_AGENT_PLAN.md`). User posture (2026-10-08, DECISIONS §41): developer proposal for a sponsor who owns clinical/regulatory judgment; new signals may enter the engine via a sponsor-editable **signal registry** (continuous wearable channels vs intermittent BP/thermometer/weight), see simulator plan §3.
 
 - **No remaining implementation permission blocker for §39–41.** The approved paths are implemented; Claude/user review is next, not another prerequisite to building them. Sponsor clinical judgment is not claimed by implementation.
@@ -160,6 +161,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+0. **User: agree the final design-push scope before implementation.** Current discussion is a proposal, not a new milestone or acceptance. Prioritize coherent synthesis and completed patient/clinician journeys over new features; preserve §44 copy discipline.
 1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Respect §44: factual, neutral copy without repeated inline disclaimers. Registry archive/migration and sponsor policy-editing UI remain future work.
 2. **User: reload and try clinician arrival, patient text recap, chart links, visible Q&A, raw comparison and guide/flu/visit flows**; confirm UX acceptance. Live generation is not guaranteed: current smoke drafts were rejected and transparently extracted. Review model quality/latency separately from functional UI completion; no clinical or M7 acceptance is claimed.
 3. Seek M7 acceptance after review and remaining demo rehearsals; do not begin M8 automatically. Public reads/isolation/retry now verified; model quality/adversarial evaluation remains an engineering concern. No automatic CodeBuddy.
@@ -220,6 +222,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-10 — Codex Sol — Brainstorm final design push, no implementation
+- User requested a final brainstorm, about 50% sold. Synced main, read Claude's product vision/agent review/I9 and inspected current renderer: structured cards replace verified claim prose, patient headline hidden, duplicate channel findings possible, repeated Rough check-ins receive a steady-report chip. Proposed improving synthesis, patient hierarchy, clinician briefing and visit-note completion before design lock. These are discussion items, not approved behavior changes; no runtime edits or deployment.
+- Verified: current focused assessment **9 PASS** (33.402 s); clean repository on arrival, remote up-to-date. Prior full 248/browser evidence remains historical. No model calls or new clinical rules. User scope choice and Claude/user UX review remain next; do not begin M8 automatically.
 
 ### 2026-10-10 — Codex Sol — Remove repeated inline caveats
 - User demanded factual/neutral wording without recurring mental-health/health-assessment disclaimers. Removed both patient-card caveats, routine/treatment-record repetition, comparison efficacy aside and stale Why-dialog boilerplate. Disclaimer, pinned safety, exact sources, neutral claim wording and validators unchanged. Recorded DECISIONS §44; no new acknowledgement workflow or domain change. Edits survived the daemon restart; checked state before resuming.
