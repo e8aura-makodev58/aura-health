@@ -161,6 +161,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+0a. **Claude assessment (2026-10-10):** `docs/CLAUDE_FINAL_ASSESSMENT.md`. Proposed lock scope L1–L5 (flu must appear in the assessment; make the AI path reliable and dedupe cards first). Not approved; user chooses scope.
 0. **User: agree the final design-push scope before implementation.** Current discussion is a proposal, not a new milestone or acceptance. Prioritize coherent synthesis and completed patient/clinician journeys over new features; preserve §44 copy discipline.
 1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Respect §44: factual, neutral copy without repeated inline disclaimers. Registry archive/migration and sponsor policy-editing UI remain future work.
 2. **User: reload and try clinician arrival, patient text recap, chart links, visible Q&A, raw comparison and guide/flu/visit flows**; confirm UX acceptance. Live generation is not guaranteed: current smoke drafts were rejected and transparently extracted. Review model quality/latency separately from functional UI completion; no clinical or M7 acceptance is claimed.
@@ -223,6 +224,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-10 — Claude — Assessment before design lock
+- Reviewed live site (clinician/patient/mobile) and ran "flu 3 days": charts show the flu, the assessment does not; AI label inconsistent, duplicate sleep cards in fallback, raw prose and jargon survive, no synthesis, patient hierarchy weak. Wrote `docs/CLAUDE_FINAL_ASSESSMENT.md` with L1–L5. Docs only; not verified: other roles/events, story buttons, clinician phone view.
 ### 2026-10-10 — Codex Sol — Brainstorm final design push, no implementation
 - User requested a final brainstorm, about 50% sold. Synced main, read Claude's product vision/agent review/I9 and inspected current renderer: structured cards replace verified claim prose, patient headline hidden, duplicate channel findings possible, repeated Rough check-ins receive a steady-report chip. Proposed improving synthesis, patient hierarchy, clinician briefing and visit-note completion before design lock. These are discussion items, not approved behavior changes; no runtime edits or deployment.
 - Verified: current focused assessment **9 PASS** (33.402 s); clean repository on arrival, remote up-to-date. Prior full 248/browser evidence remains historical. No model calls or new clinical rules. User scope choice and Claude/user UX review remain next; do not begin M8 automatically.
