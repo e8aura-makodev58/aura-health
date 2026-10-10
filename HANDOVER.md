@@ -161,6 +161,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+00. **Codex: execute `docs/FINAL_DASH_SOW.md` (WP0–WP6)** at the user's request, in order, with gates; L1 is descriptive only; validators are not weakened; Claude reviews after WP2 and WP6; design locks afterwards. Supersedes the open "Final design push" proposal.
 0a. **Claude assessment (2026-10-10):** `docs/CLAUDE_FINAL_ASSESSMENT.md`. Proposed lock scope L1–L5 (flu must appear in the assessment; make the AI path reliable and dedupe cards first). Not approved; user chooses scope.
 0. **User: agree the final design-push scope before implementation.** Current discussion is a proposal, not a new milestone or acceptance. Prioritize coherent synthesis and completed patient/clinician journeys over new features; preserve §44 copy discipline.
 1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Respect §44: factual, neutral copy without repeated inline disclaimers. Registry archive/migration and sponsor policy-editing UI remain future work.
@@ -224,6 +225,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-10 — Claude — Final-dash SOW for Codex
+- User asked Claude to finalize the plan. Wrote `docs/FINAL_DASH_SOW.md` (WP0 baseline/diagnosis, WP1 reliable AI path + one card per channel, WP2 flu in the assessment via descriptive recent-window cards, WP3 synthesis/check-ins/varied questions, WP4 patient home, WP5 tidy, WP6 evidence, then lock). Decided L1 = descriptive only (engine untouched). Docs only; reviewed Codex's brainstorm and agree except it lacked L1 and a measurable AI-path target.
 ### 2026-10-10 — Claude — Assessment before design lock
 - Reviewed live site (clinician/patient/mobile) and ran "flu 3 days": charts show the flu, the assessment does not; AI label inconsistent, duplicate sleep cards in fallback, raw prose and jargon survive, no synthesis, patient hierarchy weak. Wrote `docs/CLAUDE_FINAL_ASSESSMENT.md` with L1–L5. Docs only; not verified: other roles/events, story buttons, clinician phone view.
 ### 2026-10-10 — Codex Sol — Brainstorm final design push, no implementation
