@@ -15,8 +15,8 @@ next step; and an AI path that works reliably on the hosted demo. Then the desig
 **locked**: after this SOW only fixes, no new features.
 
 ## 2. Decisions fixed by this SOW (do not reopen)
-1. **L1 is descriptive only.** New or non-legacy channels get server-computed window
-   comparisons shown as "recent change" cards. The longitudinal engine's drift decisions,
+1. **L1 is presentation of existing engine output plus descriptive readings.** No new
+   detection rule (amended after WP0). The longitudinal engine's drift decisions,
    anchors, trust, safety state machine and communication engine are **not changed**.
    Raising engine drift on new channels is out of scope.
 2. The AI validators are **not weakened**. Fix the draft shape, prompts and fallback, not
@@ -75,34 +75,42 @@ Acceptance:
 - No duplicate cards for one channel in any case A–F or after any simulator event.
 - If the target is unreachable, stop and report the reasons table. Do not relax checks.
 
-### WP2 — The flu shows up in the assessment (L1)
+### WP2 — The flu shows up in the assessment (L1) — AMENDED 2026-10-10 after WP0
+WP0 evidence (`docs/FINAL_DASH_EVIDENCE.md`) showed the engine **already** raises
+`TRANSIENT_DEVIATION` findings for resting heart rate, HRV, respiratory rate and skin
+temperature after the three-day flu (all TRUSTED/OBSERVED, 14/14 days). The cause of the
+missing flu is presentation: the UI offers only the first three claims to the card
+renderer and sleep/activity fill those slots. The seven-day-vs-28-day median rule I first
+specified would **not** detect RHR (0.17× spread) or HRV (1.09×) on this fixture, so it is
+dropped as the primary mechanism. Do not add a new detection rule and do not tune
+thresholds to make the demo pass.
 Tasks:
-1. In `RecordTools` (or a sibling module used by it) compute, for every channel with
-   `display: true`, a **recent-window comparison**: median of the last `recent_days`
-   covered days versus the median of the previous `baseline_days` covered days, the
-   difference in the channel's unit, and the difference as a multiple of the person's
-   robust spread (reuse `robust_spread` and the existing coverage thresholds). Defaults in
-   `engineering_config.json`: recent 7, baseline 28, `moved_multiple` 2.0, minimum covered
-   days 4 (daily/nightly); intermittent channels need ≥2 readings in each window.
-2. Emit a fact for each channel that moved: text with rounded values, a `finding`
-   `{signal, direction, since}` (since = start of the recent window) and
-   `kind: "recent_window"` so the UI can tell it from an engine finding. Mark these
-   required for the brief so the model cannot omit them. Channels below the minimum
-   readings produce "N readings, not enough to compare" in the popover, never a card.
-3. UI: card chip "Recent change" (no severity colour); same card layout as I9; chart
-   callout for channels with a chart. Tier note ("Research tier") only in the popover.
-4. The existing `compare_windows` tool stays; this is server-side, not model-dependent.
+1. **Show every engine finding.** After WP1's one-latest-card-per-channel selection, apply
+   the display cap to channels, not claims. Show up to six channel cards on the clinician
+   view, ordered by `last_seen` descending (not by severity), with the rest under "More
+   changes (n)". Every retained engine finding must appear somewhere visible or one tap
+   away. Patient view keeps its two-item burden limit, ordered the same way, with "See all".
+2. **Transient findings are labelled for what they are.** Card text for
+   `TRANSIENT_DEVIATION` says "Recent change" (not "Later/Lower than usual since …" for a
+   multi-week drift); sustained drift keeps "than usual since …". Use the finding kind
+   already in the evidence; no new computation.
+3. **Display-only channels** (SpO2, blood pressure, thermometer, weight; no engine
+   baseline): show a descriptive "Recent readings" row/card: latest value, number of
+   readings in the last 7 days and their range, with dates. No "moved", direction or
+   threshold, because there is no reference. Missing readings are never filled in.
+4. Optional, only if time remains and clearly labelled descriptive: keep the 7-day-vs-prior
+   window facts as popover detail; do not promote them to cards.
 Acceptance:
-- After "Simulate: flu 3 days" and refresh, the clinician assessment shows cards for at
-  least resting heart rate (higher), HRV (lower) and one temperature channel (higher)
-  within 30 s of the committed events, with sources.
-- A quiet month (no events) produces no spurious recent-change cards across 20 seeds.
-- Intermittent BP/thermometer with two readings do not produce a "moved" card.
-- Tests: unit (windows, coverage, spread, intermittent minimums), isolation (no engine
-  state or safety output changes; engine tables and decisions byte-identical before and
-  after), and a browser test of the flu flow.
-- No diagnosis or illness wording is generated; "flu" appears only if a patient-recorded
-  context says so.
+- After "Simulate: flu 3 days" and refresh, the clinician view shows cards for resting heart
+  rate, HRV, respiratory rate and skin temperature (plus sleep and activity), each with
+  sources, and a "Recent readings" item for the thermometer, within 30 s of the committed
+  events. Patient view shows at least the two most recent channels with "See all".
+- Quiet-month check: run 20 seeds with no events and report how many produce any
+  transient card on the newly visible channels. This is a measurement of existing engine
+  behaviour; if it is high, report it to the user and do not change thresholds.
+- Engine, safety and decision tables are byte-identical before and after (isolation test).
+- No illness/diagnosis wording; "flu" appears only if a patient-recorded context says so.
+- Browser test for the flu flow at desktop and 390 px.
 
 ### WP3 — Synthesis, check-ins and varied "Worth asking" (L3)
 Tasks:
@@ -179,8 +187,8 @@ editor UI; durable approval/sharing workflow; real authentication; M8 submission
 CodeBuddy rebuild.
 
 ## 7. Risks
-- The recent-window rule may flag normal variation; keep the multiple conservative and
-  report false-positive rates from the 20-seed quiet test.
+- Making all engine findings visible may expose more transient cards in quiet months than
+  viewers expect; the 20-seed quiet check in WP2 measures this. Report; do not retune.
 - Server-generated claims could hide model failure: the evidence doc must report how
   many viewers would see model-written text versus server extraction.
 - Sparse channels need explicit "not enough readings" handling to avoid empty charts.

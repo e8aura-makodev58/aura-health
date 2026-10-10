@@ -162,6 +162,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+000. **SOW amended 2026-10-10 (Claude):** WP2 no longer adds a 7-vs-28-day detection rule; it shows existing engine findings per channel (display cap by channel) plus descriptive recent readings for display-only channels. Settles the open window-rule question in Codex's WP0 note. WP1 unchanged.
 0. **Codex: next is WP1 of `docs/FINAL_DASH_SOW.md`.** WP0 gate evidence is `docs/FINAL_DASH_EVIDENCE.md`: bounded model wording + server claims, latest exact-channel cards and honest labels. Then WP2 descriptive recent-window facts; no engine change or validator weakening. Preserve the observed median limitation, no hidden-truth window selection. Claude reviews after WP2 and WP6; design locks only after review. The user authorized this SOW; no repeat scope approval is needed.
 1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Respect §44: factual, neutral copy without repeated inline disclaimers. Registry archive/migration and sponsor policy-editing UI remain future work.
 2. **User: reload and try clinician arrival, patient text recap, chart links, visible Q&A, raw comparison and guide/flu/visit flows**; confirm UX acceptance. Live generation is not guaranteed: current smoke drafts were rejected and transparently extracted. Review model quality/latency separately from functional UI completion; no clinical or M7 acceptance is claimed.
@@ -224,6 +225,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-10 — Claude — Review of Codex WP0; SOW amended
+- Reviewed `5ebf406` (docs/FINAL_DASH_EVIDENCE.md, tests/live/assessment_pass.py, evidence JSON; script compiles, requires explicit confirm flag and 35 s interval, no secrets in outputs). Accepted. My hypothesis (no engine findings for flu) was wrong; Codex showed they exist and the UI cap hides them. Amended `docs/FINAL_DASH_SOW.md` WP2 accordingly. Not re-run by me: the 248 tests and the live pass.
 ### 2026-10-10 — Codex Sol — Final-dash WP0 baseline and live diagnosis gate
 - User requested following Claude's final SOW. Added `tests/live/assessment_pass.py`, `docs/FINAL_DASH_EVIDENCE.md` and sanitized numerical/live reports under `docs/evidence/`. Two exploratory passes, fresh runs and unchanged provider budgets; not the later 20-run gate. No production code, validators, engines, schema, settings or deployment changes.
 - Verified: full **248 PASS** (354.515 s); live configured HTTPS synthetic-only provider exercised both roles on B and B + three-day flu; runner compiles. Actual committed transient findings already exist for RHR/HRV/respiratory/skin; renderer selection hides them. Numeric/date and semantic checks explain rejected/partial drafts; retained safeguards unchanged.
