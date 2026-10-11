@@ -12,6 +12,10 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
  };
  try{
   await page.goto(base);await page.waitForSelector('#agent-clinician_brief .clinician-finding');
+  const synthesis=await page.locator('#agent-clinician_brief .assessment-synthesis').innerText();
+  assert.match(synthesis,/Sleep timing/);assert.match(synthesis,/Activity/);assert.match(synthesis,/Check-ins/);
+  assert.doesNotMatch(synthesis,/\bbecause\b|\bdue to\b|\bled to\b/i);
+  assert.match(await page.locator('.clinician-checkins').innerText(),/patient-reported/i);
   await unique();assert.match(await page.locator('.agent-disclosure').first().innerText(),/Summary from the record/);
   const catalog=await(await context.request.get(base+'/demo/scenarios')).json();
   await page.locator('#demo-toggle').click();
@@ -33,12 +37,17 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
    if(['RESTING_HEART_RATE','HRV','RESPIRATORY_RATE','SKIN_TEMPERATURE_DEVIATION'].includes(signal))assert.match(await card.innerText(),/Recent change/);
   }
   await unique();assert.match(await page.locator('.reading-item[data-signal="BODY_TEMPERATURE"]').innerText(),/Thermometer temperature.*3 readings/);
+  assert.match(await page.locator('#agent-clinician_brief .assessment-synthesis').innerText(),/HRV/);
   await page.locator('#demo-toggle').click();
   for(const width of [1280,390]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`${out}/final-dash-flu-clinician-${width}.png`,fullPage:true});}
   console.log('FD_BROWSER2_FLU_SIX_CHANNELS_AND_SPARSE_READINGS PASS');
   await page.locator('#patient-role').click();
   await page.waitForSelector('#agent-patient_insight .more-changes');
   assert.equal(await page.locator('#agent-patient_insight>.finding-grid .patient-finding:not(.steady-report)').count(),2);
+  assert.ok(await page.locator('#agent-patient_insight .patient-recap').isVisible());
+  assert.match(await page.locator('#agent-patient_insight>.finding-grid .patient-finding').first().innerText(),/recent change/i);
+  assert.equal(await page.locator('#agent-patient_insight .assessment-synthesis').count(),0);
+  assert.equal(await page.locator('#agent-patient_insight .question-copy').count(),0);
   await page.locator('#agent-patient_insight .more-changes summary').click();
   assert.ok(await page.locator('#agent-patient_insight .more-changes .patient-finding:visible').count()>=4);
   assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/\d{4}-\d{2}-\d{2}/);

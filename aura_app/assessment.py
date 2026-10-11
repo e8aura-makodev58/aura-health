@@ -6,7 +6,7 @@ from .models import AppError
 
 
 def arrival_id(role, window_days, signature):
-    return 'arrival-' + digest({'version': 'arrival-v5', 'role': role.value,
+    return 'arrival-' + digest({'version': 'arrival-v6', 'role': role.value,
                                 'window': window_days, 'state': signature})
 
 
@@ -57,10 +57,14 @@ class AssessmentService:
                         claim['text'] = (claim['text'] + ' ' + numeric['text'])[:600]
                         claim['fact_ids'].append(numeric['fact_id'])
             result['sources'] = list(tools.delivered.values())
+            from aura_agent.presentation import record_presentation
+            result['record_presentation'] = record_presentation(tools,self.agent.config)
+            result['draft']['question_ids'] = result['record_presentation']['question_ids']
             with self.agent.events.repositories.transaction() as repo:
                 current, new_block, _, _ = self.agent._approval(repo, patient_id, client_offline)
             if current != signature:
                 result.update(status='STALE', draft={'claims': [], 'question_ids': []}, sources=[], reason=new_block or 'STATE_CHANGED')
+                result.pop('record_presentation',None)
                 cached = None
         return {'preview': result, 'cached': cached, 'run_id': run_id, 'state_fingerprint': signature,
                 'generation_allowed': not blocked and result['status'] == 'COMPLETE', 'window_days': window}

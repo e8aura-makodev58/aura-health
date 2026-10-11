@@ -6,8 +6,8 @@
   const prep=node('section',null,'card agent-card');prep.append(node('h2','Your visit note'),node('p','Choose what to bring. Not sent.','fine'));
   const button=node('button','Help prepare my note');button.dataset.agentRole='visit_prep';
   const output=node('div');output.id='agent-visit_prep';output.setAttribute('aria-live','polite');prep.append(button,output);document.getElementById('appointment-preview').before(prep);
-  const icons={SLEEP_MIDPOINT:'☾',SLEEP_DURATION:'☾',ACTIVITY:'↟',RESTING_HEART_RATE:'♡',HEART_RATE_VARIABILITY:'♡',RESPIRATORY_RATE:'≋'};
-  const titles={SLEEP_MIDPOINT:'Sleep timing',SLEEP_DURATION:'Sleep duration',ACTIVITY:'Activity',RESTING_HEART_RATE:'Resting heart rate'};
+  const icons={SLEEP_MIDPOINT:'☾',SLEEP_DURATION:'☾',ACTIVITY:'↟',RESTING_HEART_RATE:'♡',HRV:'↔',HEART_RATE_VARIABILITY:'↔',RESPIRATORY_RATE:'≋',SKIN_TEMPERATURE_DEVIATION:'°'};
+  const titles={SLEEP_MIDPOINT:'Sleep timing',SLEEP_DURATION:'Sleep duration',ACTIVITY:'Activity',RESTING_HEART_RATE:'Resting heart rate',SKIN_TEMPERATURE_DEVIATION:'Skin temperature'};
   const date=at=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(at.slice(0,10)+'T00:00:00Z'));
   const everydayDate=at=>{const d=new Date(at.slice(0,10)+'T00:00:00Z');return `${d.getUTCDate()<=10?'early':d.getUTCDate()<=20?'mid':'late'} ${new Intl.DateTimeFormat('en-GB',{month:'long',timeZone:'UTC'}).format(d)}`;};
   // Resolve only an exact committed finding; never derive a drift or a magnitude from prose.
@@ -25,7 +25,7 @@
     if(amount!==null){
       const formatted=signal.unit.startsWith('minutes')?(amount>=60?`${Math.round(amount/60*2)/2} h`:`${Math.round(amount)} min`):
         signal.key.signal==='ACTIVITY'&&['steps','step'].includes(signal.unit)?`${new Intl.NumberFormat('en-GB').format(Math.round(amount/100)*100)} steps a day`:
-        `${new Intl.NumberFormat('en-GB',{maximumFractionDigits:1}).format(amount)} ${signal.unit}`;
+        `${new Intl.NumberFormat('en-GB',{maximumFractionDigits:1}).format(amount)} ${signal.key.signal==='SKIN_TEMPERATURE_DEVIATION'?'°C':signal.unit}`;
       // A small nonzero value must not be displayed as an apparent zero change.
       if(amount>0&&!/^0(?: |\.0 )/.test(formatted))magnitude=`about ${formatted} ${signal.key.signal==='ACTIVITY'?(delta<0?'fewer':'more'):direction}`;
     }
@@ -61,17 +61,8 @@
     if(patient)card.addEventListener('click',event=>{if(!event.target.closest('button,a')&&!detail.contains(event.target))show.click();});
     return {card,link:{...finding,number,target_id:card.id,callout:display.line}};
   }
-  function steadyCard(record){
-    // Explicit repeated patient reports, not a new clinical/sensor stability classifier.
-    const cutoff=record?.period.end?Date.parse(record.period.end.slice(0,10))-29*86400000:Infinity;
-    const rows=(record?.checkins||[]).filter(row=>!row.deferred&&Date.parse(row.at.slice(0,10))>=cutoff).slice(-3);
-    if(rows.length<2||rows.some(row=>row.state!==rows[0].state))return null;
-    const card=node('section',null,'agent-claim finding-card patient-finding steady-report'),header=node('div',null,'finding-card-heading');
-    header.append(node('span','◌','signal-icon'),node('h4',`Recent check-ins: ${rows[0].state}`));card.append(header,node('span','steady · reports','badge finding-state'));
-    const detail=node('div',null,'claim-sources');detail.hidden=true;detail.append(node('p',`Your last ${rows.length} recorded check-ins used the same answer.`));
-    for(const row of rows)detail.append(node('p',`${date(row.at)} · ${row.state}. Source: ${row.event_id}.`,'fine'));
-    const show=node('button','Why? / Sources','text-button');show.setAttribute('aria-expanded','false');show.addEventListener('click',()=>{detail.hidden=!detail.hidden;show.setAttribute('aria-expanded',String(!detail.hidden));});card.append(show,detail);return card;
-  }
+  const displayText=text=>text.replace(/\b\d{4}-\d{2}-\d{2}\b/g,at=>everydayDate(at))
+    .replace(/\b\d+\.\d+\b/g,value=>new Intl.NumberFormat('en-GB',{maximumFractionDigits:1}).format(Number(value)));
   function render(result,area,role){
     const previous=priorLines.get(role)||new Set(), now=new Set();area.replaceChildren();
     const paused=result.status==='BLOCKED'||result.status==='STALE';
@@ -79,16 +70,32 @@
     const label=paused?'Assessment paused':visibleAI?'AI-written · sources checked':'Summary from the record';
     const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;area.append(chip);
     if(paused){document.getElementById('assessment-complete')?.replaceChildren();window.clearAuraStory?.();document.getElementById('agent-visit_prep')?.replaceChildren();area.append(node('p','Safety interaction or record evaluation comes first. See the separate safety panel.'));return;}
-    if(result.draft.headline)area.append(node('h3',role==='patient_insight'&&!visibleAI?'Your recent days':result.draft.headline.split(/\s+/).slice(0,20).join(' ')));
+    if(result.draft.headline&&(role!=='patient_insight'||visibleAI))area.append(node('h3',result.draft.headline.split(/\s+/).slice(0,20).join(' ')));
+    const summary=result.record_presentation;
+    if(role==='clinician_brief'&&summary?.synthesis){
+      const line=node('section',null,'assessment-synthesis');line.append(node('p',summary.synthesis.text));
+      const detail=node('details');detail.append(node('summary','Sources'));
+      for(const id of summary.synthesis.fact_ids){const fact=result.sources.find(f=>f.fact_id===id);if(fact)detail.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));}
+      line.append(detail);area.append(line);
+    }
     const allClaims=result.draft.claims||[],latest=new Map();
     if(bounded)for(const fact of result.sources.filter(f=>f.finding)){
       const finding={fact_id:fact.fact_id,...fact.finding},display=presentation(finding,result.sources);if(!display)continue;
       const candidate={text:fact.text,fact_ids:[fact.fact_id],findings:[finding],display,earlier:[]},prior=latest.get(display.channel);
       if(!prior)latest.set(display.channel,candidate);
-      else if(display.lastSeen>prior.display.lastSeen){candidate.earlier=[...prior.earlier,result.sources.find(f=>f.fact_id===prior.fact_ids[0])];latest.set(display.channel,candidate);}
+      else if(display.lastSeen>prior.display.lastSeen||(display.lastSeen===prior.display.lastSeen&&display.since>prior.display.since)){candidate.earlier=[...prior.earlier,result.sources.find(f=>f.fact_id===prior.fact_ids[0])];latest.set(display.channel,candidate);}
       else prior.earlier.push(fact);
     }
-    const displayed=bounded?[...latest.values()].sort((a,b)=>b.display.lastSeen.localeCompare(a.display.lastSeen)):allClaims;
+    const displayed=bounded?[...latest.values()].sort((a,b)=>role==='patient_insight'?
+      b.display.since.localeCompare(a.display.since)||b.display.lastSeen.localeCompare(a.display.lastSeen):
+      b.display.lastSeen.localeCompare(a.display.lastSeen)):allClaims;
+    if(role==='patient_insight'){
+      const heading=document.getElementById('home-heading');if(heading)heading.textContent=displayed.length?'Your recent days':'A little less to carry.';
+      if(displayed.length&&!visibleAI){
+        const recap=displayed.slice(0,2).map(c=>`${c.display.wording}, recorded since ${everydayDate(c.display.since)}`).join('; ');
+        area.insertBefore(node('p',recap+'.','patient-recap'),area.querySelector('.assessment-synthesis'));
+      }
+    }
     const linkage=[],grid=node('div',null,'finding-grid');let number=0;area.append(grid);
     let extraGrid=null;
     const cap=role==='patient_insight'?2:6;
@@ -97,9 +104,9 @@
       const key=JSON.stringify([claim.text,claim.findings,claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)?.source_ref)]);now.add(key);
       const shaped=['clinician_brief','patient_insight'].includes(role)&&findingCard(claim,result,role,number+1);
       if(shaped){number++;if(previous.size&&!previous.has(key))shaped.card.classList.add('assessment-changed');(extraGrid&&number>cap?extraGrid:grid).append(shaped.card);if(role==='clinician_brief')linkage.push(shaped.link);continue;}
-      const line=node('section',null,'agent-claim');if(previous.size&&!previous.has(key))line.classList.add('assessment-changed');
+      const line=node('section',null,'agent-claim');if(!claim.findings?.length){line.classList.add('also-recorded','fine');line.append(node('span','Also recorded','fine'));}if(previous.size&&!previous.has(key))line.classList.add('assessment-changed');
       if(role==='clinician_brief'&&claim.findings?.length){number++;line.id=`story-finding-${number}`;line.tabIndex=-1;line.append(node('span',String(number),'finding-number'));for(const finding of claim.findings)linkage.push({...finding,number,target_id:line.id});}
-      line.append(node('p',claim.text));
+      line.append(node('p',claim.findings?.length?claim.text:displayText(claim.text)));
       if(role==='clinician_brief')for(const finding of claim.findings||[]){
         const origin=result.sources.find(f=>f.fact_id===finding.fact_id);
         const metric=result.sources.find(f=>f.source_ref===origin?.source_ref&&f.signal===finding.signal&&!f.finding&&/deviation/.test(f.text));
@@ -114,7 +121,18 @@
       const show=node('button','Sources','text-button');show.setAttribute('aria-expanded','false');show.addEventListener('click',()=>{sources.hidden=!sources.hidden;show.setAttribute('aria-expanded',String(!sources.hidden));});line.append(show,sources);
       if(role==='visit_prep'){const remove=node('button','Remove from this preview','text-button');remove.addEventListener('click',()=>line.remove());line.append(remove);}area.append(line);
     }
-    if(role==='patient_insight'&&allClaims.length){const steady=steadyCard(window.auraAgentContext().record);if(steady)grid.append(steady);}
+    if(role==='patient_insight'&&allClaims.length&&summary?.checkins){
+      const fact=summary.checkins,r=fact.checkin_summary,card=node('section',null,'checkin-summary-card patient-checkins');
+      card.append(node('h4',`Recent check-ins: ${r.state}`),node('p',`${r.count} of the last ${r.window_days} days · patient-reported`));
+      const detail=node('details');detail.append(node('summary','Why? / Sources'),node('p',`${fact.text} Sources: ${r.source_refs.join(', ')}.`,'fine'));card.append(detail);grid.append(card);
+    }
+    if(role==='clinician_brief'&&summary?.checkins){
+      const fact=summary.checkins,r=fact.checkin_summary,card=node('section',null,'checkin-summary-card clinician-checkins');
+      card.append(node('h4','Check-ins'),node('p','Patient-reported','fine'),
+        node('p',`${r.state} on ${r.count} of the last ${r.window_days} days`),
+        node('p',`${r.run_days} consecutive recorded days, since ${date(r.run_start)}`,'fine'));
+      const detail=node('details');detail.append(node('summary','Why? / Sources'),node('p',`${fact.text} Sources: ${r.source_refs.join(', ')}.`,'fine'));card.append(detail);grid.append(card);
+    }
     priorLines.set(role,now);
     if(role==='clinician_brief'){
       const readings=result.sources.filter(f=>f.reading);
@@ -137,7 +155,9 @@
       window.linkAuraStoryFindings?.(linkage,result.sources);
       window.setAuraComparisonAssessment?.(result);
     }
-    for(const id of result.draft.question_ids||[]){const text=result.question_options[id];if(!text)continue;const copy=node('button',text,'agent-question question-copy');copy.type='button';copy.title='Copy this approved question';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(text);copy.setAttribute('aria-label',`${text} — copied`);}catch{const input=document.getElementById('agent-question-text');input.value=text;input.focus();}});area.append(copy);}
+    // Worth asking belongs to clinician preparation, not a new patient prompt.
+    // Patient interaction remains owned by the separate communication result.
+    for(const id of role==='patient_insight'?[]:(result.draft.question_ids||[])){const text=result.question_options[id];if(!text)continue;const copy=node('button',text,'agent-question question-copy');copy.type='button';copy.title='Copy this approved question';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(text);copy.setAttribute('aria-label',`${text} — copied`);}catch{const input=document.getElementById('agent-question-text');input.value=text;input.focus();}});area.append(copy);}
     if(!allClaims.length&&!result.draft.question_ids?.length)area.append(node('p','Nothing additional to highlight from these records.'));
     const trace=node('section',null,'agent-trace');trace.hidden=true;
     trace.append(node('p',`Run ${result.run_id} · ${result.model_id||'not called'} · ${result.reason} · ${result.elapsed_ms||0} ms`,'fine'));

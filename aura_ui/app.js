@@ -233,6 +233,8 @@ function reviewGroup(title, items) {
 function selectionSummary() { setText("selection-summary", `${selections.size} item${selections.size === 1 ? "" : "s"} selected for this temporary preview. Nothing is sent or saved as approval.`); }
 function renderReview() {
   const snapshot = current.snapshot; $("review-list").replaceChildren();
+  const ready = snapshot.meaningful_longitudinal_changes.length + snapshot.patient_checkin_trend.slice(-7).length + snapshot.medication_routine_events.length + snapshot.active_context.length + snapshot.explained_held_for_review.length + snapshot.unresolved_items.length + snapshot.safety_episode_references.filter(row=>row.episode_id).length + snapshot.patient_selected_questions.length;
+  setText("appointment-ready", `${ready} item${ready===1?"":"s"} ready · Not sent`);
   const preview=$("appointment-preview"); preview.replaceChildren(element("h2","A note to look through"));
   for(const change of snapshot.meaningful_longitudinal_changes.slice(0,3)) preview.append(element("p",`${change.latest.description} Recorded ${dateLabel(change.first_seen)} — ${dateLabel(change.last_seen)}.`));
   if(!snapshot.meaningful_longitudinal_changes.length)preview.append(element("p","No meaningful longitudinal change is retained in this snapshot."));

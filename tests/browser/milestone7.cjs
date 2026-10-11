@@ -41,6 +41,8 @@ async function main() {
       if (await page.locator('#demo-panel').isHidden()) await page.locator('#demo-toggle').click();
       await page.locator('#scenario').selectOption(patient(key));
       await page.waitForFunction(()=>!document.getElementById('notice').hidden ? false : !document.getElementById('home-view').hidden);
+      // The phone guide is now an overlay; close it before patient interactions.
+      await page.locator('#demo-toggle').click();
     }
     async function navigate(name){await page.evaluate(value=>location.hash=value,name);await page.waitForSelector('#'+name+'-view:not([hidden])');}
     await check('HOSTED_NOTICE',async()=>{assert.equal(catalog.hosted,true); await page.locator('#demo-toggle').click(); assert.equal(await page.locator('.demo-bar>a').innerText(),'Demo'); assert.match(await page.locator('#about-view').textContent(),/synthetic data only/); assert.match(await page.locator('#about-view').textContent(),/Hosted workspaces are separate demonstration sessions/); assert.equal(await page.locator('#connect').isVisible(),false);});

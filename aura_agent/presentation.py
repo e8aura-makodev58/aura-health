@@ -1,8 +1,19 @@
 """Bounded wording contract; deterministic cards remain record-owned, not AI-owned."""
 import re
+from datetime import date, timedelta
 
 from .grounding import validate
 from .roles import AgentRole
+
+SYNTHESIS_LABELS = {
+    'SLEEP_MIDPOINT':'Sleep timing', 'SLEEP_DURATION':'Sleep duration',
+    'ACTIVITY':'Activity', 'RESTING_HEART_RATE':'Resting heart rate',
+    'HRV':'HRV', 'RESPIRATORY_RATE':'Respiratory rate',
+    'SKIN_TEMPERATURE_DEVIATION':'Skin temperature', 'SPO2':'SpO2',
+    'BLOOD_PRESSURE_SYSTOLIC':'Systolic blood pressure',
+    'BLOOD_PRESSURE_DIASTOLIC':'Diastolic blood pressure',
+    'BODY_TEMPERATURE':'Thermometer temperature', 'WEIGHT':'Body weight',
+}
 
 
 def checked_headline(raw, tools):
@@ -25,3 +36,76 @@ def checked_headline(raw, tools):
         'findings':[{'fact_id':fact['fact_id'],**fact['finding']} for fact in facts if fact.get('finding')]}]},
         tools, AgentRole.RECORD_QA)
     return facts
+
+
+def checked_synthesis(raw, tools, group):
+    """Additional bounded sentence checks, followed by the unchanged validator."""
+    if (not isinstance(raw, dict) or set(raw) != {'text', 'fact_ids'} or
+            not isinstance(raw['text'], str) or not raw['text'].strip() or
+            not isinstance(raw['fact_ids'], list) or len(set(raw['fact_ids'])) < 2 or
+            len(raw['fact_ids']) != len(set(raw['fact_ids'])) or
+            set(raw['fact_ids']) != set(group['fact_ids'])):
+        raise ValueError('SYNTHESIS_GROUP_MISMATCH')
+    if re.search(r'\bbecause\b|\bdue to\b|\bled to\b', raw['text'], re.I):
+        raise ValueError('PROHIBITED_CLAIM')
+    if re.search(r'\b(?:anchored|rolling|deviation|midpoint|extraction)\b', raw['text'], re.I):
+        raise ValueError('SYNTHESIS_JARGON')
+    validate({'headline':'', 'question_ids':[], 'claims':[{
+        'text':raw['text'], 'fact_ids':raw['fact_ids'], 'findings':[
+            {'fact_id':fid, **tools.delivered[fid]['finding']}
+            for fid in raw['fact_ids'] if tools.delivered[fid].get('finding')]}]}, tools, AgentRole.RECORD_QA)
+    return raw
+
+
+def record_presentation(tools, config):
+    """Deterministic interval intersection and approved questions, never scoring."""
+    latest = {}
+    for fact in tools.delivered.values():
+        if fact.get('finding'):
+            key = fact['key_id']
+            if key not in latest or (fact['at'], fact['finding']['since']) > (latest[key]['at'], latest[key]['finding']['since']):
+                latest[key] = fact
+    spans = []
+    for fact in latest.values():
+        spans.append((fact, fact['finding']['since'], fact['at']))
+    for fact in tools.delivered.values():
+        if fact.get('checkin_run'):
+            run = fact['checkin_run']
+            spans.append((fact, run['start'], run['end']))
+    groups = []
+    gap_facts = [tools.delivered[fid] for fid in tools.groups['get_gaps']
+                 if fid in tools.delivered and 'SENSING_GAP' in tools.delivered[fid]['text']]
+    for start in sorted({start for _,start,_ in spans}):
+        finish = (date.fromisoformat(start)+timedelta(days=config.co_occurrence_days-1)).isoformat()
+        overlap = [(fact,a,b) for fact,a,b in spans if a <= start and b >= finish and
+                   not any(gap['key_id']==fact['key_id'] and start <= gap['at'] <= finish for gap in gap_facts)]
+        # Check-ins alone never create an assessment synthesis.
+        if len(overlap) >= 2 and any(fact.get('finding') for fact,_,_ in overlap):
+            groups.append({'fact_ids':[fact['fact_id'] for fact,_,_ in overlap],
+                           'start':start, 'end':finish})
+    group = max(groups, key=lambda group:(len(group['fact_ids']),group['start']), default=None)
+    synthesis = None
+    if group:
+        labels = []
+        for fid in group['fact_ids']:
+            fact = tools.delivered[fid]
+            label = ('Check-ins' if fact.get('checkin_run') else
+                     SYNTHESIS_LABELS.get(fact['signal'],tools.keys[fact['key_id']]['label']))
+            if label not in labels: labels.append(label)
+        wording = ', '.join(labels[:-1])+' and '+labels[-1]
+        # The overlap date may not be printed in every cited fact. Omit dates
+        # from the sentence; exact common bounds remain in source disclosure.
+        synthesis = checked_synthesis({'text':wording+' were recorded over the same period.',
+                                       'fact_ids':group['fact_ids']},tools,group)
+        synthesis.update(group=group, generation_used=False)
+    contexts = [tools.delivered[fid] for fid in tools.groups['get_context'] if fid in tools.delivered]
+    missing_context = any(not any(context['key_id']==fact['key_id'] and context.get('context_span') and
+        context['context_span']['start'] <= fact['at'] and context['context_span']['end'] >= fact['finding']['since']
+        for context in contexts) for fact in latest.values())
+    gaps = any(fid in tools.delivered and 'SENSING_GAP' in tools.delivered[fid]['text'] for fid in tools.groups['get_gaps'])
+    questions = []
+    if missing_context: questions.append('context')
+    if gaps: questions.append('recording')
+    if not questions and latest: questions.append('visit')
+    checkins = next((fact for fact in tools.delivered.values() if fact.get('checkin_summary')),None)
+    return {'synthesis':synthesis,'checkins':checkins,'question_ids':questions[:2]}

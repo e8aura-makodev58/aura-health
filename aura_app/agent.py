@@ -74,7 +74,8 @@ class AgentService:
             evidence['assessed_notes'] = [{'event_id': row['event_id'], 'at': row['occurred_at'], 'text': row['payload']['text']}
                 for row in repo.events(patient_id) if row['event_type'] == 'PATIENT_FREE_TEXT'
                 and row['event_id'] in assessed and not row['longitudinal_deferred']]
-        return RecordTools(evidence, role, window_days=window_days, recent_readings_days=self.config.recent_readings_days), evidence
+        return RecordTools(evidence, role, window_days=window_days, recent_readings_days=self.config.recent_readings_days,
+                           checkin_days=self.config.checkin_days), evidence
 
     def _execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False):
         try:
@@ -129,6 +130,13 @@ class AgentService:
                 if not blocked:
                     result = run(role, question or QUERIES.get(query_id), tools, self.provider, self.config,
                                  presentation=role in {AgentRole.CLINICIAN_BRIEF, AgentRole.PATIENT_INSIGHT})
+                    if role in {AgentRole.CLINICIAN_BRIEF, AgentRole.PATIENT_INSIGHT}:
+                        from aura_agent.presentation import record_presentation
+                        for name in ('get_series','get_decisions','get_context','get_gaps'):
+                            tools.call(name,{})
+                        result['record_presentation'] = record_presentation(tools,self.config)
+                        result['draft']['question_ids'] = result['record_presentation']['question_ids']
+                        result['sources'] = list(tools.delivered.values())
                     if role == AgentRole.PATIENT_INSIGHT:
                         import re
                         if re.search(r'\b(?:baseline|drift|anchor|reestablishing)\b', json.dumps(result['draft']).lower()):
@@ -145,6 +153,7 @@ class AgentService:
                     blocked = new_block or "STATE_CHANGED_DURING_GENERATION"
                 if blocked:
                     result.update(draft={"claims": [], "question_ids": []}, sources=[], generation_used=False, reason=blocked)
+                    result.pop('record_presentation',None)
                 result.update(run_id=run_id, patient_id=patient_id, role=role.value,
                     query_id=query_id, window_days=window_days, status="BLOCKED" if blocked else "COMPLETE",
                     created_at=self.clock().isoformat(), request_fingerprint=options, state_fingerprint=signature,

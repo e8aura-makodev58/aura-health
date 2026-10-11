@@ -27,6 +27,9 @@ const {chromium}=require('playwright');
     assert.equal(await page.locator('.story-finding-band').getAttribute('data-since'),'2026-02-01');
     assert.equal(await page.locator('.story-finding-band').getAttribute('data-until'),'2026-03-01');
     assert.equal(await page.locator('.finding-timeline-span').count(),1);
+    // Sparse charts are optional; a sourced backlink must reveal their group.
+    await page.locator('#story-finding-1 .story-chart-link').click();
+    assert.equal(await page.locator('#other-measurements').evaluate(n=>n.open),true);
     assert.match(await page.locator('[data-source="watch-one"][data-signal="RESTING_HEART_RATE"] .chart-callout').innerText(),/Higher than usual/);
     assert.equal(await page.locator('[data-source="watch-two"] .chart-callout').count(),0);
     await page.locator('#story-finding-1 .story-chart-link').click();

@@ -9,11 +9,32 @@ from collections import Counter
 from datetime import date, timedelta
 import json
 from pathlib import Path
+from math import ceil
 from statistics import median
 import time
 from uuid import uuid4
 
 import httpx
+
+
+def summarize(measurements):
+    """Per-role/scenario evidence; HTTP timings are proxies, not DOM paint times."""
+    groups = {}
+    for row in measurements:
+        groups.setdefault((row['scenario'], row['role']), []).append(row)
+    result = []
+    for (scenario, role), rows in sorted(groups.items()):
+        def p95(key):
+            values = sorted(row[key] for row in rows)
+            return values[ceil(.95 * len(values)) - 1]
+        successes = sum(bool(row.get('validated_headline')) for row in rows)
+        complete = len(rows) == 20
+        result.append({'scenario': scenario, 'role': role, 'samples': len(rows),
+            'validated_headlines': successes, 'preview_http_p95_ms': p95('preview_ms'),
+            'swap_http_p95_ms': p95('total_ms'),
+            'sample_gate': 'PASS' if complete and successes >= 18 else 'FAIL' if complete else 'INCOMPLETE',
+            'timing_scope': 'HTTP response timings; visible-paint acceptance needs browser instrumentation'})
+    return result
 
 
 def card_count(result, evidence, role):
@@ -87,6 +108,7 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
 
     def save():
+        report['summary'] = summarize(report['measurements'])
         report['rejection_histogram'] = dict(Counter(code for row in report['measurements']
             for code in row['rejection_codes']))
         output.write_text(json.dumps(report, indent=2) + '\n')

@@ -11,7 +11,7 @@ from .roles import ROLE_TOOLS
 
 
 class RecordTools:
-    def __init__(self, evidence, role, *, window_days=56, recent_readings_days=7):
+    def __init__(self, evidence, role, *, window_days=56, recent_readings_days=7, checkin_days=7):
         self.role = role
         self.facts = {}
         self.groups = {name: [] for name in ROLE_TOOLS[role]}
@@ -92,12 +92,44 @@ class RecordTools:
                 # Arbitrary explanation text is deliberately excluded. Category and
                 # explicit signal association are observable structured data.
                 add("get_context", row["event_id"], f"{label}: {row['category']} context recorded from {start[:10]} to {finish[:10] if finish else 'no recorded end'}; explicitly associated with {label}.", signal=key["signal"])
+                self.facts[f'f{len(self.facts)}']['context_span'] = {'start':start[:10], 'end':finish[:10] if finish else (end or '')[:10]}
                 if row["event_id"] in evidence.get("agent_assessed_context_ids", []) and row.get("explanation"):
                     note = str(row["explanation"])[:400]
                     add("get_context", row["event_id"], f"{label}: patient-reported context: {json.dumps(note)}.", signal=key["signal"])
         for row in evidence["checkins"][-8:]:
             if not row["deferred"] and row["at"][:10] >= cutoff:
                 add("get_decisions", row["event_id"], f"Patient check-in {row['at'][:10]}: {row['state']}.")
+        # One answer per recorded calendar day; held answers and missing days
+        # cannot extend a run. Latest committed answer wins within the day.
+        days = {}
+        for row in sorted(evidence['checkins'], key=lambda row: row['at']):
+            if not row['deferred'] and cutoff <= row['at'][:10] <= (end or '')[:10]:
+                days[row['at'][:10]] = row
+        runs = []
+        for day, row in sorted(days.items()):
+            if (runs and runs[-1]['state'] == row['state'] and
+                    (datetime.fromisoformat(day)-datetime.fromisoformat(runs[-1]['end'])).days == 1):
+                runs[-1]['end'] = day
+                runs[-1]['source_refs'].append(row['event_id'])
+            else:
+                runs.append({'state':row['state'], 'start':day, 'end':day, 'source_refs':[row['event_id']]})
+        for run in runs:
+            add('get_decisions', run['source_refs'][-1],
+                f"Patient-reported check-ins: {run['state']} on {len(run['source_refs'])} consecutive recorded days, from {run['start']} to {run['end']}.", at=run['end'])
+            self.facts[f'f{len(self.facts)}']['checkin_run'] = run
+        if days and end:
+            start = (datetime.fromisoformat(end)-timedelta(days=checkin_days-1)).date().isoformat()
+            recent = [row for day,row in sorted(days.items()) if day >= start]
+            if recent:
+                state = recent[-1]['state']
+                count = sum(row['state'] == state for row in recent)
+                latest_run = runs[-1]
+                add('get_decisions', recent[-1]['event_id'],
+                    f"Patient-reported check-ins: {state} on {count} of the last {checkin_days} days; {len(recent)} days recorded. Latest run: {len(latest_run['source_refs'])} consecutive days from {latest_run['start']} to {latest_run['end']}.", at=recent[-1]['at'][:10])
+                self.facts[f'f{len(self.facts)}']['checkin_summary'] = {'state':state,'count':count,
+                    'window_days':checkin_days, 'recorded_days':len(recent), 'start':start, 'end':end[:10],
+                    'run_start':latest_run['start'], 'run_end':latest_run['end'],
+                    'run_days':len(latest_run['source_refs']), 'source_refs':[row['event_id'] for row in recent]}
         for row in evidence["medication"][-8:]:
             if not row["deferred"] and row["at"][:10] >= cutoff:
                 add("get_decisions", row["event_id"], f"Medication-routine record {row['at'][:10]}: {row['status']}.")
@@ -146,13 +178,25 @@ class RecordTools:
                 self._window(start, end)
                 facts = [fact for fact in facts if fact["at"] is None or start <= fact["at"] <= end]
         while len(json.dumps(facts)) > 24000:
-            removable=next((index for index in range(len(facts)-1,-1,-1) if facts[index]['fact_id'] not in self.required),None)
+            # Keep the compact recent check-in view when a fragmented window
+            # has many runs; retained findings keep the same mandatory budget.
+            latest_run = next((fact['fact_id'] for fact in reversed(facts) if fact.get('checkin_run')),None)
+            removable=next((index for index in range(len(facts)-1,-1,-1)
+                if facts[index]['fact_id'] not in self.required and not facts[index].get('checkin_summary')
+                and facts[index]['fact_id'] != latest_run),None)
             if removable is None:raise ValueError('TOOL_BUDGET')
             facts.pop(removable)
         self.delivered.update({fact["fact_id"]: fact for fact in facts})
         # Demo event IDs can encode scenario names. The model receives opaque
         # reference aliases, while application/UI citations retain real source IDs.
-        model_facts = [{**{k:v for k,v in fact.items() if k != 'reading_source_refs'}, "source_ref": "ref:" + sha256(fact["source_ref"].encode()).hexdigest()[:16]} for fact in facts]
+        model_facts = []
+        for fact in facts:
+            model_fact = {**{k:v for k,v in fact.items() if k != 'reading_source_refs'},
+                          'source_ref':'ref:' + sha256(fact['source_ref'].encode()).hexdigest()[:16]}
+            for field in ('checkin_run','checkin_summary'):
+                if field in model_fact:
+                    model_fact[field] = {k:v for k,v in model_fact[field].items() if k != 'source_refs'}
+            model_facts.append(model_fact)
         return {"facts": model_facts, 'retained_fact_ids':sorted(self.required & {fact['fact_id'] for fact in facts}), "scope": "selected record; selected window; bounded measurement sample"}
 
     def _window(self, start, end):

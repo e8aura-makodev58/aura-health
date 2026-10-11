@@ -217,6 +217,10 @@ main {padding-inline:24px}
 .patient-links a {display:flex;align-items:center;gap:12px;text-decoration:none;padding:16px 4px;min-height:56px;font-size:.9rem}
 .patient-links a:first-child {border-bottom:1px solid var(--line)}
 .patient-links a>span:last-child {margin-left:auto}
+.patient-links .appointment-link {border:1px solid var(--line);margin:0 0 8px;padding:16px;background:var(--white);border-radius:16px}
+.appointment-link-copy {display:flex;flex-direction:column;gap:4px;min-width:0}
+.appointment-link-copy strong {font-size:.9rem;font-weight:600}
+.patient-links {border-top:0}
 .optional-records {margin:18px 0}
 .optional-records>summary {font-size:.82rem;color:var(--muted);padding:10px 26px 10px 0}
 .optional-records .home-grid {grid-template-columns:1fr;margin-top:14px}
@@ -274,6 +278,7 @@ caption {text-align:left;padding:8px 0;font-size:.72rem;color:var(--muted)}
 .appointment-preview p {font-size:.88rem}
 #review-details>summary {font-size:.85rem;margin-bottom:16px}
 @media(max-width:700px) {
+  .demo-panel {position:fixed;top:108px;left:12px;right:12px;max-height:42dvh;overflow-y:auto;z-index:35;background:var(--white);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 36px #24362d26;padding:14px}
   main {padding-inline:16px}
   .masthead {padding:14px 16px}
   .demo-bar {padding:8px 16px;gap:8px}

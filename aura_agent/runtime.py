@@ -23,6 +23,8 @@ class AgentConfig:
     provider_timeout_seconds: float = 15.0
     max_tool_calls: int = 24
     recent_readings_days: int = 7
+    co_occurrence_days: int = 3
+    checkin_days: int = 7
 
     def __post_init__(self):
         if (type(self.max_steps) is not int or not 1 <= self.max_steps <= 12 or
@@ -33,6 +35,8 @@ class AgentConfig:
         if type(self.max_tool_calls) is not int or not 1<=self.max_tool_calls<=48:raise ValueError('Invalid tool budget')
         if type(self.recent_readings_days) is not int or not 1 <= self.recent_readings_days <= 30:
             raise ValueError('Invalid recent readings window')
+        if any(type(value) is not int or not 1 <= value <= 30 for value in (self.co_occurrence_days, self.checkin_days)):
+            raise ValueError('Invalid presentation window')
 
 
 def load_config():

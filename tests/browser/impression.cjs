@@ -16,7 +16,7 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
   assert.equal(await page.locator('#agent-query').isVisible(),false);
   await page.waitForTimeout(800);assert.equal(posts.filter(p=>p.run_id.startsWith('arrival-')).length,1);console.log('I1_ARRIVAL_IMMEDIATE_CACHED_ASSESSMENT PASS');
   assert.equal(await page.locator('#agent-question-text').isVisible(),true);assert.equal(await page.locator('.suggested-questions button').count(),3);
-  assert.equal(await page.locator('#patterns-view details').count(),3);
+  assert.equal(await page.locator('#patterns-view > details.workspace-disclosure').count(),3);
   await page.locator('.suggested-questions button').first().click();await page.waitForSelector('#agent-record_qa .agent-disclosure');console.log('I4_VISIBLE_SOURCED_QUESTIONS_I5_THREE_GROUPS PASS');
   await page.locator('#patient-role').click();await page.waitForSelector('#month-recap:not([hidden]) .agent-claim');
   assert.equal(await page.locator('#home-view svg').count(),0);assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/\b(?:baseline|drift|anchor)\b/i);

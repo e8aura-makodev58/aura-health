@@ -1,12 +1,13 @@
 """FD: bounded wording and presentation facts; no paid models or domain changes."""
 from copy import deepcopy
+from pathlib import Path
 import json
 import unittest
 
 from aura_agent.grounding import validate
-from aura_agent.presentation import checked_headline
+from aura_agent.presentation import checked_headline, checked_synthesis, record_presentation
 from aura_agent.roles import AgentRole
-from aura_agent.runtime import run
+from aura_agent.runtime import run, AgentConfig
 from aura_agent.tools import RecordTools
 
 
@@ -45,6 +46,94 @@ class HeadlineProvider:
 
 
 class FinalDashTests(unittest.TestCase):
+    def presentation_tools(self, source):
+        tools=RecordTools(source,AgentRole.CLINICIAN_BRIEF)
+        for name in tools.groups:tools.call(name,{})
+        return tools
+
+    def test_fd5_common_overlap_cites_channels_and_patient_run(self):
+        source=evidence()
+        source['checkins']=[{'event_id':f'check-{d}','at':f'2026-03-{d:02}T10:00:00',
+                            'state':'Rough','deferred':False} for d in (10,11,12)]
+        tools=self.presentation_tools(source)
+        result=record_presentation(tools,AgentConfig())
+        synthesis=result['synthesis'];self.assertIsNotNone(synthesis)
+        self.assertIn('Resting heart rate and Check-ins',synthesis['text'])
+        self.assertEqual(len(synthesis['fact_ids']),2)
+        self.assertEqual(synthesis['group']['start'],'2026-03-10')
+        self.assertEqual(result['checkins']['checkin_summary']['count'],3)
+        self.assertIsNone(record_presentation(tools,AgentConfig(co_occurrence_days=4))['synthesis'])
+        interrupted=deepcopy(source)
+        interrupted['signals'][0]['gaps']=[{'event_id':'gap','type':'SENSING_GAP','at':'2026-03-11'}]
+        self.assertIsNone(record_presentation(self.presentation_tools(interrupted),AgentConfig())['synthesis'])
+        for text in ['Changes because of check-ins','Changes due to check-ins','Changes led to check-ins',
+                     'Rough on 999 days','Good check-ins','The anchored changes were recorded']:
+            with self.subTest(text=text),self.assertRaises(ValueError):
+                checked_synthesis({'text':text,'fact_ids':synthesis['fact_ids']},tools,synthesis['group'])
+        with self.assertRaises(ValueError):
+            checked_synthesis({'text':'Recorded over the same period','fact_ids':synthesis['fact_ids'][:1]},tools,synthesis['group'])
+
+    def test_fd6_held_missing_and_changed_answers_break_runs_no_interpolation(self):
+        source=evidence()
+        source['checkins']=[{'event_id':f'check-{d}','at':f'2026-03-{d:02}T10:00:00',
+                            'state':'Rough','deferred':d==11} for d in (10,11,12)]
+        tools=self.presentation_tools(source);result=record_presentation(tools,AgentConfig())
+        self.assertIsNone(result['synthesis'])
+        self.assertEqual(result['checkins']['checkin_summary']['recorded_days'],2)
+        self.assertEqual(result['checkins']['checkin_summary']['run_days'],1)
+        self.assertNotIn('check-11',json.dumps(result))
+
+    def test_fd7_questions_vary_with_associated_context_and_recorded_gaps(self):
+        source=evidence();self.assertEqual(record_presentation(self.presentation_tools(source),AgentConfig())['question_ids'],['context'])
+        source['signals'][0]['contexts']=[{'event_id':'ctx','category':'BENIGN_CONTEXT','start':'2026-03-10','end':'2026-03-12'}]
+        self.assertEqual(record_presentation(self.presentation_tools(source),AgentConfig())['question_ids'],['visit'])
+        source['signals'][0]['gaps']=[{'event_id':'gap','type':'SENSING_GAP','at':'2026-03-11'}]
+        self.assertEqual(record_presentation(self.presentation_tools(source),AgentConfig())['question_ids'],['recording'])
+        source['signals'][0]['contexts'][0]['end']='2026-03-09'
+        self.assertEqual(record_presentation(self.presentation_tools(source),AgentConfig())['question_ids'],['context','recording'])
+
+    def test_fd8_checkin_source_ids_remain_outside_model_facts(self):
+        source=evidence();source['checkins']=[{'event_id':'hidden-scenario-Rough-truth',
+            'at':'2026-03-12T10:00:00','state':'Rough','deferred':False}]
+        tools=RecordTools(source,AgentRole.CLINICIAN_BRIEF)
+        returned=tools.call('get_decisions',{})
+        self.assertNotIn('hidden-scenario',json.dumps(returned))
+        self.assertNotIn('source_refs',json.dumps(returned))
+        self.assertIn('hidden-scenario',json.dumps(list(tools.delivered.values())))
+
+    def test_fd9_synthesis_covers_all_overlapping_channels_and_excludes_chained_spans(self):
+        source=evidence();base=source['signals'][0]
+        for signal,label in [('SLEEP_MIDPOINT','Sleep timing'),('ACTIVITY','Activity'),
+                             ('HRV','HRV'),('RESPIRATORY_RATE','Respiratory rate'),
+                             ('SKIN_TEMPERATURE_DEVIATION','Skin temperature')]:
+            row=deepcopy(base);row['key']['signal']=signal;row['label']=label
+            source['signals'].append(row)
+        source['checkins']=[{'event_id':f'check-{d}','at':f'2026-03-{d:02}T10:00:00',
+                            'state':'Rough','deferred':False} for d in (10,11,12)]
+        result=record_presentation(self.presentation_tools(source),AgentConfig())
+        self.assertEqual(len(result['synthesis']['fact_ids']),7)
+        for label in ['Sleep timing','Activity','HRV','Respiratory rate','Skin temperature','Check-ins']:
+            self.assertIn(label,result['synthesis']['text'])
+        source['signals'][-1]['findings'][0].update(first_seen='2026-03-01',last_seen='2026-03-09')
+        result=record_presentation(self.presentation_tools(source),AgentConfig())
+        self.assertNotIn('Skin temperature',result['synthesis']['text'])
+
+    def test_fd10_actual_registry_labels_produce_jargon_free_validated_synthesis(self):
+        source=evidence();base=source['signals'][0]
+        registry=json.loads((Path(__file__).resolve().parents[1]/'aura_longitudinal'/'signal_registry.json').read_text())
+        definitions=registry['signals']
+        for definition in definitions:
+            if not definition['enabled_in_engine'] or definition['name']=='RESTING_HEART_RATE':continue
+            row=deepcopy(base);row['key']['signal']=definition['name'];row['label']=definition['label']
+            source['signals'].append(row)
+        self.assertIn('Skin-temperature deviation',[row['label'] for row in source['signals']])
+        tools=self.presentation_tools(source)
+        result=record_presentation(tools,AgentConfig())
+        synthesis=result['synthesis']
+        self.assertIn('Skin temperature',synthesis['text'])
+        self.assertNotIn('deviation',synthesis['text'].lower())
+        checked_synthesis({'text':synthesis['text'],'fact_ids':synthesis['fact_ids']},tools,synthesis['group'])
+
     def test_fd1_model_headline_and_server_history_are_separate_and_cited(self):
         source=evidence();before=deepcopy(source);tools=RecordTools(source,AgentRole.CLINICIAN_BRIEF)
         result=run(AgentRole.CLINICIAN_BRIEF,None,tools,HeadlineProvider(),presentation=True)

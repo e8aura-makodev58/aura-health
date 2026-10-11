@@ -27,6 +27,10 @@
   }
   const keyOf = key => JSON.stringify([key.signal,key.source,key.metric||""]);
   const chartId = key => `chart-${encodeURIComponent(keyOf(key)).replaceAll('%','_')}`;
+  function revealChart(target) {
+    for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
+    target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});
+  }
   function storyFor(signal) {
     return storyItems.flatMap(item => {
       const source=storySources.find(row=>row.fact_id===item.fact_id);
@@ -164,7 +168,7 @@
     }
     if (!findings.length) overview.append(node("p","No descriptive change is retained in these records."));
     byId("workspace-decision").textContent = `Current communication: ${evidence.current_decision === "STAY_QUIET" ? "no question pending" : evidence.current_decision === "SAFETY_REVIEW_REQUIRED" ? "safety policy takes priority" : "an approved interaction is available in Patient view"}. Retained changes are history, not a new prompt.`;
-    const charts = byId("evidence-charts"); charts.replaceChildren();
+    const charts = byId("evidence-charts"),otherOpen=Boolean(byId('other-measurements')?.open); charts.replaceChildren();
     let timeline=byId('finding-timeline');if(!timeline){timeline=node('section',null,'finding-timeline');timeline.id='finding-timeline';charts.before(timeline);}timeline.replaceChildren();timeline.hidden=true;
     let exact=byId('chart-exact-sources');
     if(!exact){exact=node('div');exact.id='chart-exact-sources';(byId('workspace-evidence')||charts.parentElement).append(exact);}exact.replaceChildren();
@@ -183,7 +187,17 @@
         spans.forEach((item,index)=>{const y=index*22+8,a=Math.max(start,day(item.since)),b=Math.min(end,day(item.until));const link=svgNode('a',{href:`#${item.target_id}`,'aria-label':`Finding ${item.number}, ${shortDate(a)} to ${shortDate(b)}`});link.append(svgNode('text',{x:56,y:y+10,'text-anchor':'end',class:'chart-axis'},String(item.number)),svgNode('rect',{x:66,y,width:width-90,height:10,rx:5,class:'finding-timeline-track'}),svgNode('rect',{x:x(a),y,width:Math.max(3,x(b)-x(a)),height:10,rx:5,class:'finding-timeline-span','data-finding-number':item.number}));link.addEventListener('click',event=>{const target=document.getElementById(item.target_id);if(target){event.preventDefault();target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});}});strip.append(link);});
         for(const at of [start,end])strip.append(svgNode('text',{x:x(at),y:spans.length*22+18,'text-anchor':at===start?'start':'end',class:'chart-axis'},shortDate(at)));timeline.append(strip);
       }
-      for (const signal of evidence.signals) charts.append(drawChart(signal,start,end));
+      const coreOrder=['SLEEP_MIDPOINT','SLEEP_DURATION','ACTIVITY','RESTING_HEART_RATE'];
+      const groups={core:[],moved:[],other:[]};
+      for(const signal of evidence.signals){
+        const readings=signal.observations.filter(row=>!row.deferred&&day(row.day)>=start&&day(row.day)<=end).length;
+        const group=readings<3?'other':coreOrder.includes(signal.key.signal)?'core':storyFor(signal).length?'moved':'other';
+        groups[group].push(signal);
+      }
+      groups.core.sort((a,b)=>coreOrder.indexOf(a.key.signal)-coreOrder.indexOf(b.key.signal));
+      for(const signal of groups.core)charts.append(drawChart(signal,start,end));
+      if(groups.moved.length){const moved=node('section',null,'chart-group');moved.id='also-moved';moved.append(node('h2','Also moved'));const grid=node('div',null,'chart-group-grid');for(const signal of groups.moved)grid.append(drawChart(signal,start,end));moved.append(grid);charts.append(moved);}
+      if(groups.other.length){const other=node('details',null,'chart-group other-measurements');other.id='other-measurements';other.open=otherOpen;other.append(node('summary',`Other measurements (${groups.other.length})`));const grid=node('div',null,'chart-group-grid');for(const signal of groups.other)grid.append(drawChart(signal,start,end));other.append(grid);charts.append(other);}
     } else charts.append(node("p","No recorded history yet."));
     const strip = byId("evidence-strip"); strip.replaceChildren();
     for (const [title,rows,field] of [["Check-ins · patient reports",evidence.checkins,"state"],["Medication routine · not verified ingestion",evidence.medication,"status"]]) {
@@ -277,7 +291,7 @@
     if(lastEvidence)window.renderAuraEvidence(lastEvidence);
     for(const item of storyItems){const target=document.getElementById(item.target_id||`story-finding-${item.number}`);if(!target)continue;
       target.querySelector('.story-chart-link')?.remove();const match=lastEvidence?.signals.find(signal=>storyFor(signal).some(row=>row.number===item.number));if(!match)continue;
-      const link=node('a','See on chart','story-chart-link');link.href=`#${chartId(match.key)}`;link.addEventListener('click',event=>{const chart=document.getElementById(chartId(match.key));if(chart){event.preventDefault();chart.scrollIntoView({block:'center',behavior:'auto'});chart.focus({preventScroll:true});}});target.append(link);
+      const link=node('a','See on chart','story-chart-link');link.href=`#${chartId(match.key)}`;link.addEventListener('click',event=>{const chart=document.getElementById(chartId(match.key));if(chart){event.preventDefault();revealChart(chart);}});target.append(link);
     }
   };
   window.setAuraComparisonAssessment=result=>{comparisonAssessment=result||null;if(lastEvidence)comparison(lastEvidence);};
