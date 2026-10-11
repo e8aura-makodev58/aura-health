@@ -29,7 +29,8 @@ def fallback(tools, role, query=None):
             prior = latest.get(key)
             if prior is None or (fact.get('at') or '') > (tools.facts[prior].get('at') or ''):
                 latest[key] = fid
-        ids = [*latest.values(), *held][:2]
+        ids = sorted(latest.values(),key=lambda fid:tools.facts[fid].get('at') or '',reverse=True)[:2]
+        if len(ids)<2:ids.extend(held[:2-len(ids)])
     # Group all retained findings into bounded factual lines, never silently drop
     # them because a short brief has a smaller preferred number of sentences.
     def wording(fid):
@@ -47,4 +48,4 @@ def fallback(tools, role, query=None):
         return fact['text'][:600]
     claims = [{"text": wording(fid), "fact_ids": [fid], "section": "review" if fid in tools.groups['get_review_snapshot'] else "changes",
                "findings": [{"fact_id": fid, **tools.facts[fid]['finding']}] if tools.facts[fid].get('finding') else []} for fid in ids]
-    return {"claims": claims, "question_ids": [], "headline": "Recorded changes" if claims else ""}
+    return {"claims": claims, "question_ids": [], "headline": ("Your recent days" if role == AgentRole.PATIENT_INSIGHT else "Recorded changes") if claims else ""}

@@ -1,6 +1,6 @@
 # Final-dash evidence
 
-2026-10-10. Scope: `FINAL_DASH_SOW.md`, **WP0 only**. User authorized following
+Historical WP0 report, 2026-10-10. Scope: `FINAL_DASH_SOW.md`, **WP0 only**. User authorized following
 Claude's instructions. This is the first work-package gate, not design lock or
 M7 acceptance. No production behavior, validator, engine, schema, dependency,
 provider setting or deployment was changed.
@@ -157,3 +157,104 @@ Per SOW “stop at each gate”, hand off this baseline before WP1. The next pac
 is reliable bounded AI wording and one latest card per exact signal/source/metric;
 then descriptive window facts, followed by Claude's WP2 review. Design is not
 locked; no M8 or CodeBuddy work began.
+
+## WP1–WP2 implementation and review handoff — 2026-10-11
+
+Claude's `da36b42` amendment governs WP2: expose existing committed engine
+findings, not a new 7-versus-28-day detector. Accepted engines, configuration
+thresholds, schema, dependencies and safety precedence are unchanged.
+
+### Changes
+
+- Clinician/patient generation now requests only a cited, bounded headline and
+  approved question IDs. The server supplies retained claims. Existing numeric,
+  citation, prohibited-claim, retained-history and patient-burden checks remain;
+  the independent semantic verifier checks the headline against exactly its
+  cited facts. Model failure or rejection retains the immediate record summary.
+- UI selects the latest exact signal/source/metric finding, preserving older
+  spans in Why. Date-descending channel cards replace the old claim cap:
+  clinician six by default plus More changes; patient two plus See all.
+  Transient engine findings say Recent change, not persistent drift.
+- Display-only channels show latest/count/date range and inspectable recorded
+  min/max over configurable `recent_readings_days=7` (engineering default,
+  constrained 1–30). No interpolation, baseline, direction or alert is added.
+  Deferred/low-quality observations are excluded. Raw source IDs remain in UI
+  evidence but are stripped/aliased before model tools, preserving fixture
+  isolation. AI provenance labels require visible validated generated wording;
+  otherwise the label is Summary from the record.
+- Versions: `aura-agent-v5`, `agent-engineering-v3`, `arrival-v5`. Other agent
+  roles and legacy explicit draft contracts remain unchanged.
+
+### Verification
+
+FD1–FD4 cover server/model separation, retained evidence, prohibited and
+fabricated wording, semantic rejection and sparse facts/isolation.
+Final full regression: **252 PASS**, 361.490 s. Existing Starlette/httpx warning
+remains. Final three new browser checks rerun PASS after all edits.
+AG10 now asserts the approved record-summary disclosure and absence of the AI
+label, rather than the obsolete literal Offline rule-based wording.
+
+Browser checks: final dash 3, impression 5, agent 5, story charts 3, dual view
+12 and hosted 7 PASS (35 total); standalone finding cards 3 PASS. Covers A–F
+channel uniqueness, actual flu's six channels, three thermometer readings,
+patient overflow, phone/laptop layout and safety/offline clearing.
+HTTPS preview screenshots exist at `/tmp/aura-final-dash-https/`: clinician
+and patient at 1280/390 pixels. That check blocked assistant POSTs; it exercised
+one synthetic director call, not headline reliability. Clinician 390-pixel
+screenshot inspected: all six findings and sparse readings visible, no overflow.
+
+Twenty quiet seeds produced **0/20** with transient RHR/HRV/respiratory/skin
+findings (`evidence/final-dash-quiet.json`). This is the explicitly stable
+synthetic profile with a 28-day governed reference and 30 observed days, not
+a population false-positive estimate or clinical validation.
+
+Commands:
+
+```sh
+.venv/bin/python -m unittest discover -s tests -q
+.venv/bin/python tests/live/quiet_channels.py --output docs/evidence/final-dash-quiet.json
+NODE_PATH=/home/makodev58/aura-math/node_modules LD_LIBRARY_PATH=/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu \
+  .venv/bin/python tests/browser/run.py --hosted \
+  --suite final_dash.cjs impression.cjs agent.cjs story_charts.cjs dual_view.cjs milestone7.cjs \
+  --artifacts /tmp/aura-final-dash-browser
+.venv/bin/python tests/live/assessment_pass.py --confirm-live-synthetic-checks --runs 1 \
+  --output docs/evidence/final-dash-wp1-wp2-live.json
+.venv/bin/python tests/live/assessment_pass.py --confirm-live-synthetic-checks --runs 1 \
+  --output docs/evidence/final-dash-wp1-wp2-v5-live.json
+NODE_PATH=/home/makodev58/aura-math/node_modules LD_LIBRARY_PATH=/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu \
+  node tests/live/final_dash_browser.cjs --confirm-live-synthetic-checks
+```
+
+### Live smoke, not the reliability gate
+
+Fresh synthetic HTTPS runs, DeepSeek/deepseek-flash, seed 42, three-day flu,
+feedback disabled. Provider budgets unchanged; 35-second measurement interval.
+The first v4 pass validated clinician wording but rejected both patient
+headlines with HEADLINE_BUDGET. These failures remain in
+`evidence/final-dash-wp1-wp2-live.json`. Prompt revision v5 asks for 8–12 words
+with absolute 20-word maximum; the validator was not changed.
+
+| v5 scenario / role | Preview ms | Total ms | Agent runtime ms | Validated headline |
+|---|---:|---:|---:|---|
+| B / clinician | 170 | 2591 | 2195 | Yes |
+| B / patient | 293 | 2640 | 2138 | Yes |
+| B + flu / clinician | 366 | 3674 | 2990 | Yes |
+| B + flu / patient | 497 | 2868 | 2038 | Yes |
+
+Saved in `evidence/final-dash-wp1-wp2-v5-live.json`. These are one sample per
+role/scenario, **not** 18/20 success or p95 acceptance evidence. Runtime includes
+tools and semantic verification, not just model inference. Card counts in JSON
+are eligibility estimates; DOM assertions are separate browser checks. One
+initial request encountered a startup 502 before any model call; it was repeated
+after health became ready, not retried until generation passed.
+
+### Deployment and remaining gate
+
+Rebuilt Docker app, preserving volume/provider settings and the user-managed
+Cloudflare container. Deployed on `0.0.0.0:8017`, public
+`https://aura-health.makodev58.com`. Health and synthetic-only live provider status
+verified. Latest image: `874cdc963406cff9ceffdbabbf889b02f05055b0a3ba25ace6f5a565fa258c80`.
+
+**WP1 quantitative 20-run/p95 gate remains pending. Claude WP2 review is next.**
+WP3–WP6 have not been implemented in this slice. Do not claim design lock,
+M7 acceptance, new clinical detection, or CodeBuddy evidence.

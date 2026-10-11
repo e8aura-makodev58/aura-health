@@ -1,0 +1,919 @@
+{
+  "version": "final-dash-live-pass-v2",
+  "runs_per_role_per_scenario": 1,
+  "roles": [
+    "clinician_brief",
+    "patient_insight"
+  ],
+  "interval_seconds": 35,
+  "measurements": [
+    {
+      "scenario": "B",
+      "run": 1,
+      "role": "clinician_brief",
+      "preview_ms": 402,
+      "total_ms": 2740,
+      "model_elapsed_ms": 2079,
+      "reason": "VALIDATED_MODEL_DRAFT",
+      "outcome": "validated_model_draft",
+      "headline_present": true,
+      "card_count": 2,
+      "card_count_method": "current UI eligibility; not browser DOM measurement",
+      "verifier_rejected_items": 0,
+      "rejection_codes": [],
+      "claim_count": 4,
+      "finding_channel_count": 2
+    },
+    {
+      "scenario": "B",
+      "run": 1,
+      "role": "patient_insight",
+      "preview_ms": 311,
+      "total_ms": 2527,
+      "model_elapsed_ms": 1945,
+      "reason": "INVALID_OR_UNAVAILABLE_MODEL",
+      "outcome": "fallback",
+      "headline_present": true,
+      "card_count": 3,
+      "card_count_method": "current UI eligibility; not browser DOM measurement",
+      "verifier_rejected_items": 0,
+      "rejection_codes": [
+        "HEADLINE_BUDGET"
+      ],
+      "claim_count": 2,
+      "finding_channel_count": 2
+    },
+    {
+      "scenario": "B_PLUS_FLU_3_DAYS",
+      "run": 1,
+      "role": "clinician_brief",
+      "preview_ms": 339,
+      "total_ms": 3034,
+      "model_elapsed_ms": 2341,
+      "reason": "VALIDATED_MODEL_DRAFT",
+      "outcome": "validated_model_draft",
+      "headline_present": true,
+      "card_count": 6,
+      "card_count_method": "current UI eligibility; not browser DOM measurement",
+      "verifier_rejected_items": 0,
+      "rejection_codes": [],
+      "claim_count": 8,
+      "finding_channel_count": 6
+    },
+    {
+      "scenario": "B_PLUS_FLU_3_DAYS",
+      "run": 1,
+      "role": "patient_insight",
+      "preview_ms": 352,
+      "total_ms": 2557,
+      "model_elapsed_ms": 1938,
+      "reason": "INVALID_OR_UNAVAILABLE_MODEL",
+      "outcome": "fallback",
+      "headline_present": true,
+      "card_count": 3,
+      "card_count_method": "current UI eligibility; not browser DOM measurement",
+      "verifier_rejected_items": 0,
+      "rejection_codes": [
+        "HEADLINE_BUDGET"
+      ],
+      "claim_count": 2,
+      "finding_channel_count": 2
+    }
+  ],
+  "diagnostics": {
+    "B": {
+      "recent_start": "2026-03-05",
+      "end": "2026-03-11",
+      "channels": [
+        {
+          "channel": {
+            "signal": "SLEEP_MIDPOINT",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 1654.44097025,
+            "median": 1653.1974225166668,
+            "robust_spread": 7.046769272304878,
+            "sample_count": 14,
+            "slope_per_day": -0.9517825994139212,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 1457.7742525666667,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 5.39462056948501,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "PERSISTENT_DRIFT",
+            "ROLLING_ANCHOR_DIVERGENCE"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            1651.3864039666666,
+            1650.3165017,
+            1653.7099417333334,
+            1651.8105635833333,
+            1651.9598801166665,
+            1644.7124286166666,
+            1648.47965765
+          ],
+          "recent_median": 1651.3864039666666,
+          "previous_median": 1622.9029822083335,
+          "previous_robust_spread": 53.08641930511468,
+          "median_delta": 28.48342175833318
+        },
+        {
+          "channel": {
+            "signal": "SLEEP_DURATION",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 7.9920285714285715,
+            "median": 7.978949999999999,
+            "robust_spread": 0.038769989999999185,
+            "sample_count": 14,
+            "slope_per_day": 0.0008676923076923156,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 8.04415,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 0.05922987000000154,
+            "version": 1
+          },
+          "engine_finding_kinds": [],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            8.0489,
+            8.0647,
+            7.9725,
+            7.9661,
+            8.0306,
+            7.9662,
+            7.9611
+          ],
+          "recent_median": 7.9725,
+          "previous_median": 7.98715,
+          "previous_robust_spread": 0.07375934999999993,
+          "median_delta": -0.014649999999999608
+        },
+        {
+          "channel": {
+            "signal": "ACTIVITY",
+            "source": "synthetic_wearable",
+            "metric": "steps"
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 4911.8835714285715,
+            "median": 4890.1,
+            "robust_spread": 100.32754199999943,
+            "sample_count": 14,
+            "slope_per_day": 4.1566813186813505,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 7019.924999999999,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 112.09938600000018,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "PERSISTENT_DRIFT",
+            "ROLLING_ANCHOR_DIVERGENCE"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            4857.78,
+            4950.18,
+            4771.66,
+            5019.87,
+            4881.81,
+            4882.05,
+            5097.47
+          ],
+          "recent_median": 4882.05,
+          "previous_median": 5265.825000000001,
+          "previous_robust_spread": 489.82138799999876,
+          "median_delta": -383.77500000000055
+        },
+        {
+          "channel": {
+            "signal": "RESTING_HEART_RATE",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 61.832142857142856,
+            "median": 61.45,
+            "robust_spread": 0.756125999999997,
+            "sample_count": 14,
+            "slope_per_day": -0.01004395604395617,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 61.935,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 0.8154300000000063,
+            "version": 1
+          },
+          "engine_finding_kinds": [],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            61.25,
+            61.17,
+            63.05,
+            61.32,
+            61.32,
+            61.32,
+            62.19
+          ],
+          "recent_median": 61.32,
+          "previous_median": 62.065,
+          "previous_robust_spread": 0.6819960000000013,
+          "median_delta": -0.7449999999999974
+        }
+      ]
+    },
+    "B_PLUS_FLU_3_DAYS": {
+      "recent_start": "2026-03-08",
+      "end": "2026-03-14",
+      "channels": [
+        {
+          "channel": {
+            "signal": "SLEEP_MIDPOINT",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 1612.3545213130951,
+            "median": 1651.598483775,
+            "robust_spread": 9.839416154714986,
+            "sample_count": 14,
+            "slope_per_day": -14.641935532564101,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 1457.7742525666667,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 5.39462056948501,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "PERSISTENT_DRIFT",
+            "ROLLING_ANCHOR_DIVERGENCE"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            1651.8105635833333,
+            1651.9598801166665,
+            1644.7124286166666,
+            1648.47965765,
+            1459.995,
+            1461.8300000000002,
+            1460.7459999999999
+          ],
+          "recent_median": 1644.7124286166666,
+          "previous_median": 1645.365942441667,
+          "previous_robust_spread": 21.941109274524578,
+          "median_delta": -0.6535138250003456
+        },
+        {
+          "channel": {
+            "signal": "SLEEP_DURATION",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 8.143635714285715,
+            "median": 8.02035,
+            "robust_spread": 0.08287734000000041,
+            "sample_count": 14,
+            "slope_per_day": 0.04600373626373623,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 8.04415,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 0.05922987000000154,
+            "version": 1
+          },
+          "engine_finding_kinds": [],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            7.9661,
+            8.0306,
+            7.9662,
+            7.9611,
+            8.697000000000001,
+            8.728,
+            8.562
+          ],
+          "recent_median": 8.0306,
+          "previous_median": 8.0008,
+          "previous_robust_spread": 0.08421167999999994,
+          "median_delta": 0.029799999999999827
+        },
+        {
+          "channel": {
+            "signal": "ACTIVITY",
+            "source": "synthetic_wearable",
+            "metric": "steps"
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 4535.689,
+            "median": 4876.5650000000005,
+            "robust_spread": 136.92552300000068,
+            "sample_count": 14,
+            "slope_per_day": -126.33349450549449,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 7019.924999999999,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 112.09938600000018,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "PERSISTENT_DRIFT",
+            "ROLLING_ANCHOR_DIVERGENCE"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            5019.87,
+            4881.81,
+            4882.05,
+            5097.47,
+            3234.161,
+            3068.647,
+            3125.438
+          ],
+          "recent_median": 4881.81,
+          "previous_median": 5132.275,
+          "previous_robust_spread": 362.70326400000044,
+          "median_delta": -250.46499999999924
+        },
+        {
+          "channel": {
+            "signal": "RESTING_HEART_RATE",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 63.89664285714286,
+            "median": 62.4,
+            "robust_spread": 1.6012079999999973,
+            "sample_count": 14,
+            "slope_per_day": 0.6086615384615389,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 61.935,
+            "created_at": "2026-01-14T12:00:00+00:00",
+            "reference_end": "2026-01-14",
+            "reference_start": "2026-01-01",
+            "reviewed_by": null,
+            "robust_spread": 0.8154300000000063,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "TRANSIENT_DEVIATION"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 28,
+          "recent_values": [
+            61.32,
+            61.32,
+            61.32,
+            62.19,
+            70.894,
+            71.686,
+            70.593
+          ],
+          "recent_median": 62.19,
+          "previous_median": 62.065,
+          "previous_robust_spread": 0.7413,
+          "median_delta": 0.125
+        },
+        {
+          "channel": {
+            "signal": "HRV",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 41.9445,
+            "median": 43.985,
+            "robust_spread": 1.5797103000000001,
+            "sample_count": 14,
+            "slope_per_day": -1.0716417582417583,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 44.5175,
+            "created_at": "2026-03-11T12:00:00+00:00",
+            "reference_end": "2026-03-11",
+            "reference_start": "2026-02-12",
+            "reviewed_by": null,
+            "robust_spread": 1.057093799999996,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "TRANSIENT_DEVIATION"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 24,
+          "recent_values": [
+            43.839,
+            43.364,
+            44.093,
+            43.38,
+            31.963,
+            32.449,
+            30.413
+          ],
+          "recent_median": 43.364,
+          "previous_median": 44.911,
+          "previous_robust_spread": 1.4203307999999975,
+          "median_delta": -1.5470000000000041
+        },
+        {
+          "channel": {
+            "signal": "RESPIRATORY_RATE",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 14.437857142857142,
+            "median": 14.0565,
+            "robust_spread": 0.19051409999999974,
+            "sample_count": 14,
+            "slope_per_day": 0.1456263736263737,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": 14.01,
+            "created_at": "2026-03-11T12:00:00+00:00",
+            "reference_end": "2026-03-11",
+            "reference_start": "2026-02-12",
+            "reviewed_by": null,
+            "robust_spread": 0.12379709999999985,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "TRANSIENT_DEVIATION"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 7,
+          "baseline_count": 24,
+          "recent_values": [
+            14.156,
+            14.187,
+            13.819,
+            13.871,
+            15.921,
+            16.188,
+            16.045
+          ],
+          "recent_median": 14.187,
+          "previous_median": 14.01,
+          "previous_robust_spread": 0.10897110000000017,
+          "median_delta": 0.1769999999999996
+        },
+        {
+          "channel": {
+            "signal": "SKIN_TEMPERATURE_DEVIATION",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": true,
+          "trust": "TRUSTED",
+          "sensing": "OBSERVED",
+          "rolling": {
+            "coverage_ratio": 1.0,
+            "mean": 0.14385714285714285,
+            "median": 0.0225,
+            "robust_spread": 0.0934038,
+            "sample_count": 14,
+            "slope_per_day": 0.053010989010989,
+            "sufficient": true
+          },
+          "anchor": {
+            "center": -0.006999999999999999,
+            "created_at": "2026-03-11T12:00:00+00:00",
+            "reference_end": "2026-03-11",
+            "reference_start": "2026-02-12",
+            "reviewed_by": null,
+            "robust_spread": 0.0533736,
+            "version": 1
+          },
+          "engine_finding_kinds": [
+            "TRANSIENT_DEVIATION"
+          ],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.1
+          },
+          "recent_count": 7,
+          "baseline_count": 24,
+          "recent_values": [
+            0.077,
+            0.027,
+            -0.048,
+            0.018,
+            0.723,
+            0.673,
+            0.661
+          ],
+          "recent_median": 0.077,
+          "previous_median": -0.013499999999999998,
+          "previous_robust_spread": 0.042995399999999996,
+          "median_delta": 0.0905
+        },
+        {
+          "channel": {
+            "signal": "SPO2",
+            "source": "synthetic_wearable",
+            "metric": ""
+          },
+          "enabled_in_engine": false,
+          "trust": null,
+          "sensing": null,
+          "rolling": null,
+          "anchor": null,
+          "engine_finding_kinds": [],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 3,
+          "baseline_count": 0,
+          "recent_values": [
+            96.283,
+            95.704,
+            95.892
+          ],
+          "recent_median": 95.892,
+          "previous_median": null,
+          "previous_robust_spread": null,
+          "median_delta": null
+        },
+        {
+          "channel": {
+            "signal": "BLOOD_PRESSURE_SYSTOLIC",
+            "source": "synthetic_cuff",
+            "metric": ""
+          },
+          "enabled_in_engine": false,
+          "trust": null,
+          "sensing": null,
+          "rolling": null,
+          "anchor": null,
+          "engine_finding_kinds": [],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 2,
+          "baseline_count": 0,
+          "recent_values": [
+            120.849,
+            119.742
+          ],
+          "recent_median": 120.2955,
+          "previous_median": null,
+          "previous_robust_spread": null,
+          "median_delta": null
+        },
+        {
+          "channel": {
+            "signal": "BLOOD_PRESSURE_DIASTOLIC",
+            "source": "synthetic_cuff",
+            "metric": ""
+          },
+          "enabled_in_engine": false,
+          "trust": null,
+          "sensing": null,
+          "rolling": null,
+          "anchor": null,
+          "engine_finding_kinds": [],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 2,
+          "baseline_count": 0,
+          "recent_values": [
+            76.933,
+            75.628
+          ],
+          "recent_median": 76.2805,
+          "previous_median": null,
+          "previous_robust_spread": null,
+          "median_delta": null
+        },
+        {
+          "channel": {
+            "signal": "BODY_TEMPERATURE",
+            "source": "synthetic_manual_thermometer",
+            "metric": ""
+          },
+          "enabled_in_engine": false,
+          "trust": null,
+          "sensing": null,
+          "rolling": null,
+          "anchor": null,
+          "engine_finding_kinds": [],
+          "engineering_parameters": {
+            "version": "m3-engineering-v1-not-clinically-validated",
+            "rolling_window_days": 14,
+            "minimum_points": 5,
+            "minimum_window_coverage": 0.5,
+            "minimum_observation_coverage": 0.5,
+            "reestablish_after_days": 14,
+            "deviation_spread_multiplier": 2.0,
+            "persistent_fraction": 0.6,
+            "trend_spread_per_day": 0.1,
+            "relative_spread_floor": 0.05,
+            "communication_cooldown_days": 7,
+            "absolute_spread_floor": 0.0
+          },
+          "recent_count": 3,
+          "baseline_count": 0,
+          "recent_values": [
+            37.718,
+            37.874,
+            37.886
+          ],
+          "recent_median": 37.874,
+          "previous_median": null,
+          "previous_robust_spread": null,
+          "median_delta": null
+        }
+      ]
+    }
+  },
+  "provider": {
+    "provider": "DeepSeek",
+    "model": "deepseek-flash",
+    "synthetic_only": true
+  },
+  "rejection_histogram": {
+    "HEADLINE_BUDGET": 2
+  },
+  "simulation": {
+    "seed": 42,
+    "days": 3,
+    "notes": false,
+    "status": "VALIDATED_MODEL_PLAN"
+  }
+}

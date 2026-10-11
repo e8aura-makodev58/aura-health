@@ -56,6 +56,9 @@ class MockAgent:
         if role == "record_qa": selected = facts[-3:]
         if role == "question_ranker": selected = []
         raw = {"claims": [{"text": fact["text"], "fact_ids": [fact["fact_id"]], 'findings':[{'fact_id':fact['fact_id'],**fact['finding']}] if fact.get('finding') else []} for fact in selected], "question_ids": []}
+        if 'BOUNDED_ASSESSMENT_HEADLINE' in messages[0]['content'] and not self.corrupt:
+            raw = {'headline':'Recorded changes in sleep timing',
+                   'fact_ids':[f['fact_id'] for f in selected[:2]],'question_ids':[]}
         if self.corrupt: raw = self.corrupt(raw)
         return {"role": "assistant", "content": json.dumps(raw), "tool_calls": []}
 
@@ -172,7 +175,8 @@ class AgentTests(unittest.TestCase):
         self.agent.provider = ScriptedAgentProvider()
         result = self.execute()
         self.assertFalse(result["generation_used"])
-        self.assertIn("Offline rule-based", result["disclosure"])
+        self.assertIn("Summary from the record", result["disclosure"])
+        self.assertNotIn("AI draft", result["disclosure"])
         self.assertTrue(result["draft"]["claims"])
 
     def test_ag11_validation_failure_uses_inspectable_fallback(self):

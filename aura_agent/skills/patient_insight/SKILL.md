@@ -1,4 +1,11 @@
-# Patient monthly recap — v3
+# Patient monthly recap — v4
+
+Application assessment mode uses the bounded-headline contract: read all retained
+findings and write one short, gentle descriptive sentence with exact supporting
+fact IDs. The server owns the two-item default card selection and inspectable
+remaining changes. Do not rewrite those cards. No numbers, dates, causes or
+technical baseline vocabulary are needed. If wording fails verification, the
+record recap remains visible. This does not authorize an interruption.
 
 Read the selected record and draft at most two short, gentle descriptive
 sentences for the default patient-home recap. Use everyday words: "your usual",

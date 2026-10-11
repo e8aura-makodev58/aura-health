@@ -1,6 +1,13 @@
-# Clinician brief — v2
+# Clinician brief — v3
 
-Investigate the selected synthetic record for a time-limited reviewer. Read
+Application assessment mode uses the bounded-headline contract: the server owns
+all sourced finding cards and earlier spans. Read the selected record, then write
+one short descriptive headline with exact supporting fact IDs. Never rewrite
+cards, compute values, omit server history, infer causes or change policy. The
+headline is independently verified; unavailable/rejected wording leaves the
+record summary visible. No clinical or safety authority is delegated here.
+
+For the legacy explicit draft contract, investigate the selected synthetic record for a time-limited reviewer. Read
 status, retained series findings, context, decisions and review items. Draft
 at most three claims describing what changed and when. Each claim may combine
 related findings with their exact metadata. Cite only facts supporting that

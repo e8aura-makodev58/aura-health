@@ -18,18 +18,17 @@ import httpx
 
 def card_count(result, evidence, role):
     """Mirror current rendering eligibility only; browser screenshots stay separate."""
-    facts = {row['fact_id']: row for row in result.get('sources', [])}
-    count = 0
-    for claim in result['draft']['claims'][:2 if role == 'patient_insight' else 3]:
-        if not claim.get('findings'):
+    channels = set()
+    for fact in result.get('sources', []):
+        if not fact.get('finding'):
             continue
-        finding = claim['findings'][0]
-        fact = facts.get(finding['fact_id'], {})
-        matches = [row for signal in evidence['signals'] for row in signal['findings']
+        finding = fact['finding']
+        matches = [(signal,row) for signal in evidence['signals'] for row in signal['findings']
             if signal['key']['signal'] == finding['signal'] and row['event_id'] == fact.get('source_ref')
             and row['first_seen'][:10] == finding['since'] and row['last_seen'][:10] == fact.get('at')]
         if len(matches) == 1:
-            count += 1
+            key=matches[0][0]['key'];channels.add((key['signal'],key['source'],key.get('metric') or ''))
+    count=min(len(channels),2 if role=='patient_insight' else 6)
     cutoff = date.fromisoformat(evidence['period']['end'][:10]) - timedelta(days=29)
     rows = [r for r in evidence['checkins'] if not r['deferred'] and r['at'][:10] >= cutoff.isoformat()][-3:]
     if role == 'patient_insight' and result['draft']['claims'] and len(rows) >= 2 and len({r['state'] for r in rows}) == 1:
@@ -76,11 +75,13 @@ def main():
     parser.add_argument('--confirm-live-synthetic-checks', action='store_true')
     parser.add_argument('--runs', type=int, default=1, help='fresh runs PER role PER scenario (20 for WP1 gate)')
     parser.add_argument('--interval', type=float, default=35, help='seconds between live requests')
+    parser.add_argument('--roles',nargs='+',choices=('clinician_brief','patient_insight'),default=('clinician_brief','patient_insight'))
     parser.add_argument('--output', default='docs/evidence/final-dash-baseline.json')
     args = parser.parse_args()
     if not args.confirm_live_synthetic_checks or not 1 <= args.runs <= 20 or args.interval < 35:
         parser.error('explicit paid synthetic confirmation, 1–20 runs and interval >=35 required')
-    report = {'version': 'final-dash-live-pass-v1', 'runs_per_role_per_scenario': args.runs,
+    report = {'version': 'final-dash-live-pass-v2', 'runs_per_role_per_scenario': args.runs,
+              'roles':args.roles,
               'interval_seconds': args.interval, 'measurements': [], 'diagnostics': {}}
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -122,7 +123,7 @@ def main():
             report['diagnostics'][scenario] = diagnostic(evidence)
             save()
             for run in range(1, args.runs + 1):
-                for role in ('clinician_brief', 'patient_insight'):
+                for role in args.roles:
                     wait_budget()
                     start = time.monotonic()
                     preview = request('GET', f'{base}/assessment/{role}')
@@ -144,6 +145,8 @@ def main():
                         'outcome': 'partial' if result['reason'] == 'VALIDATED_PARTIAL_MODEL_DRAFT' else
                             'validated_model_draft' if result['generation_used'] else 'fallback',
                         'headline_present': bool(result['draft'].get('headline')),
+                        'validated_headline':bool(result['generation_used'] and result['draft'].get('headline')),
+                        'prompt_version':result.get('prompt_version'),'config_version':result.get('config_version'),
                         'card_count': card_count(result, evidence, role),
                         'card_count_method': 'current UI eligibility; not browser DOM measurement',
                         'verifier_rejected_items': verifier_rejections,

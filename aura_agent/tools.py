@@ -11,7 +11,7 @@ from .roles import ROLE_TOOLS
 
 
 class RecordTools:
-    def __init__(self, evidence, role, *, window_days=56):
+    def __init__(self, evidence, role, *, window_days=56, recent_readings_days=7):
         self.role = role
         self.facts = {}
         self.groups = {name: [] for name in ROLE_TOOLS[role]}
@@ -64,6 +64,23 @@ class RecordTools:
             rows = [row for row in signal["observations"] if row["day"] >= cutoff and not row["deferred"]]
             for row in rows[-8:]:
                 add("get_series", row["event_id"], f"{label} recorded {row['day']}: {row['value']} {signal['unit']}.", signal=key["signal"], at=row["day"])
+            if not enabled and signal.get('registry', {}).get('display', True) and end:
+                start = (datetime.fromisoformat(end).date() - timedelta(days=recent_readings_days-1)).isoformat()
+                threshold = self.coverage_thresholds.get(key['signal'], {}).get('minimum_observation_coverage', .5)
+                recent = sorted((row for row in signal['observations'] if not row['deferred']
+                    and min(row['coverage'],row['data_quality']) >= threshold and start <= row['day'] <= end[:10]),
+                    key=lambda row:(row['day'],row.get('commit_order',0),row['event_id']))
+                if recent:
+                    latest = recent[-1]
+                    values = [row['value'] for row in recent]
+                    add('get_series',latest['event_id'],
+                        f"{label}: {len(recent)} readings from {recent[0]['day']} to {latest['day']}; latest {latest['value']} {signal['unit']}; range {min(values)} to {max(values)} {signal['unit']}.",
+                        signal=key['signal'],at=latest['day'])
+                    fact = self.facts[f'f{len(self.facts)}']
+                    fact['reading'] = {'label':label,'unit':signal['unit'],'count':len(recent),
+                        'latest':latest['value'],'minimum':min(values),'maximum':max(values),
+                        'start':recent[0]['day'],'end':latest['day'],'window_days':recent_readings_days}
+                    fact['reading_source_refs'] = [row['event_id'] for row in recent]
             for row in signal["gaps"]:
                 if row["at"][:10] >= cutoff:
                     add("get_gaps", row["event_id"], f"{label}: {row['type']} recorded {row['at'][:10]}.", signal=key["signal"], at=row["at"][:10])
@@ -135,7 +152,7 @@ class RecordTools:
         self.delivered.update({fact["fact_id"]: fact for fact in facts})
         # Demo event IDs can encode scenario names. The model receives opaque
         # reference aliases, while application/UI citations retain real source IDs.
-        model_facts = [{**fact, "source_ref": "ref:" + sha256(fact["source_ref"].encode()).hexdigest()[:16]} for fact in facts]
+        model_facts = [{**{k:v for k,v in fact.items() if k != 'reading_source_refs'}, "source_ref": "ref:" + sha256(fact["source_ref"].encode()).hexdigest()[:16]} for fact in facts]
         return {"facts": model_facts, 'retained_fact_ids':sorted(self.required & {fact['fact_id'] for fact in facts}), "scope": "selected record; selected window; bounded measurement sample"}
 
     def _window(self, start, end):

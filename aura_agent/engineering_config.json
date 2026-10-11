@@ -1,8 +1,9 @@
 {
-  "version": "agent-engineering-v1",
+  "version": "agent-engineering-v3",
   "max_steps": 8,
   "max_seconds": 50,
   "max_prompt_chars": 90000,
   "provider_timeout_seconds": 15,
-  "max_tool_calls": 24
+  "max_tool_calls": 24,
+  "recent_readings_days": 7
 }

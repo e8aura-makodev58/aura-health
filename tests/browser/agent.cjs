@@ -17,7 +17,7 @@ if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Lo
     await page.waitForSelector("#patterns-view:not([hidden])").catch(async error=>{console.error(errors,await page.locator('#notice').textContent());throw error;});
     await page.waitForFunction(()=>document.getElementById("notice").hidden);
     await page.waitForSelector("#agent-clinician_brief .agent-disclosure");
-    assert.match(await page.locator("#agent-clinician_brief .agent-disclosure").innerText(),/Offline extraction/);
+    assert.match(await page.locator("#agent-clinician_brief .agent-disclosure").innerText(),/Summary from the record/);
     assert.ok(await page.locator("#agent-clinician_brief .agent-claim").count()>0);
     await page.locator("#agent-clinician_brief .agent-claim button").first().click();
     assert.match(await page.locator("#agent-clinician_brief").innerText(),/Source:/);

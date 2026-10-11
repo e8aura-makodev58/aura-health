@@ -6,7 +6,7 @@ from .models import AppError
 
 
 def arrival_id(role, window_days, signature):
-    return 'arrival-' + digest({'version': 'arrival-v3', 'role': role.value,
+    return 'arrival-' + digest({'version': 'arrival-v5', 'role': role.value,
                                 'window': window_days, 'state': signature})
 
 
