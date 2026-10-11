@@ -258,3 +258,136 @@ verified. Latest image: `874cdc963406cff9ceffdbabbf889b02f05055b0a3ba25ace6f5a56
 **WP1 quantitative 20-run/p95 gate remains pending. Claude WP2 review is next.**
 WP3–WP6 have not been implemented in this slice. Do not claim design lock,
 M7 acceptance, new clinical detection, or CodeBuddy evidence.
+
+## WP3–WP5 review follow-ups — 2026-10-11
+
+Claude reviewed WP1–WP2 in `19d3cea`: PASS with follow-ups. User requested
+continuation and delegated model selection (Luna for lightweight work,
+6.1-Sol medium for heavier work). Implemented within the approved SOW.
+
+### Presentation, not policy
+
+- Added a deterministic cited co-occurrence sentence for the clinician. Uses
+  latest exact-channel finding spans and gap-broken, non-held check-in runs;
+  common intersection must be at least `co_occurrence_days=3` (engineering
+  default). Relevant recorded gap dates exclude the channel from that interval.
+  At least two distinct cited facts are required, and the unchanged claim
+  validator checks numbers/categories/finding metadata. Causal wording and
+  headline jargon remain prohibited. Neutral labels cover the real registry,
+  including Skin temperature rather than Skin-temperature deviation.
+- **Deliberate bounded choice:** synthesis uses the validated deterministic
+  template only. The model still writes the separately checked headline; optional
+  model synthesis wording is not implemented. This avoids adding a second live
+  generation failure path. Server synthesis is not counted as AI-written output.
+- Clinician check-ins show count of distinct non-held recorded calendar days,
+  denominator/window, and latest consecutive run. Missing days break a run.
+  Latest eligible answer wins within a day; a held answer is never counted.
+  Counts are patient reports, not scores. Raw event IDs stay in UI citations,
+  not model-facing nested metadata.
+- Worth asking uses approved IDs only: missing associated context selects
+  context; a recorded scoped gap selects recording; otherwise visit. At most two
+  copy chips. A historical scoped gap is not asserted to be active missingness.
+  These inspection questions do not replace the communication/safety engines or
+  create automatic patient interruptions.
+- Patient cards use onset recency, surfacing recent physiology before older
+  sleep/activity spans when last-seen dates tie. Plain deterministic recap is
+  visible on fallback; validated generated headline remains available. No large
+  six-channel clinician synthesis on patient home. Check-ins are plain words,
+  without a steady chip. Skin units use °C; HRV/skin have distinct icons.
+- Patient heading changes to Your recent days when findings exist. Appointment
+  entry is a one-tap card with actual snapshot item count and Not sent. Approval
+  is still temporary, not persisted or transmitted. Help and safety unchanged.
+- Nonfinding prose is muted Also recorded with rounded display values and
+  everyday dates; exact source values/dates remain in Sources. Core four charts
+  appear first; other sourced findings are Also moved. Remaining or sparse
+  (<3 actual readings) charts are collapsed under Other measurements. Source
+  links reveal their groups. Evidence/Context/Details show item counts.
+- Mobile demo guide is bounded overlay instead of pushing the patient page
+  down. Story step 3 now honestly says Slow-change checkpoint: it selects the
+  existing B checkpoint rather than promising a policy question.
+
+New external presentation parameters: `co_occurrence_days=3`, `checkin_days=7`;
+existing `recent_readings_days=7` unchanged. All engineering defaults. Versions
+`agent-engineering-v4` and `arrival-v6`; headline prompt remains `aura-agent-v5`.
+Accepted safety/longitudinal engines, thresholds, decision tables, DB schema,
+dependencies and provider budgets are unchanged.
+
+### Noisier quiet measurement (review follow-up)
+
+```sh
+.venv/bin/python tests/live/quiet_channels.py --noise-multiplier 3 \
+  --output docs/evidence/final-dash-quiet-noisy.json
+```
+
+Original profile: **0/20** seeds with transients. Three-times-noise profile:
+**8/20** seeds, with **24 HRV** and **9 skin-temperature** transient channel-days;
+RHR and respiratory rate: zero. The same increased noise is used for the
+28-day reference and 30 observed days; no life event is inserted. The generator's
+fixed skin-deviation noise is scaled only in this evaluation harness. This is
+an explicit synthetic stress profile, not a patient population distribution,
+notification count, false-positive rate or clinical validation. **No retuning**
+was done. Noise sensitivity remains a sponsor/reviewer limitation to assess.
+
+### Regression scope and remaining work
+
+FD5–FD10 cover exact overlap, gap exclusion, missing/held check-ins, context/gap
+question selection, hidden source-ID isolation, all shown channels versus chained
+overlap, and labels from the actual signal registry. Two live-report math tests
+prove a smoke sample cannot pass the 20-run gate and p95 grouping is per role and
+scenario. Timing summaries explicitly remain HTTP proxies, not DOM paint timing.
+New `final_dash_polish.cjs` exercises sparse/chart grouping, patient phone/laptop
+and all five real story actions. Earlier literal steady-chip and always-visible
+sparse-chart assertions were updated to the approved UI behavior, preserving
+source inspection, missing-report absence and reveal-on-link checks.
+
+Final verification/deployment results are recorded in HANDOVER.md. An initial
+preflight ran while the config/class was being edited and read mismatched old
+code/new JSON; it is not a valid baseline result. Only stable final runs count.
+
+**WP6 full HTTPS event walkthrough and the WP1 20-run/p95 gate remain pending.**
+The larger live run consumes shared hourly budgets (native read/generate/verify
+calls all count); do not raise limits, clear quota state, or retry-until-pass.
+Four earlier v5 smoke results do not establish reliability after these changes.
+Claude's final review, design lock and M7 acceptance remain open. No M8/CodeBuddy.
+
+### Final WP3–WP5 verification and deployment
+
+Full **260 PASS**, 415.785 s. Final coherent browser run: **41 PASS**, no page
+errors (polish 3/final dash 3/impression 5/agent 5/charts 3/dual view 12/hosted
+7/cards 3). Actual Case B synthesis cites sleep, activity and check-ins; actual
+flu synthesis includes HRV. Patient first card is a recent change, with a recap
+and no clinician preparation question chips. Sparse links reveal their group;
+all five guide actions work. Final screenshots:
+`/tmp/aura-final-dash-polish-final/`. HTTPS flu preview both roles at 1280/390
+also PASS; assistant calls blocked, one real synthetic director call. Phone
+patient screenshot inspected. Final tiny icon/duplicate-heading/question-chip
+polish was then tested in the coherent local browser pass and redeployed.
+
+```sh
+NODE_PATH=/home/makodev58/aura-math/node_modules LD_LIBRARY_PATH=/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu \
+  .venv/bin/python tests/browser/run.py --hosted \
+  --suite final_dash_polish.cjs final_dash.cjs impression.cjs agent.cjs \
+  story_charts.cjs dual_view.cjs milestone7.cjs cards.cjs \
+  --artifacts /tmp/aura-final-dash-polish-final
+.venv/bin/python tests/live/assessment_pass.py --confirm-live-synthetic-checks --runs 1 \
+  --output docs/evidence/final-dash-wp3-wp5-live.json
+```
+
+Live DeepSeek/deepseek-flash, synthetic seed 42, feedback disabled, same prompt
+v5 / configuration v4. Fresh calls, no generation retry, unchanged quotas:
+
+| Scenario / role | Preview ms | Total ms | Agent runtime ms | Headline outcome |
+|---|---:|---:|---:|---|
+| B / clinician | 212 | 3565 | 2500 | Validated |
+| B / patient | 419 | 2863 | 2159 | Fallback: HEADLINE_JARGON |
+| B + flu / clinician | 407 | 3230 | 2415 | Fallback: HEADLINE_BUDGET |
+| B + flu / patient | 566 | 4354 | 3068 | Validated |
+
+**2/4 smoke results, not a reliability estimate or acceptance gate.** The
+report's four per-role/scenario sample gates explicitly say INCOMPLETE. The
+old all-success smoke cannot be generalized. Immediate deterministic recap
+and synthesis remain available on both rejection paths. No validator relaxed.
+
+Final Docker image: `a58781bec0736c91774169793d8e8309b7d152b8c38b2d2e026fd8abf8a97bfd`.
+Bind `0.0.0.0:8017`; provider settings, volume and user-managed tunnel preserved.
+HTTPS health/provider status verified. **WP6/full reliability review still next.**

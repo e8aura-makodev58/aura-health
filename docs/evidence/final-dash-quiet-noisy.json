@@ -1,0 +1,415 @@
+{
+  "scope": "synthetic stable profile; each cohort uses a 28-day explicit anchor and 30 observed quiet days",
+  "generator_profile_assumption": "aura_simulation life_effects profile; no life events; simulator uniform noise scaled from the same profile during anchor and observation; skin-temperature deviation uniform noise is scaled in this evaluation-only harness",
+  "engine_changed": false,
+  "registry_version": "m7-signal-registry-v1-not-clinically-validated",
+  "original_noise_multiplier": 1.0,
+  "original_seeds": [
+    {
+      "seed": 0,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 1,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 2,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 3,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 4,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 5,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 6,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 7,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 8,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 9,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 10,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 11,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 12,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 13,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 14,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 15,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 16,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 17,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 18,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 19,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    }
+  ],
+  "original_seeds_with_any_transient": 0,
+  "noisy_noise_multiplier": 3.0,
+  "noisy_seeds": [
+    {
+      "seed": 0,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 1,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 1,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 2,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 3,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 3,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 4,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 5,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 1
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 6,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 7,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 8,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 6,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 1
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 9,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 10,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 11,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 12,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 4,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 13,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 9,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 1
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 14,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 1,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 15,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 16,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 17,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    },
+    {
+      "seed": 18,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 6
+      },
+      "any_transient": true
+    },
+    {
+      "seed": 19,
+      "transient_channel_days": {
+        "RESTING_HEART_RATE": 0,
+        "HRV": 0,
+        "RESPIRATORY_RATE": 0,
+        "SKIN_TEMPERATURE_DEVIATION": 0
+      },
+      "any_transient": false
+    }
+  ],
+  "noisy_seeds_with_any_transient": 8,
+  "interpretation": "Counts are outputs from the existing longitudinal engine for these synthetic profiles; this measurement does not tune thresholds and is not a false-positive rate or clinical claim."
+}
