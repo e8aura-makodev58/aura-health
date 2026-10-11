@@ -52,6 +52,8 @@ class RecordTools:
                     f"{label}: {drift['description']} First recorded {finding['first_seen'][:10]}; last recorded {finding['last_seen'][:10]}.",
                     signal=key["signal"], required=True,
                     finding={"signal": key["signal"], "direction": direction, "since": finding["first_seen"][:10]}, at=finding["last_seen"][:10])
+                self.facts[f'f{len(self.facts)}']['comparison'] = (
+                    'RECENT_PATTERN' if drift['kind'] == 'TRANSIENT_DEVIATION' else 'PERSONAL_REFERENCE')
                 metrics = []
                 for field, title in (("current_vs_rolling", "current versus rolling deviation"), ("rolling_vs_anchor", "rolling versus own reference deviation"), ("trend_magnitude_per_day", "stored trend magnitude per day")):
                     value = drift.get(field)

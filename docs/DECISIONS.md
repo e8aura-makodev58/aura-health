@@ -310,3 +310,19 @@ implying diagnosis, prediction or advice. Exact sources, AI provenance, operatio
 states (missing/offline/held/Not sent) and the pinned safety panel remain. Claim
 validation and safety policy are unchanged; removal of repetition is not a relaxation
 of factual or clinical boundaries.
+
+## 45. Patient recap is a conversation, not a measurement report (2026-10-11)
+
+User direction: the patient page is still too technical in both interface and wording.
+Aura-Agent should choose understandable wording within deterministic rules. This
+supersedes the default patient finding-card wall, repeated headings and prominent
+research-measurement labels in earlier layout specs; clinician analytics stay intact.
+
+The default patient recap is one short, source-linked everyday-language sentence.
+Measurements, dates, check-in counts and exact evidence remain available on demand;
+they are not discarded. AI provenance remains honest but secondary. The model chooses
+phrasing and which approved facts fit the recap, not safety state, baseline changes,
+communication policy, questions, actions or clinical conclusions. Existing source,
+claim and independent verification gates still apply; rejected/unavailable generation
+uses a clearly identified factual record fallback. Safety precedence, direct patient
+help and pinned resources remain independent of ordinary recap rendering.

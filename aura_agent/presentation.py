@@ -16,7 +16,7 @@ SYNTHESIS_LABELS = {
 }
 
 
-def checked_headline(raw, tools):
+def checked_headline(raw, tools, role=None):
     if (not isinstance(raw, dict) or set(raw) != {'headline','fact_ids','question_ids'}
             or not isinstance(raw['headline'], str) or not raw['headline'].strip()
             or not isinstance(raw['fact_ids'], list) or not 1 <= len(raw['fact_ids']) <= 24
@@ -27,6 +27,33 @@ def checked_headline(raw, tools):
         raise ValueError('HEADLINE_JARGON')
     if re.search(r'\bbecause\b|\bdue to\b|\bled to\b',raw['headline'],re.I):
         raise ValueError('PROHIBITED_CLAIM')
+    if role == AgentRole.PATIENT_INSIGHT:
+        text = raw['headline']
+        if re.search(r'\b(?:baseline|drift|anchor|reestablishing|hrv|rmssd|spo2|'
+                     r'physiology|physiological|respiratory|systolic|diastolic|'
+                     r'variability|telemetry|biomarker)\b', text, re.I):
+            raise ValueError('HEADLINE_JARGON')
+        if (re.search(r'[\n\r:;]|^\s*[-*•]', text) or
+                re.search(r'^\s*(?:recorded changes|changes in|recent changes in)\b', text, re.I) or
+                re.search(r'\b(?:sleep|activity|heart rate|breathing|temperature)\s+'
+                          r'(?:later|earlier|higher|lower)\s*(?:,|\band\b)', text, re.I)):
+            raise ValueError('PATIENT_HEADLINE_STYLE')
+        if re.search(r'\b(?:I|we|my|our)\b', text, re.I):
+            raise ValueError('PATIENT_HEADLINE_PERSPECTIVE')
+        if re.search(r'\b(?:should|must|try|consider|remember|please|contact|call|seek)\b|'
+                     r'\b(?:take|get|make) (?:a |some |more |less |your )|'
+                     r'\byou (?:need|ought) to\b|'
+                     r'^\s*(?:rest|drink|eat|avoid|exercise|book|schedule|talk|speak|keep)\b|'
+                     r'\b(?:nothing to worry|no concerns?|everything (?:is )?fine|all (?:is )?well|'
+                     r'you(?: are|\'re) (?:fine|okay|safe))\b', text, re.I):
+            raise ValueError('PROHIBITED_CLAIM')
+        for pattern, signal in ((r'\bsleep time\b', 'SLEEP_MIDPOINT'),
+                                (r'\bmoving (?:more|less)\b', 'ACTIVITY'),
+                                (r'\bbreathing\b', 'RESPIRATORY_RATE'),
+                                (r'\btime between .*heartbeats\b', 'HRV')):
+            if re.search(pattern, text, re.I) and not any(
+                    tools.delivered[fid]['signal'] == signal for fid in raw['fact_ids']):
+                raise ValueError('UNSUPPORTED_SIGNAL')
     facts = [tools.delivered[fid] for fid in raw['fact_ids']]
     # Full existing claim checks for citations/numbers/categories and metadata.
     # Runtime then validates the assembled draft in its actual role, including

@@ -18,9 +18,9 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
   assert.equal(await page.locator('#agent-question-text').isVisible(),true);assert.equal(await page.locator('.suggested-questions button').count(),3);
   assert.equal(await page.locator('#patterns-view > details.workspace-disclosure').count(),3);
   await page.locator('.suggested-questions button').first().click();await page.waitForSelector('#agent-record_qa .agent-disclosure');console.log('I4_VISIBLE_SOURCED_QUESTIONS_I5_THREE_GROUPS PASS');
-  await page.locator('#patient-role').click();await page.waitForSelector('#month-recap:not([hidden]) .agent-claim');
+  await page.locator('#patient-role').click();await page.waitForSelector('#month-recap:not([hidden]) .patient-recap');
   assert.equal(await page.locator('#home-view svg').count(),0);assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/\b(?:baseline|drift|anchor)\b/i);
-  const recapHeading=await page.locator('#recap-heading').boundingBox();assert.ok(recapHeading.y>=0&&recapHeading.y+recapHeading.height<844);
+  const recapHeading=await page.locator('.patient-recap').boundingBox();assert.ok(recapHeading.y>=0&&recapHeading.y+recapHeading.height<844);
   assert.ok(await page.locator('#agent-patient_insight .agent-claim').count()<=3);assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/\d{4}-\d{2}-\d{2}|Recorded changes/);await page.screenshot({path:`${out}/impression-patient-390.png`,fullPage:true});
   await page.locator('#clinician-role').click();await page.waitForSelector('#agent-clinician_brief .agent-claim');await page.waitForTimeout(300);
   assert.equal(posts.filter(p=>p.run_id.startsWith('arrival-')&&p.window_days===56).length,1);console.log('I6_DEFAULT_TEXT_RECAP_NO_HOME_CHARTS PASS');

@@ -8,6 +8,7 @@
   const output=node('div');output.id='agent-visit_prep';output.setAttribute('aria-live','polite');prep.append(button,output);document.getElementById('appointment-preview').before(prep);
   const icons={SLEEP_MIDPOINT:'☾',SLEEP_DURATION:'☾',ACTIVITY:'↟',RESTING_HEART_RATE:'♡',HRV:'↔',HEART_RATE_VARIABILITY:'↔',RESPIRATORY_RATE:'≋',SKIN_TEMPERATURE_DEVIATION:'°'};
   const titles={SLEEP_MIDPOINT:'Sleep timing',SLEEP_DURATION:'Sleep duration',ACTIVITY:'Activity',RESTING_HEART_RATE:'Resting heart rate',SKIN_TEMPERATURE_DEVIATION:'Skin temperature'};
+  const patientTitles={SLEEP_MIDPOINT:'Sleep timing',SLEEP_DURATION:'Time asleep',ACTIVITY:'Activity',RESTING_HEART_RATE:'Resting heart rate',HRV:'Heart rate variation',HEART_RATE_VARIABILITY:'Heart rate variation',RESPIRATORY_RATE:'Breathing rate',SKIN_TEMPERATURE_DEVIATION:'Skin temperature'};
   const date=at=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(at.slice(0,10)+'T00:00:00Z'));
   const everydayDate=at=>{const d=new Date(at.slice(0,10)+'T00:00:00Z');return `${d.getUTCDate()<=10?'early':d.getUTCDate()<=20?'mid':'late'} ${new Intl.DateTimeFormat('en-GB',{month:'long',timeZone:'UTC'}).format(d)}`;};
   // Resolve only an exact committed finding; never derive a drift or a magnitude from prose.
@@ -42,7 +43,10 @@
     const patient=role==='patient_insight',card=node('section',null,`agent-claim finding-card ${patient?'patient-finding':'clinician-finding'}`);
     card.dataset.signal=finding.signal;card.dataset.source=display.source;card.dataset.channel=display.channel;
     const header=node('div',null,'finding-card-heading'),icon=node('span',display.icon,'signal-icon');icon.setAttribute('aria-hidden','true');
-    header.append(icon,node('h4',patient?display.wording:display.label));
+    const patientLabel=patientTitles[finding.signal]||display.label;
+    const patientDirection={LATER:'later',EARLIER:'earlier',HIGHER:'higher',LOWER:'lower'}[finding.direction];
+    const patientWording=finding.signal==='SLEEP_MIDPOINT'?`Sleeping ${patientDirection} than ${display.transient?'recently':'usual'}`:`${patientLabel} ${patientDirection} than ${display.transient?'recently':'usual'}`;
+    header.append(icon,node('h4',patient?patientWording:display.label));
     if(!patient){card.id=`story-finding-${number}`;card.tabIndex=-1;header.append(node('span',String(number),'finding-number'));}
     const show=node('button',patient?'Why? / Sources':'Why?','text-button finding-why');show.type='button';show.setAttribute('aria-expanded','false');header.append(show);card.append(header);
     if(patient){card.append(node('p',`${display.transient?'Recorded':'Since'} ${everydayDate(display.since)}`,'finding-date'),node('span',display.transient?'Recent change':'shifted','badge finding-state'));}
@@ -68,9 +72,9 @@
     const paused=result.status==='BLOCKED'||result.status==='STALE';
     const bounded=['clinician_brief','patient_insight'].includes(role),visibleAI=result.generation_used&&(!bounded||Boolean(result.draft.headline));
     const label=paused?'Assessment paused':visibleAI?'AI-written · sources checked':'Summary from the record';
-    const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;area.append(chip);
+    const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;if(role!=='patient_insight')area.append(chip);
     if(paused){document.getElementById('assessment-complete')?.replaceChildren();window.clearAuraStory?.();document.getElementById('agent-visit_prep')?.replaceChildren();area.append(node('p','Safety interaction or record evaluation comes first. See the separate safety panel.'));return;}
-    if(result.draft.headline&&(role!=='patient_insight'||visibleAI))area.append(node('h3',result.draft.headline.split(/\s+/).slice(0,20).join(' ')));
+    if(result.draft.headline&&role!=='patient_insight')area.append(node('h3',result.draft.headline.split(/\s+/).slice(0,20).join(' ')));
     const summary=result.record_presentation;
     if(role==='clinician_brief'&&summary?.synthesis){
       const line=node('section',null,'assessment-synthesis');line.append(node('p',summary.synthesis.text));
@@ -89,16 +93,30 @@
     const displayed=bounded?[...latest.values()].sort((a,b)=>role==='patient_insight'?
       b.display.since.localeCompare(a.display.since)||b.display.lastSeen.localeCompare(a.display.lastSeen):
       b.display.lastSeen.localeCompare(a.display.lastSeen)):allClaims;
+    let recapSources=[];
     if(role==='patient_insight'){
-      const heading=document.getElementById('home-heading');if(heading)heading.textContent=displayed.length?'Your recent days':'A little less to carry.';
-      if(displayed.length&&!visibleAI){
-        const recap=displayed.slice(0,2).map(c=>`${c.display.wording}, recorded since ${everydayDate(c.display.since)}`).join('; ');
-        area.insertBefore(node('p',recap+'.','patient-recap'),area.querySelector('.assessment-synthesis'));
+      const heading=document.getElementById('home-heading');if(heading)heading.textContent='Your day, with AURA';
+      if(visibleAI&&result.draft.headline){
+        area.append(node('p',result.draft.headline,'patient-recap'));
+        recapSources=(result.headline_fact_ids||[]).map(id=>result.sources.find(f=>f.fact_id===id)).filter(Boolean);
+      }
+      else if(displayed.length){
+        const everyday=displayed.filter(c=>['SLEEP_MIDPOINT','ACTIVITY','SLEEP_DURATION'].includes(c.findings[0].signal));
+        const selected=everyday.slice(0,2);
+        const recap=selected.map(c=>`your ${c.findings[0].signal==='SLEEP_MIDPOINT'?'sleep time':(patientTitles[c.findings[0].signal]||c.display.label).toLowerCase()} was ${c.findings[0].direction.toLowerCase()} than ${c.display.transient?'recently':'usual'}`).join(', and ');
+        area.append(node('p',recap?recap[0].toUpperCase()+recap.slice(1)+'.':'Your recent readings show a change.','patient-recap'));
+        recapSources=(selected.length?selected:displayed).flatMap(c=>c.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id))).filter(Boolean);
+      }else if(summary?.checkins){
+        area.append(node('p',`You reported feeling ${summary.checkins.checkin_summary.state.toLowerCase()} in your recent check-ins.`,'patient-recap'));
+        recapSources=[summary.checkins];
       }
     }
-    const linkage=[],grid=node('div',null,'finding-grid');let number=0;area.append(grid);
+    const patientDetails=role==='patient_insight'?node('details',null,'patient-summary-details'):null;
+    if(patientDetails){patientDetails.append(node('summary','See what changed'));area.append(patientDetails);}
+    const claimArea=patientDetails||area;
+    const linkage=[],grid=node('div',null,'finding-grid');let number=0;claimArea.append(grid);
     let extraGrid=null;
-    const cap=role==='patient_insight'?2:6;
+    const cap=role==='patient_insight'?Infinity:6;
     if(bounded&&displayed.length>cap){const more=node('details',null,'more-changes');more.append(node('summary',role==='patient_insight'?`See all (${displayed.length} changes)`:`More changes (${displayed.length-cap})`));extraGrid=node('div',null,'finding-grid');more.append(extraGrid);area.append(more);}
     for(const claim of displayed){
       const key=JSON.stringify([claim.text,claim.findings,claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)?.source_ref)]);now.add(key);
@@ -119,7 +137,7 @@
       const sources=node('div',null,'claim-sources');sources.hidden=true;
       for(const id of claim.fact_ids){const fact=result.sources.find(f=>f.fact_id===id);if(fact)sources.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));}
       const show=node('button','Sources','text-button');show.setAttribute('aria-expanded','false');show.addEventListener('click',()=>{sources.hidden=!sources.hidden;show.setAttribute('aria-expanded',String(!sources.hidden));});line.append(show,sources);
-      if(role==='visit_prep'){const remove=node('button','Remove from this preview','text-button');remove.addEventListener('click',()=>line.remove());line.append(remove);}area.append(line);
+      if(role==='visit_prep'){const remove=node('button','Remove from this preview','text-button');remove.addEventListener('click',()=>line.remove());line.append(remove);}claimArea.append(line);
     }
     if(role==='patient_insight'&&allClaims.length&&summary?.checkins){
       const fact=summary.checkins,r=fact.checkin_summary,card=node('section',null,'checkin-summary-card patient-checkins');
@@ -158,11 +176,18 @@
     // Worth asking belongs to clinician preparation, not a new patient prompt.
     // Patient interaction remains owned by the separate communication result.
     for(const id of role==='patient_insight'?[]:(result.draft.question_ids||[])){const text=result.question_options[id];if(!text)continue;const copy=node('button',text,'agent-question question-copy');copy.type='button';copy.title='Copy this approved question';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(text);copy.setAttribute('aria-label',`${text} — copied`);}catch{const input=document.getElementById('agent-question-text');input.value=text;input.focus();}});area.append(copy);}
-    if(!allClaims.length&&!result.draft.question_ids?.length)area.append(node('p','Nothing additional to highlight from these records.'));
+    if(!allClaims.length&&!result.draft.question_ids?.length&&!(role==='patient_insight'&&summary?.checkins))area.append(node('p','Nothing additional to highlight from these records.'));
     const trace=node('section',null,'agent-trace');trace.hidden=true;
     trace.append(node('p',`Run ${result.run_id} · ${result.model_id||'not called'} · ${result.reason} · ${result.elapsed_ms||0} ms`,'fine'));
     for(const entry of result.trace||[])trace.append(node('p',entry.tool?`${entry.tool}: ${(entry.fact_ids||[]).length} linked facts`:entry.action,'fine'));
     if(role!=='patient_insight'){const showTrace=node('button','Inspect assistant steps','text-button');showTrace.addEventListener('click',()=>{trace.hidden=!trace.hidden;});area.append(showTrace,trace);}
+    else{
+      const why=node('details',null,'patient-summary-sources');why.append(node('summary','Why this summary?'),chip,node('p',result.disclosure,'fine'));
+      for(const fact of recapSources){const refs=fact.checkin_summary?.source_refs||[fact.source_ref];why.append(node('p',`${fact.text} Source: ${refs.join(', ')}.`,'fine patient-recap-source'));}
+      const retained=node('details',null,'patient-retained-sources');retained.append(node('summary','All recorded details'));
+      for(const fact of result.sources)retained.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));
+      trace.hidden=false;retained.append(trace);why.append(retained);area.append(why);
+    }
     if(role==='patient_insight'){document.getElementById('month-recap').hidden=!allClaims.length;document.getElementById('home-view').classList.toggle('has-recap',Boolean(allClaims.length));}
   }
   function valid(ticket,ctx){const latest=window.auraAgentContext();return ticket===requestEpoch&&latest.patientId===ctx.patientId&&latest.role===ctx.role&&!latest.offline&&navigator.onLine;}

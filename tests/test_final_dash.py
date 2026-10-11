@@ -8,6 +8,7 @@ from aura_agent.grounding import validate
 from aura_agent.presentation import checked_headline, checked_synthesis, record_presentation
 from aura_agent.roles import AgentRole
 from aura_agent.runtime import run, AgentConfig
+from aura_agent.templates import fallback
 from aura_agent.tools import RecordTools
 
 
@@ -172,6 +173,121 @@ class FinalDashTests(unittest.TestCase):
         self.assertNotIn('reading_source_refs',json.dumps(returned))
         source['signals'][1]['observations']=[]
         self.assertFalse(any(f.get('reading') for f in RecordTools(source,AgentRole.CLINICIAN_BRIEF).facts.values()))
+
+    def test_patient_natural_sentence_retains_citations_and_independent_verifier(self):
+        tools=RecordTools(evidence(),AgentRole.PATIENT_INSIGHT)
+        sentence='Your resting heart rate was higher than usual in the recorded days.'
+        provider=HeadlineProvider(sentence)
+        original_step=provider.step
+        prompts=[]
+        def capture(messages,specs):
+            if specs:prompts.append(messages[0]['content'])
+            return original_step(messages,specs)
+        provider.step=capture
+        result=run(AgentRole.PATIENT_INSIGHT,None,tools,provider,presentation=True)
+        self.assertTrue(result['generation_used'],result['trace'])
+        self.assertEqual(result['draft']['headline'],sentence)
+        self.assertTrue(result['headline_fact_ids'])
+        self.assertTrue(result['extracted_fact_ids'])
+        self.assertIn('Choose one or two supported facts',prompts[0])
+        self.assertIn('Read get_decisions',prompts[0])
+        self.assertTrue(any(t.get('action')=='INDEPENDENT_VERIFIER' for t in result['trace']))
+        validate(result['draft'],tools,AgentRole.PATIENT_INSIGHT)
+
+    def test_patient_technical_lists_perspective_and_advice_are_rejected(self):
+        cases=[('Your RMSSD and HRV changed.','HEADLINE_JARGON'),
+               ('Your physiology and respiratory rate changed.','HEADLINE_JARGON'),
+               ('Recorded changes in resting heart rate','PATIENT_HEADLINE_STYLE'),
+               ('Sleep later, activity lower','PATIENT_HEADLINE_STYLE'),
+               ('Your heart rate: higher than usual','PATIENT_HEADLINE_STYLE'),
+               ('I noticed your heart rate was higher.','PATIENT_HEADLINE_PERSPECTIVE'),
+               ('Your heart rate was higher; contact your doctor.','PATIENT_HEADLINE_STYLE'),
+               ('You should contact your doctor.','PROHIBITED_CLAIM'),
+               ('Take a break.','PROHIBITED_CLAIM'),
+               ('Rest more.','PROHIBITED_CLAIM'),
+               ('There is nothing to worry about.','PROHIBITED_CLAIM'),
+               ('Everything is fine.','PROHIBITED_CLAIM'),
+               ('Your breathing was faster than usual.','UNSUPPORTED_SIGNAL'),
+               ('Your sleep time was later than usual.','UNSUPPORTED_SIGNAL'),
+               ('You were moving less than usual.','UNSUPPORTED_SIGNAL'),
+               ('Your resting heart rate was 999.','FABRICATED_NUMBER_OR_DATE'),
+               ('You reported Rough days.','UNSUPPORTED_CATEGORY'),
+               ('Your heart rate changed because of flu.','PROHIBITED_CLAIM'),
+               ('Depression is worsening.','PROHIBITED_CLAIM'),
+               ('Your heart rate '+ 'was '*21,'HEADLINE_BUDGET')]
+        for text,code in cases:
+            with self.subTest(text=text):
+                result=run(AgentRole.PATIENT_INSIGHT,None,
+                    RecordTools(evidence(),AgentRole.PATIENT_INSIGHT),HeadlineProvider(text),presentation=True)
+                self.assertFalse(result['generation_used'])
+                self.assertFalse(result['headline_fact_ids'])
+                self.assertTrue(result['draft']['claims'])
+                self.assertTrue(any(t.get('code')==code for t in result['trace']),result['trace'])
+        # Patient copy constraints do not narrow the clinician contract.
+        result=run(AgentRole.CLINICIAN_BRIEF,None,RecordTools(evidence(),AgentRole.CLINICIAN_BRIEF),
+                   HeadlineProvider(),presentation=True)
+        self.assertTrue(result['generation_used'],result['trace'])
+
+    def test_patient_semantic_rejection_restores_useful_plain_record_recap(self):
+        result=run(AgentRole.PATIENT_INSIGHT,None,RecordTools(evidence(),AgentRole.PATIENT_INSIGHT),
+            HeadlineProvider('Your resting heart rate was lower than usual.',supported=False),presentation=True)
+        self.assertFalse(result['generation_used'])
+        self.assertFalse(result['headline_fact_ids'])
+        self.assertIn('Your resting heart rate was higher',result['draft']['headline'])
+        self.assertTrue(any(t.get('code')=='VERIFIER_REJECTED' for t in result['trace']))
+
+    def test_patient_extraction_names_research_channels_in_ordinary_words(self):
+        source=evidence()
+        for signal,label in [('HRV','HRV (RMSSD)'),('RESPIRATORY_RATE','Respiratory rate'),
+                             ('SKIN_TEMPERATURE_DEVIATION','Skin-temperature deviation')]:
+            with self.subTest(signal=signal):
+                row=deepcopy(source['signals'][0]);row['key']['signal']=signal;row['label']=label
+                only=deepcopy(source);only['signals']=[row]
+                tools=RecordTools(only,AgentRole.PATIENT_INSIGHT);tools.call('get_series',{})
+                draft=fallback(tools,AgentRole.PATIENT_INSIGHT)
+                self.assertNotRegex(draft['headline'].lower(),r'rmssd|\bhrv\b|respiratory|deviation')
+                self.assertLessEqual(len(draft['headline'].split()),20)
+                self.assertEqual(draft['claims'][0]['findings'][0]['signal'],signal)
+                validate(draft,tools,AgentRole.PATIENT_INSIGHT)
+
+    def test_patient_recaps_preserve_recent_vs_personal_comparator(self):
+        for kind,reference in [('TRANSIENT_DEVIATION','in your recent records'),
+                               ('PERSISTENT_DRIFT','your usual')]:
+            with self.subTest(kind=kind):
+                source=evidence();source['signals'][0]['findings'][0]['drift']['kind']=kind
+                tools=RecordTools(source,AgentRole.PATIENT_INSIGHT);tools.call('get_series',{})
+                draft=fallback(tools,AgentRole.PATIENT_INSIGHT)
+                self.assertIn('than '+reference,draft['headline'])
+                self.assertIn('than '+reference,draft['claims'][0]['text'])
+
+    def test_patient_report_categories_are_cited_and_semantic_overreach_falls_back(self):
+        source=evidence();source['checkins']=[{'event_id':'check-12',
+            'at':'2026-03-12T10:00:00','state':'Rough','deferred':False}]
+        class ReportProvider(HeadlineProvider):
+            def step(self,messages,specs):
+                if not specs:return super().step(messages,specs)
+                completed=[m for m in messages if m['role']=='tool']
+                if not completed:
+                    return {'role':'assistant','content':None,'tool_calls':[
+                        {'id':name,'type':'function','function':{'name':name,'arguments':'{}'}}
+                        for name in ('get_series','get_decisions')]}
+                facts=[fact for m in completed for fact in json.loads(m['content'])['facts']]
+                finding=next(f for f in facts if f.get('finding'))
+                report=next(f for f in facts if 'Patient check-in' in f['text'])
+                return {'role':'assistant','content':json.dumps({'headline':self.text,
+                    'fact_ids':[finding['fact_id'],report['fact_id']],'question_ids':[]})}
+        good=run(AgentRole.PATIENT_INSIGHT,None,RecordTools(source,AgentRole.PATIENT_INSIGHT),
+            ReportProvider('Your heart rate was higher in recent records, and you reported Rough days.'),presentation=True)
+        self.assertTrue(good['generation_used'],good['trace'])
+        self.assertEqual(len(good['headline_fact_ids']),2)
+        wrong=run(AgentRole.PATIENT_INSIGHT,None,RecordTools(source,AgentRole.PATIENT_INSIGHT),
+            ReportProvider('You reported Good days.'),presentation=True)
+        self.assertFalse(wrong['generation_used'])
+        self.assertTrue(any(t.get('code')=='UNSUPPORTED_CATEGORY' for t in wrong['trace']))
+        overreach=run(AgentRole.PATIENT_INSIGHT,None,RecordTools(source,AgentRole.PATIENT_INSIGHT),
+            ReportProvider('You feel worse now.',supported=False),presentation=True)
+        self.assertFalse(overreach['generation_used'])
+        self.assertTrue(any(t.get('code')=='VERIFIER_REJECTED' for t in overreach['trace']))
 
 
 if __name__=='__main__':unittest.main()

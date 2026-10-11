@@ -17,7 +17,7 @@ const base='https://aura-health.makodev58.com',out='/tmp/aura-final-dash-https';
   await page.locator('#demo-toggle').click();
   for(const signal of ['RESTING_HEART_RATE','HRV','RESPIRATORY_RATE','SKIN_TEMPERATURE_DEVIATION'])await page.locator(`.clinician-finding[data-signal="${signal}"]`).waitFor({state:'visible'});
   for(const role of ['clinician','patient']){
-   await page.locator(`#${role}-role`).click();await page.waitForSelector(`#agent-${role==='clinician'?'clinician_brief':'patient_insight'} .finding-card`);
+   await page.locator(`#${role}-role`).click();await page.waitForSelector(role==='clinician'?'#agent-clinician_brief .finding-card':'#agent-patient_insight .patient-recap');
    for(const width of [1280,390]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`${out}/flu-${role}-${width}.png`,fullPage:true});}
   }
   assert.deepEqual(errors,[]);console.log('HTTPS_FLU_PREVIEW_BOTH_ROLES_PHONE_LAPTOP PASS; no assistant model calls; one synthetic director call');

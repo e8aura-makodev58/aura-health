@@ -23,12 +23,14 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   assert.equal(await page.locator('#other-measurements .chart-card[data-signal="SLEEP_DURATION"]').isVisible(),false);
   await page.evaluate(()=>window.renderAuraEvidence(window.auraAgentContext().record));
   console.log('FD_POLISH1_CHART_GROUPS_SPARSE_COLLAPSE_COUNTS PASS');
-  await page.locator('#patient-role').click();await page.waitForSelector('#agent-patient_insight .patient-finding');
+  await page.locator('#patient-role').click();await page.waitForSelector('#agent-patient_insight .patient-recap');
   for(const width of [1280,390]){
    await page.setViewportSize({width,height:900});
-   assert.equal(await page.locator('#home-heading').innerText(),'Your recent days');
+   assert.equal(await page.locator('#home-heading').innerText(),'Your day, with AURA');
    assert.ok(await page.locator('#month-recap').isVisible());
-   assert.doesNotMatch(await page.locator('#home-view').innerText(),/\d{4}-\d{2}-\d{2}|steady · reports/);
+   assert.doesNotMatch(await page.locator('#home-view').innerText(),/\d{4}-\d{2}-\d{2}|steady · reports|RMSSD|HRV|Recent change|AI-written|What AURA has noticed/);
+   assert.equal(await page.locator('#agent-patient_insight .patient-finding:visible').count(),0);
+   assert.equal(await page.locator('#agent-patient_insight .patient-summary-details').evaluate(n=>n.open),false);
    assert.match(await page.locator('#appointment-ready').innerText(),/\d+ items? ready · Not sent/);
    assert.ok(await page.locator('#patient-help').isVisible());
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

@@ -42,17 +42,19 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   for(const width of [1280,390]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`${out}/final-dash-flu-clinician-${width}.png`,fullPage:true});}
   console.log('FD_BROWSER2_FLU_SIX_CHANNELS_AND_SPARSE_READINGS PASS');
   await page.locator('#patient-role').click();
-  await page.waitForSelector('#agent-patient_insight .more-changes');
-  assert.equal(await page.locator('#agent-patient_insight>.finding-grid .patient-finding:not(.steady-report)').count(),2);
+  await page.waitForSelector('#agent-patient_insight .patient-summary-details');
+  assert.equal(await page.locator('#agent-patient_insight .patient-finding:visible').count(),0);
   assert.ok(await page.locator('#agent-patient_insight .patient-recap').isVisible());
-  assert.match(await page.locator('#agent-patient_insight>.finding-grid .patient-finding').first().innerText(),/recent change/i);
+  assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/HRV|RMSSD|Recent change|AI-written|\d{4}-\d{2}-\d{2}/);
   assert.equal(await page.locator('#agent-patient_insight .assessment-synthesis').count(),0);
   assert.equal(await page.locator('#agent-patient_insight .question-copy').count(),0);
-  await page.locator('#agent-patient_insight .more-changes summary').click();
-  assert.ok(await page.locator('#agent-patient_insight .more-changes .patient-finding:visible').count()>=4);
-  assert.doesNotMatch(await page.locator('#agent-patient_insight').innerText(),/\d{4}-\d{2}-\d{2}/);
+  await page.locator('#agent-patient_insight .patient-summary-details > summary').click();
+  assert.equal(await page.locator('#agent-patient_insight .patient-finding:visible').count(),6);
+  await page.locator('#agent-patient_insight .patient-summary-sources > summary').click();
+  assert.match(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/Summary from the record|AI-written/);
+  assert.match(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/Source:.*\d{4}-\d{2}-\d{2}|\d{4}-\d{2}-\d{2}.*Source:/s);
   await page.screenshot({path:`${out}/final-dash-flu-patient-390.png`,fullPage:true});
-  console.log('FD_BROWSER3_PATIENT_TWO_DEFAULT_AND_ONE_TAP_ALL PASS');
+  console.log('FD_BROWSER3_PATIENT_CALM_RECAP_AND_FULL_DISCLOSURES PASS');
   assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

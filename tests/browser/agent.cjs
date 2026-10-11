@@ -19,8 +19,11 @@ if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Lo
     await page.waitForSelector("#agent-clinician_brief .agent-disclosure");
     assert.match(await page.locator("#agent-clinician_brief .agent-disclosure").innerText(),/Summary from the record/);
     assert.ok(await page.locator("#agent-clinician_brief .agent-claim").count()>0);
-    await page.locator("#agent-clinician_brief .agent-claim button").first().click();
-    assert.match(await page.locator("#agent-clinician_brief").innerText(),/Source:/);
+    await page.waitForFunction(()=>document.querySelector('#agent-clinician_brief .finding-detail'));
+    const firstFinding=page.locator('#agent-clinician_brief .finding-card').first();
+    await firstFinding.locator('.finding-why').click();
+    await firstFinding.locator('.finding-detail:not([hidden])').waitFor();
+    assert.match(await firstFinding.locator('.finding-detail').innerText(),/Source:/);
     console.log("AG_UI1_BRIEF_SOURCES_TRACE PASS");
     await page.locator('.suggested-questions button').first().click();
     await page.waitForSelector("#agent-record_qa .agent-disclosure");
@@ -28,7 +31,8 @@ if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Lo
     await page.locator("#patient-role").click();
     await page.waitForSelector('#month-recap:not([hidden])');
     assert.equal(await page.locator("#recap-charts .chart-card").count(),0);
-    await page.waitForSelector("#agent-patient_insight .agent-disclosure");
+    await page.waitForSelector("#agent-patient_insight .patient-recap");
+    assert.equal(await page.locator("#agent-patient_insight .agent-disclosure").isVisible(),false);
     assert.ok(await page.locator("#agent-patient_insight .agent-claim").count()<=3);
     console.log("AG_UI3_DEFAULT_PLAIN_MOBILE_RECAP PASS");
     await page.getByRole("link",{name:"Prepare for my appointment"}).click();

@@ -49,12 +49,9 @@ def card_count(result, evidence, role):
             and row['first_seen'][:10] == finding['since'] and row['last_seen'][:10] == fact.get('at')]
         if len(matches) == 1:
             key=matches[0][0]['key'];channels.add((key['signal'],key['source'],key.get('metric') or ''))
-    count=min(len(channels),2 if role=='patient_insight' else 6)
-    cutoff = date.fromisoformat(evidence['period']['end'][:10]) - timedelta(days=29)
-    rows = [r for r in evidence['checkins'] if not r['deferred'] and r['at'][:10] >= cutoff.isoformat()][-3:]
-    if role == 'patient_insight' and result['draft']['claims'] and len(rows) >= 2 and len({r['state'] for r in rows}) == 1:
-        count += 1
-    return count
+    # Patient measurements are retained inside a closed disclosure, not default
+    # cards. This metric counts the initially visible measurement cards only.
+    return 0 if role == 'patient_insight' else min(len(channels), 6)
 
 
 def diagnostic(evidence):

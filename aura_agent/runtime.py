@@ -85,6 +85,26 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
             'The patient headline should be a short gentle sentence. No preamble, list, second sentence or explanatory suffix. '
             'Question ids may only come from '+json.dumps(QUESTIONS)+'. They are optional, not instructions to contact anyone. '
             'Return ONLY plain JSON conforming to '+json.dumps(schema))
+        if role.value == 'patient_insight':
+            messages[0]['content'] += (
+                '\nPATIENT RECAP: the headline is the main sentence on the person\'s home page. '
+                'Read get_decisions as well as get_series so you can see their own check-in reports. '
+                'Choose one or two supported facts that matter to understanding recent days; do not enumerate every channel. '
+                'When Rough check-ins are recorded, include the person\'s report alongside a wearable change if both fit. '
+                'Write one complete, natural sentence addressed to you/your, at most 20 words and 160 characters. '
+                'For example, ONLY if the cited facts support it: Your sleep time was later than usual, and you reported Rough days. '
+                'Describe sleep timing as sleep time, not sleep quality. Describe activity as moving more or less. '
+                'Use ordinary words such as heart rate, breathing or skin temperature where precisely supported. '
+                'Do not mention HRV, RMSSD, SpO2, variability, physiology, respiratory rate, baseline or drift. '
+                'You may leave a difficult technical measurement in the details instead of inventing a broad health meaning. '
+                'Never turn a check-in label into a diagnosis or assert how the person feels now. '
+                'No analyst headings such as Recorded changes in, comma-separated channel lists, colons, semicolons or bullets. '
+                'No first-person narration, reassurance, advice, questions, tasks or contact instructions. '
+                'Keep historical wording when facts describe an earlier interval. Copy category labels exactly. '
+                'Preserve the comparator: RECENT_PATTERN means than in your recent records; '
+                'PERSONAL_REFERENCE means than your usual. Never turn a recent-pattern change into a usual-reference change. '
+                'Cite all supporting fact_ids, including check-in facts when mentioning reports. '
+                'The server retains every detailed finding; you own wording only, never policy or actions.')
     trace = []
     started = monotonic()
     reason = "STEP_BUDGET"
@@ -154,7 +174,7 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                 headline_facts = None
                 if presentation:
                     from .presentation import checked_headline
-                    headline_facts = checked_headline(raw, tools)
+                    headline_facts = checked_headline(raw, tools, role)
                     headline_ids = list(raw['fact_ids'])
                     output = validate({**fallback(tools, role), 'headline':raw['headline'],
                                        'question_ids':raw['question_ids']}, tools, role)
@@ -164,7 +184,7 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                     output = validate(raw, tools, role)
                 if provider.live and (output['claims'] or output['headline']):
                     def verification_fact(fact):
-                        return {key:fact.get(key) for key in ('text','signal','finding','analysis')}
+                        return {key:fact.get(key) for key in ('text','signal','finding','analysis','comparison')}
                     # Direction/since can be recorded as structured engine metadata
                     # rather than repeated in prose. The verifier needs BOTH.
                     checks = [{"index":index,"text": claim['text'], "facts": [verification_fact(tools.delivered[fid]) for fid in claim['fact_ids']]} for index,claim in enumerate(output['claims'])]
@@ -215,7 +235,7 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
         reason = "INVALID_OR_UNAVAILABLE_MODEL" if provider.live else "OFFLINE_EXTRACTION"
         codes = {"PROHIBITED_CLAIM", "UNDELIVERED_FACT", "FABRICATED_NUMBER_OR_DATE", "UNSUPPORTED_SIGNAL",'WINDOW_BUDGET','WINDOW_REQUIRED','TOOL_BUDGET','INVALID_MODEL_MESSAGE',
                  "UNSUPPORTED_CATEGORY", "OMITTED_RETAINED_FINDING", "PATIENT_BURDEN", "QUESTION_RANKER_CONTENT",
-                 "UNAPPROVED_QUESTION", "FINDING_MISMATCH", "VERIFIER_REJECTED", "HEADLINE_BUDGET", "UNAUTHORIZED_TOOL", "PROMPT_BUDGET", "PARALLEL_TOOL_LIMIT", 'HEADLINE_SCHEMA', 'HEADLINE_JARGON'}
+                 "UNAPPROVED_QUESTION", "FINDING_MISMATCH", "VERIFIER_REJECTED", "HEADLINE_BUDGET", "UNAUTHORIZED_TOOL", "PROMPT_BUDGET", "PARALLEL_TOOL_LIMIT", 'HEADLINE_SCHEMA', 'HEADLINE_JARGON', 'PATIENT_HEADLINE_STYLE', 'PATIENT_HEADLINE_PERSPECTIVE'}
         if isinstance(exc, ValueError) and str(exc) in codes:
             trace.append({"action": "VALIDATION", "result": "REJECT", "code": str(exc)})
         else:
