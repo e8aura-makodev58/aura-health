@@ -164,6 +164,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+000000. **Plain language everywhere (user, 2026-10-11):** voice accepted; no technical data terms in the patient **or** clinician default views (patients and doctors, not analysts). Implement `docs/PLAIN_LANGUAGE_SPEC.md` with WP4/WP5: one banned-terms list, UI renames, collapsed "Technical details" and "Developer tools" folds, browser lint test, user sign-off.
 00000. **Patient voice (user, 2026-10-11): current patient summary is "cold, technical, robotic" and not acceptable.** Implement `docs/PATIENT_VOICE_SPEC.md` as part of WP4: sample-remark exemplars in the patient prompt, friendly (non-ISO, non-jargon) patient facts, warmer templates for the fallback, a plain "Why this summary?" panel without engine text or source IDs, and removal of the repeated "AI draft from synthetic records" line. User sign-off on five real outputs is the acceptance gate.
 0. **Next: review the newer patient recap (§45), then WP6 remaining evidence/reliability and Claude's final review.** WP2 passed; WP3–WP5 follow-ups implemented. New patient smoke 2/2 validated, older WP3–WP5 2/4 and noisy 8/20 evidence remain small-sample engineering observations, not acceptance statistics. Complete all seven HTTPS simulator events/five story steps and 20-run/p95 gate within unchanged shared quotas. Report failures rather than weakening checks or retrying until pass. Optional clinician model synthesis wording remains deferred. No design lock yet.
 1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Respect §44: factual, neutral copy without repeated inline disclaimers. Registry archive/migration and sponsor policy-editing UI remain future work.
@@ -227,6 +228,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-11 — Claude — Plain-language spec (patient and clinician)
+- User accepted the tone and extended the rule to the clinician view. Audited visible strings (chart legends, "Governed personal reference", "Stored rolling mean", "Recent data: 100% · 14 samples", "Research tier", "Source extraction", assistant steps, demo guide seed/replay/trace). Wrote `docs/PLAIN_LANGUAGE_SPEC.md` with a rename table, fold rules and a browser lint test. Docs only.
 ### 2026-10-11 — Claude — Patient voice spec
 - User rejected the patient summary wording (raw "anchored reference", ISO dates, source IDs, repeated caveat). Traced causes to engine description text in `aura_agent/tools.py`, `aura_app/agent.py:164` and the `patient_insight` SKILL prohibiting warmth. Wrote `docs/PATIENT_VOICE_SPEC.md` (voice rules, sample remarks, implementation, acceptance with user sign-off). Docs only.
 ### 2026-10-11 — Codex Sol — Conversational patient recap and on-demand measurement details
