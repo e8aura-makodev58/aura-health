@@ -338,6 +338,8 @@ function toggleBusy(value) { for (const node of document.querySelectorAll("[data
 
 $("demo-toggle").addEventListener("click", () => { $("demo-panel").hidden = !$("demo-panel").hidden; $("demo-toggle").setAttribute("aria-expanded", String(!$("demo-panel").hidden)); });
 $("start-demo").addEventListener("click", () => { $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); $("scenario").focus(); });
+$("start-patient")?.addEventListener("click", () => { presentationRole = "patient"; $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); $("scenario").focus(); });
+$("start-clinician")?.addEventListener("click", () => { presentationRole = "clinician"; $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); $("scenario").focus(); });
 $("scenario").addEventListener("change", () => { location.hash = "home"; loadPatient($("scenario").value); });
 $("connect").addEventListener("click", () => { if ($("patient-id").value.trim()) loadPatient($("patient-id").value.trim()); });
 for (const button of document.querySelectorAll("[data-checkin]")) button.addEventListener("click", async () => { lastCheckin = button.dataset.checkin; await submitEvent("PATIENT_CHECKIN", {state:lastCheckin}); });
