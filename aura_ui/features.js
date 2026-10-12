@@ -85,7 +85,7 @@
   const request=labelled(sim,'What happens next?',el('textarea'));request.rows=2;request.maxLength=2000;request.placeholder='e.g. three days of flu, or a week away from the wearable';
   const developer=window.auraTechnical();developer.querySelector('summary').textContent='Developer tools';
   const seed=labelled(developer,'Random seed',input('number','sim-seed'));seed.value='7';seed.min='0';seed.max='2147483647';
-  const notes=input('checkbox','sim-feedback');notes.checked=true;const notesLabel=el('label');notesLabel.append(notes,el('span','Simulated feedback: check-ins, routine and safety-gated notes'));sim.append(notesLabel);
+  const notes=input('checkbox','sim-feedback');notes.checked=false;const notesLabel=el('label');notesLabel.append(notes,el('span','Also add simulated patient notes (each one passes the safety check)'));sim.append(notesLabel);
   const quick=el('div',null,'settings-actions');for(const theme of ['Flu','Travel','Work stress','Alcohol','Missed medication','Wearable off','Exercise'])quick.append(button(theme==='Flu'?'Simulate: flu 3 days':`Simulate: ${theme.toLowerCase()}`,async()=>{request.value=theme;report('Generating synthetic events; first use may prepare reference history…');lastRun=await call('advance',{days:3,seed:Number(seed.value),request:theme,notes:notes.checked});await reload();report(`${theme}: ${lastRun.event_ids.length} committed events. Assessment refreshed from the new record.`);}));sim.append(quick);
   const advances=el('div',null,'settings-actions');const trace=el('details');trace.append(el('summary','Inspect last simulator run'));const traceBody=el('pre');trace.append(traceBody);
   for(const days of [1,3,7])advances.append(button(`Advance ${days} day${days>1?'s':''}`,async()=>{
