@@ -139,3 +139,43 @@ sessions produced which changes.
 > tests listed in section 5 (say honestly if you cannot), attach 1280 px and 390 px
 > screenshots to your Log entry in `HANDOVER.md`, and do not merge or deploy.
 
+## 10. Repo map for a UI-only agent (you do not need to read the whole repo)
+**Read only these.** 1) this brief; 2) `HANDOVER.md`: just "Current state" and the newest
+three Log entries; 3) `aura_ui/README.md`; 4) `docs/PATIENT_VOICE_SPEC.md` and
+`docs/PLAIN_LANGUAGE_SPEC.md`. **Ignore** every Python folder (`aura_safety/`,
+`aura_longitudinal/`, `aura_communication/`, `aura_agent/`, `aura_detectors/`, `aura_app/`,
+`aura_simulation/`), the milestone and review documents, and `docs/evidence/`. They are
+backend, history or evidence and are out of your scope.
+
+**The whole UI is nine files in `aura_ui/` (about 180 KB), plain HTML/CSS/JS with no build
+step, no framework and no new dependency:**
+| File | What it does |
+|---|---|
+| `index.html` | page shell and every element ID; sections: `#home-view` (patient), `#patterns-view` (clinician), `#review-view`, `#about-view`, `#demo-panel` (demo guide), `#safety` panel |
+| `styles.css`, `evidence.css` | all styling (global; charts, finding cards and spans) |
+| `app.js` | core state, navigation, patient home, check-in; **`window.auraPlain`** (wording rewrites) and the term list it loads from `/assets/plain_terms.json` |
+| `agent.js` | renders the AI assessment: clinician headline and finding cards, patient recap, "Why?" panels, refresh and stale handling; `window.auraFormatValue` (number formatting) |
+| `evidence.js` | charts, finding-dates strip, evidence and "recent readings" |
+| `features.js` | demo guide: story steps, simulator buttons, manual input, import, context |
+| `settings.js` | provider and model settings dialog (protected; leave alone) |
+
+**How data reaches the UI:** the page calls the FastAPI backend (for example
+`GET /patients/{id}/status`, `/evidence`, `POST /patients/{id}/agent/{role}`,
+`.../workflows/advance`). You can change how the results look, not what they contain. Real
+responses are easiest to see in the browser's network tab or by running the app locally
+(section 5). `window.auraAgentContext()` exposes the current patient, role and record to the
+console for debugging.
+
+**Conventions you must keep:** all visible text passes through `window.auraPlain` or the
+`node()` helper in `agent.js`, so the plain-language rules apply; patient and clinician
+views share the same render code with a role switch; "technical" content lives only inside
+`window.auraTechnical(...)` folds; do not inject raw IDs or unrounded numbers.
+
+**Tests that guard the UI (in `tests/browser/`, run with `tests/browser/run.py`):**
+`plain_language.cjs` (jargon, raw numbers, ISO dates, source IDs), `cards.cjs`,
+`agent.cjs`, `final_dash.cjs`, `impression.cjs`, `dual_view.cjs`, `workflows.cjs`. Update
+assertions only when you intentionally change wording or layout, never to hide a
+regression.
+
+**If something looks wrong in the data or wording the AI writes**, do not fix it in the UI
+with a patch: write it in `HANDOVER.md` for Codex or Claude.
