@@ -1,11 +1,11 @@
-# WorkBuddy handoff brief (DRAFT until WP6 is reviewed)
+# WorkBuddy handoff brief
 
 2026-10-12. Claude. **User decisions (2026-10-12):** WorkBuddy creates its own branch, implements, and
 finishes the product, but only after Codex has finished **all** remaining items, including
 anything beyond WP6 (the voice and plain-language specs, leftover Next steps). Claude reviews.
 The user decides who tests, who merges and who deploys. This brief is
-what WorkBuddy reads first. It is a draft until Claude's WP6 review is recorded in
-`HANDOVER.md`; section 3 is filled in at handoff.
+what WorkBuddy reads first. Section 3 was filled in on 2026-10-12 and reflects the user's
+demo priority (look sellable; skip further reliability gates).
 
 ## 1. Mission
 Finish aura-health as a demo that a patient and a doctor can understand in minutes:
@@ -22,12 +22,40 @@ story. Use any approach inside the boundaries in section 4.
 - Read `HANDOVER.md` first. Add your own Log entry when you finish a work session. Other
   agents may edit the repo concurrently: pull and re-read before editing shared files.
 
-## 3. Remaining work (filled in at handoff)
-Claude fills this from the WP6 review. Expected themes: layout and visual polish of the
-clinician and patient views, phone layout, empty and loading states, the demo guide and
-three-minute story flow, plain-language and voice sign-off follow-ups, accessibility
-(contrast, focus, labels, reduced motion), the demo video script. Plus any leftover items
-listed under Next steps in `HANDOVER.md`.
+## 3. Remaining work
+**Priority (user, 2026-10-12):** this is a hackathon demo, not a deployment. The goal is that
+it looks sellable and tells a clear story in three minutes. Visual polish and flow come before
+robustness. Do not add reliability gates or exhaustive evidence runs.
+
+**State at handoff:** live at https://aura-health.makodev58.com (DeepSeek `deepseek-flash`,
+synthetic only). Clinician view: AI headline, finding cards, a finding-dates strip, annotated
+charts, recent readings. Patient view: short warm recap, "See what changed", "Why this
+summary?", appointment note ("Not sent"), "I want to mention something". Demo guide: story
+steps, simulator events, developer tools fold. See `HANDOVER.md` for the latest numbers.
+
+**Your scope (UI and UX only, see section 4 for limits):**
+1. **First impression.** The first screen of each view should say what AURA does and look
+   confident: spacing, typography, colour, icon consistency (check HRV and skin temperature
+   icons), consistent card shapes and corners.
+2. **Clinician view.** Visual hierarchy of headline, cards and charts; shorter page (group or
+   collapse secondary charts and sections); clear "what changed and when" at a glance;
+   phone layout.
+3. **Patient home.** Warm, calm look; the recap sentence as the hero; "See what changed" and
+   the appointment note as clear secondary actions; the help button stays prominent.
+4. **Demo guide and story.** Make the three-minute story obvious and one-click, the flu
+   moment visible (the assessment visibly changes), reset easy; keep Developer tools tucked
+   away. Highlight what changed after a simulator event.
+5. **Loading and empty states.** The AI headline swaps in without flicker; skeletons or a calm
+   placeholder while it generates; friendly states when nothing noteworthy.
+6. **Accessibility basics.** Contrast, focus outlines, labels, reduced motion; touch targets
+   on phone.
+7. **Copy.** Small wording polish only within `PATIENT_VOICE_SPEC.md` and
+   `PLAIN_LANGUAGE_SPEC.md`; the lint test must keep passing.
+8. **Submission assets (optional, not code):** cover image, one-paragraph blurb, 5–8 minute
+   video script and the reflection on building with WorkBuddy.
+
+**Not yours (ask the user, then Codex or Claude):** anything needing backend, prompt,
+validator, engine or safety changes; the patient voice sign-off; model reliability.
 
 ## 4. Boundaries (non-negotiable)
 **Safety and integrity**
