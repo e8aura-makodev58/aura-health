@@ -13,8 +13,11 @@ coherent, warm, plain-language, polished on desktop and phone, with a smooth thr
 story. Use any approach inside the boundaries in section 4.
 
 ## 2. Starting point and branch rules
-- Start from `main` after the user confirms WP6 acceptance. The user tags that commit
-  `pre-workbuddy`.
+- Start from the commit tagged `pre-workbuddy` on `main` (the user tags it at handoff; Codex
+  and Claude have stopped building). Baseline at 2026-10-12: tests listed in `HANDOVER.md`,
+  app live on the demo URL with prompt `aura-agent-v10`.
+- Do not copy or commit the Tencent ADP guide PDF (`ADP_*.PDF`, untracked in the repo root);
+  it is marked Tencent-internal.
 - Create `workbuddy/final` (more branches are fine). Small commits, clear messages, no
   force push, no history rewriting. Do not push to `main` and do not deploy.
 - The user merges. Claude reviews the diff against this brief first. Remote:
@@ -120,3 +123,17 @@ sessions produced which changes.
    otherwise Codex or Claude. Never record a test as passing unless it was actually run;
    state who ran it.
 3. The user decides who merges and who deploys. No agent merges or deploys unprompted.
+
+## 9. Kickoff prompt (paste into WorkBuddy)
+> You are finishing a hackathon demo called aura-health. Read `docs/WORKBUDDY_HANDOFF.md`
+> first, then `HANDOVER.md` (Current state and Next steps). Create the branch
+> `workbuddy/final` from the tag `pre-workbuddy`. Your job is UI and UX polish only: the
+> first impression, the clinician view, the patient home, the demo guide and story flow,
+> loading and empty states, and accessibility basics, so the app looks confident and sellable
+> in a three-minute demo. Follow section 4 (boundaries) strictly: do not edit safety,
+> longitudinal, communication, detector or agent code, the schema, or prompts; the pinned
+> safety panel and the patient help button must stay as prominent as now; keep the plain
+> language and patient voice rules; synthetic data only. Work in small commits, run the
+> tests listed in section 5 (say honestly if you cannot), attach 1280 px and 390 px
+> screenshots to your Log entry in `HANDOVER.md`, and do not merge or deploy.
+
