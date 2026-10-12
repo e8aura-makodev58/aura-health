@@ -351,6 +351,24 @@ caption {text-align:left;padding:8px 0;font-size:.72rem;color:var(--muted)}
   .chart-card {padding:14px}
   .findings-overview {padding:16px}
 }
+/* D5: Clinician two-column layout at ≥1100px for denser data view */
+@media(min-width:1100px) {
+  body[data-role=clinician] main {max-width:1400px}
+  body[data-role=clinician] .findings-overview {font-size:.95rem}
+  body[data-role=clinician] #changes-overview p {font-size:.96rem}
+}
+/* D6: Gentle transitions and calm states */
+.view {animation:view-fade var(--dur-med) var(--ease-out)}
+.card,.findings-overview,.chart-card,.quiet-card {transition:box-shadow var(--dur-med) var(--ease-out)}
+.landing-tile {transition:box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
+.assessment-changed {animation:assessment-highlight 6s var(--ease-out) forwards}
+@keyframes view-fade {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce) {
+  .view {animation:none}
+  .card,.findings-overview,.chart-card,.quiet-card {transition:none}
+  .landing-tile {transition:none}
+  .assessment-changed {animation:none}
+}
 /* Optional, source-linked agent outputs stay secondary to policy and charts. */
 .agent-card { margin-block: 1rem; }
 .agent-card > details { margin-top: 1rem; }
