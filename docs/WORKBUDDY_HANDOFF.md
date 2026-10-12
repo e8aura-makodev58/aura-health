@@ -20,7 +20,7 @@ story. Use any approach inside the boundaries in section 4.
   app live on the demo URL with prompt `aura-agent-v10`.
 - Do not copy or commit the Tencent ADP guide PDF (`ADP_*.PDF`, untracked in the repo root);
   it is marked Tencent-internal.
-- Create `workbuddy/final` (more branches are fine). Small commits, clear messages, no
+- Create `workbuddy/final` (CodeBuddy doing the visual redesign uses `codebuddy/ui`; more branches are fine). Small commits, clear messages, no
   force push, no history rewriting. Do not push to `main` and do not deploy.
 - The user merges. Claude reviews the diff against this brief first. Remote:
   `git@github.com:e8aura-makodev58/aura-health.git` (SSH key notes in `HANDOVER.md`).
@@ -37,6 +37,8 @@ synthetic only). Clinician view: AI headline, finding cards, a finding-dates str
 charts, recent readings. Patient view: short warm recap, "See what changed", "Why this
 summary?", appointment note ("Not sent"), "I want to mention something". Demo guide: story
 steps, simulator events, developer tools fold. See `HANDOVER.md` for the latest numbers.
+
+**Visual redesign:** the detailed SOW is [`CODEBUDDY_UI_SOW.md`](CODEBUDDY_UI_SOW.md) (Headspace-like feel, own brand). Its kickoff prompt replaces section 9 when that SOW is used.
 
 **Your scope (UI and UX only, see section 4 for limits):**
 1. **First impression.** The first screen of each view should say what AURA does and look

@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 import os
+import re
 from pathlib import Path
 from uuid import uuid4
 
@@ -253,6 +254,19 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
         if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "evidence.css", "agent.js", "features.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)
+
+    media = ui / "media"
+    media_types = {".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp",
+                   ".jpg": "image/jpeg", ".woff2": "font/woff2"}
+    @app.get("/assets/media/{media_name}", include_in_schema=False)
+    def ui_media(media_name: str):
+        # Flat folder of static UI art and fonts; no subpaths, no other file types.
+        suffix = Path(media_name).suffix.lower()
+        path = media / media_name
+        if (not re.fullmatch(r"[a-z0-9][a-z0-9_-]*\.[a-z0-9]+", media_name)
+                or suffix not in media_types or not path.is_file()):
+            raise HTTPException(404)
+        return FileResponse(path, media_type=media_types[suffix])
 
     @app.get("/", include_in_schema=False)
     def patient_application():
