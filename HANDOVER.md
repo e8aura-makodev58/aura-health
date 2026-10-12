@@ -32,6 +32,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (as of 2026-10-12)
 
+- **DeepSeek diagnostic (2026-10-12):** saved-key authenticated `/models` HTTP 200, configured `deepseek-flash` present; `/user/balance` HTTP 200 with sufficient-credit flag true (no balance amounts printed). One minimal synthetic `VendorProvider.agent_step` probe PASS. Protected connection-test route returned UNAVAILABLE; no key/model/endpoint/code change made. Earlier generic ProviderUnavailable errors do not identify an exact upstream cause; full agent/connection-test failure remains unexplained, not fixed by the control probe. No credentials or model prose printed.
+
 - **Project name:** officially **aura-health** (user, 2026-09-23). Care Plan Bridge (`PRODUCT_FRAMEWORK*.md`, `FRAMEWORK_CRITIQUE.md`) was dropped; those docs are marked superseded and kept for background only.
 - **Product being built:** a longitudinal, wearable-first companion for adults on stable antidepressant maintenance treatment. Spec: `aura_health_framework_v1.0.md`. Safety policy: `aura_deterministic_safety_policy_state_machine_v1.2.md`.
 - **Milestones 1–4 are complete; M4.5 documentation is complete.** The Milestone 4 engineering stop condition is met. See `MILESTONE3_REVIEW.md` and `MILESTONE4_REVIEW.md`.
@@ -166,7 +168,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 ## Next steps
 
 000000. **Review the implemented plain-language/voice follow-up:** patient wording is simplified; clinician factual measurements remain visible. Review mobile/laptop home, Why panels, full-data and appointment views against `docs/PLAIN_LANGUAGE_SPEC.md`. User voice sign-off is still pending, not inferred from implementation permission.
-00000. **Patient voice acceptance:** show five actual live/fallback outputs (B, flu, stable, gap, check-ins only) for user review before completion. The latest two live attempts hit provider unavailability and used factual fallback; diagnose provider availability without exposing keys, increasing quotas or retrying until pass. `docs/PATIENT_VOICE_SPEC.md` is implemented, but its user acceptance gate remains open.
+00000. **Patient voice acceptance:** show five actual live/fallback outputs (B, flu, stable, gap, check-ins only) for user review before completion. Two full live attempts used fallback; later authenticated catalog/balance and minimal adapter generation probes pass. Investigate the request-specific/connection-test failure with sanitized diagnostics, not by replacing a demonstrably accepted key, increasing quotas or retrying until pass. `docs/PATIENT_VOICE_SPEC.md` is implemented, but its user acceptance gate remains open.
 0. **Next: review the newer patient voice (§46), then WP6 remaining evidence/reliability and Claude's final review.** WP2 passed; WP3–WP5 follow-ups implemented. Latest v7 live smoke 0/2 generated (provider unavailable); earlier v6 2/2, WP3–WP5 2/4 and noisy 8/20 evidence are historical small-sample engineering observations, not acceptance statistics. Complete all seven HTTPS simulator events/five story steps and 20-run/p95 gate within unchanged shared quotas. Report failures rather than weakening checks or retrying until pass. Optional clinician model synthesis wording remains deferred. No design lock yet.
 1. **Claude: review I1–I9 and the approved agent/input work**, `docs/IMPRESSION_IMPLEMENTATION.md`, `docs/APPROVED_AGENT_AND_SIMULATOR_IMPLEMENTATION.md`, AW1–AW28 and AG1–AG20. Check rounded cards/exact disclosures, shared dates, steady-report meaning, arrival/cache/race/unsafe clearing, patient burden/source linkage, real guide actions, strict claim rejection and actual live usefulness. Respect §44: factual, neutral copy without repeated inline disclaimers. Registry archive/migration and sponsor policy-editing UI remain future work.
 2. **User: reload the patient view** and try the short natural recap, **See what changed** and **Why this summary?** disclosures; clinician analytics/full-data access remain intact. Confirm UX acceptance before further expansion. No clinical or M7 acceptance claimed.
@@ -228,6 +230,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-12 — Codex Sol — Diagnose DeepSeek key versus endpoint
+- Read-only configuration/authenticated catalog and balance checks: HTTP 200; saved model present and sufficient-balance flag true. One protected synthetic connection test UNAVAILABLE; one minimal native adapter synthetic probe PASS. No key/prose/balance amounts exposed, no runtime or provider configuration changes.
+- Verified: system-settings focused tests **10 PASS / 31.429 s**; previous full274/browser52 remain historical, not rerun for this documentation-only diagnostic. Exact earlier upstream cause cannot be reconstructed from generic stored errors; full assessment generation is not proven fixed.
+- Reviewer update `00c027f` is WorkBuddy-handoff documentation only; no inferred implementation scope. User-supplied untracked PDF preserved. Follow-up: sanitized request-specific diagnosis and voice acceptance, not an automatic provider switch.
 
 ### 2026-10-12 — Codex Sol — Warm patient voice and plain-language views
 - Implemented Claude's corrected patient/clinician wording scope: shared term catalogue, placeholder few-shot examples, friendly grounded facts, warmer fallback, readable source/date labels, optional technical/developer folds. Clinician exact data retained; safety copy and domain algorithms untouched. Added same-guarded-record disclosure preservation so refresh does not close the patient's source panel.
