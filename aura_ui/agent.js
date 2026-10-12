@@ -14,6 +14,7 @@
     return `${sign}${plainNumber(value)} ${signalName==='SKIN_TEMPERATURE_DEVIATION'?'°C':unit}`;
   }
   window.auraFormatValue=formatValue;
+  let staleRetries=0;
   const technicalText=text=>{const p=node('p',null,'fine');p.textContent=text;return p;};
   const friendly=fact=>fact.patient?fact.patient.text||'A measurement or note was included.':window.auraPlain(fact.text);
   const sourceLine=fact=>`${fact.patient?.source_label|| (fact.checkin_summary?'Your check-ins':'Your measurements')}${fact.patient?.date_label?' · '+fact.patient.date_label:fact.at?' · '+date(fact.at):''}`;
@@ -104,6 +105,9 @@
       .filter(card=>card.querySelector('.finding-detail')?.hidden===false).map(findingKey)):new Set();
     const previous=priorLines.get(role)||new Set(), now=new Set();area.replaceChildren();
     if(paused||ctx.offline)rendered.delete(area);else rendered.set(area,{recordKey,signature});
+    // A stale result only means the record changed while it was being written: refresh quietly (a few times), no safety message.
+    if(result.status==='STALE'&&staleRetries<3&&!ctx.offline){staleRetries++;area.append(node('p','Updating the summary…','fine'));setTimeout(()=>window.refreshAuraAssessment?.(),1500);return;}
+    if(result.status!=='STALE')staleRetries=0;
     const bounded=['clinician_brief','patient_insight'].includes(role),visibleAI=result.generation_used&&(!bounded||Boolean(result.draft.headline))&&(role!=='patient_insight'||Boolean(result.headline_fact_ids?.length));
     const label=paused?'Assessment paused':visibleAI?'AI-written · sources checked':'Summary from the record';
     const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;if(role!=='patient_insight')area.append(chip);
