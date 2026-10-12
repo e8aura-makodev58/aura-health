@@ -1,36 +1,36 @@
 /* Presentation only: no chart-derived patient state or inferred context. */
 .aligned-checkins{display:block;width:100%;margin-top:-.35rem}
-.checkin-point{fill:#467d72;stroke:#fff;stroke-width:1}
-.checkin-okay{fill:#99833c}.checkin-rough{fill:#946b81}
-.context-timing-marker{stroke:#7e8791;stroke-width:1;stroke-dasharray:3 4;opacity:.65}
-.story-finding-band{fill:#719bd0;fill-opacity:.12;stroke:#426da1;stroke-width:1;stroke-dasharray:4 3}
-.story-finding-marker{fill:#275f87;stroke:#fff;stroke-width:1}
-.story-finding-number{fill:#fff;font-size:12px;font-weight:700}
+.checkin-point{fill:var(--accent-leaf);stroke:var(--white);stroke-width:1}
+.checkin-okay{fill:var(--accent-ink)}.checkin-rough{fill:var(--accent-coral)}
+.context-timing-marker{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 4;opacity:.65}
+.story-finding-band{fill:var(--accent-blue);fill-opacity:.12;stroke:var(--accent-blue);stroke-width:1;stroke-dasharray:4 3}
+.story-finding-marker{fill:var(--accent-blue);stroke:var(--white);stroke-width:1}
+.story-finding-number{fill:var(--white);font-size:12px;font-weight:700}
 .story-chart-link{display:inline-block;font-size:.8rem;margin:.4rem 0 0 .7rem;text-underline-offset:3px}
-.chart-card:focus{outline:2px solid #416a89;outline-offset:4px}
+.chart-card:focus{outline:2px solid var(--focus);outline-offset:4px}
 .chart-group{grid-column:1/-1;min-width:0}
 .chart-group>h2,.chart-group>summary{font-size:.95rem;margin:8px 0 14px}
 .chart-group>summary{min-height:44px;cursor:pointer;padding:12px 0}
 .chart-group-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.other-measurements{border-top:1px solid var(--line,#dde4e5)}
+.other-measurements{border-top:1px solid var(--line)}
 .workspace-disclosure>summary{display:flex;align-items:center;gap:10px}
 .disclosure-count{margin-left:auto;font-size:.7rem}
-.checkin-summary-card{min-width:0;border:1px solid #d9e1df;border-radius:16px;padding:16px;background:#f6f9f8;align-self:start}
+.checkin-summary-card{min-width:0;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px;background:var(--surface-soft);align-self:start}
 .checkin-summary-card h4{font-size:.9rem;margin:0}
-.checkin-summary-card p{font-size:.85rem;margin:10px 0;color:#5b6c68}
-.also-recorded{color:var(--muted,#667);font-size:.8rem}
+.checkin-summary-card p{font-size:.85rem;margin:10px 0;color:var(--ink-soft)}
+.also-recorded{color:var(--muted);font-size:.8rem}
 .patient-recap{font-size:.98rem;line-height:1.55;margin:12px 0}
-#home-view.has-recap #month-recap{padding:24px;border-radius:22px;background:#f6f9f8;border:1px solid #d9e1df}
-#agent-patient_insight .patient-recap{font-size:clamp(1.12rem,2.6vw,1.35rem);line-height:1.6;margin:0 0 18px;max-width:48ch;color:#314c56}
-.patient-summary-details,.patient-summary-sources{border-top:1px solid #d9e1df;margin-top:8px}
-.patient-summary-details>summary,.patient-summary-sources>summary{cursor:pointer;font-size:.86rem;min-height:44px;padding:12px 0;color:#41616b}
+#home-view.has-recap #month-recap{padding:24px;border-radius:var(--radius-xl);background:var(--surface-soft);border:1px solid var(--line)}
+#agent-patient_insight .patient-recap{font-size:clamp(1.12rem,2.6vw,1.35rem);line-height:1.6;margin:0 0 18px;max-width:48ch;color:var(--ink)}
+.patient-summary-details,.patient-summary-sources{border-top:1px solid var(--line);margin-top:8px}
+.patient-summary-details>summary,.patient-summary-sources>summary{cursor:pointer;font-size:.86rem;min-height:44px;padding:12px 0;color:var(--accent)}
 .patient-summary-sources .fine{overflow-wrap:anywhere}
 @media(max-width:700px){#home-view.has-recap #month-recap{padding:20px}.patient-summary-sources .agent-trace{font-size:.75rem}}
 @media(max-width:700px){.chart-group-grid{grid-template-columns:minmax(0,1fr)}}
 #chart-exact-sources{display:grid;gap:1rem;min-width:0}
-#chart-exact-sources .chart-sources{border-top:1px solid var(--line,#dde4e5);padding-top:.75rem;min-width:0}
+#chart-exact-sources .chart-sources{border-top:1px solid var(--line);padding-top:.75rem;min-width:0}
 #record-comparison-toggle{margin:0 0 1rem;width:auto}
-.record-comparison{padding:1rem;border:1px solid var(--line,#dde4e5);border-radius:1rem;background:#fff;margin-bottom:1rem;min-width:0}
+.record-comparison{padding:1rem;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--white);margin-bottom:1rem;min-width:0}
 .record-comparison[hidden]{display:none}
 .comparison-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.2rem}
 .comparison-columns>section{min-width:0;max-width:100%}
@@ -41,29 +41,29 @@
 @media(max-width:700px){.comparison-columns{grid-template-columns:minmax(0,1fr)}.record-comparison{padding:.8rem}#record-comparison-toggle{width:100%}}
 /* I9: source-backed cards, neutral categories; rounding is display-only. */
 .finding-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
-.finding-card.agent-claim{min-width:0;border:1px solid #d9e1df;border-radius:16px;padding:16px;background:#f6f9f8;align-self:start}
+.finding-card.agent-claim{min-width:0;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px;background:var(--surface-soft);align-self:start}
 .finding-card-heading{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .finding-card-heading h4{font-size:.9rem;margin:0;flex:1;min-width:100px}
-.finding-card .signal-icon{display:grid;place-items:center;width:30px;height:30px;background:#e6ecee;color:#41616b;border-radius:9px;flex-shrink:0}
-.finding-card[data-signal=ACTIVITY] .signal-icon{background:#e9e7ee;color:#625870}
-.finding-card[data-signal=RESTING_HEART_RATE] .signal-icon{background:#e7ecea;color:#52675f}
-.finding-card .finding-number{width:22px;height:22px;font-size:.7rem;margin:0;background:#e4eaf0;color:#3a5c78}
+.finding-card .signal-icon{display:grid;place-items:center;width:30px;height:30px;background:var(--accent-blue);color:var(--ink);border-radius:var(--radius-sm);flex-shrink:0}
+.finding-card[data-signal=ACTIVITY] .signal-icon{background:var(--accent-lilac);color:var(--ink)}
+.finding-card[data-signal=RESTING_HEART_RATE] .signal-icon{background:var(--accent-leaf);color:var(--ink)}
+.finding-card .finding-number{width:22px;height:22px;font-size:.7rem;margin:0;background:var(--accent-sunny);color:var(--ink)}
 .finding-card .finding-why{font-size:.75rem;min-height:44px;margin:0;padding:5px}
-.finding-card .finding-magnitude{font-size:1.55rem;line-height:1.3;font-weight:650;margin:12px 0;color:#314c56}
-.finding-span{height:5px;background:#e1e8e7;border-radius:4px;margin:14px 0;overflow:hidden;display:flex}
-.finding-span>span{display:block;min-width:3px;height:100%;background:#7b9caa;border-radius:4px;flex-shrink:0}
-.finding-card .finding-one-liner,.finding-card .finding-date{font-size:.8rem;color:#5b6c68;margin:8px 0}
-.finding-detail{margin-top:12px;border-radius:10px;font-size:.85rem}
+.finding-card .finding-magnitude{font-size:1.55rem;line-height:1.3;font-weight:700;margin:12px 0;color:var(--ink)}
+.finding-span{height:5px;background:var(--line);border-radius:4px;margin:14px 0;overflow:hidden;display:flex}
+.finding-span>span{display:block;min-width:3px;height:100%;background:var(--accent-blue);border-radius:4px;flex-shrink:0}
+.finding-card .finding-one-liner,.finding-card .finding-date{font-size:.8rem;color:var(--ink-soft);margin:8px 0}
+.finding-detail{margin-top:12px;border-radius:var(--radius-md);font-size:.85rem}
 .finding-card .story-chart-link{margin:4px 0 0;font-size:.75rem;min-height:44px;display:inline-flex;align-items:center}
-.finding-card .finding-state{background:#edf1f0;color:#506760;border-color:#d7dfdd;font-size:.7rem;margin-top:6px}
+.finding-card .finding-state{background:var(--surface-soft);color:var(--ink-soft);border-color:var(--line);font-size:.7rem;margin-top:6px}
 .patient-finding .finding-card-heading h4{font-size:.96rem;line-height:1.4}
 #agent-patient_insight .finding-grid{grid-template-columns:1fr;margin:8px 0}
 #agent-patient_insight .agent-disclosure{font-size:.67rem;margin-top:4px}
-.finding-timeline{padding:8px 16px;border:1px solid #dce4e1;border-radius:12px;background:#f6f8f6;margin:14px 0}
+.finding-timeline{padding:8px 16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface-soft);margin:14px 0}
 .finding-timeline svg{display:block;width:100%;max-height:145px}
-.finding-timeline-track{fill:#e3e9e7}.finding-timeline-span{fill:#86a6b4}
-.chart-callout{display:block;font-size:.77rem;text-decoration:none;color:#3f657a;background:#eef3f6;border-radius:8px;padding:8px;margin:8px 0}
-.question-copy{font-size:.8rem;text-align:left;border-radius:20px;margin:4px;padding:9px 12px}
+.finding-timeline-track{fill:var(--line)}.finding-timeline-span{fill:var(--accent-blue)}
+.chart-callout{display:block;font-size:.77rem;text-decoration:none;color:var(--accent);background:var(--surface-soft);border-radius:var(--radius-sm);padding:8px;margin:8px 0}
+.question-copy{font-size:.8rem;text-align:left;border-radius:var(--radius-pill);margin:4px;padding:9px 12px}
 .record-questions .details-body{border:0;margin:0;padding:0}
 .record-questions .question-submit{font-size:.85rem;padding:8px 16px}
 @media(max-width:700px){.finding-grid{grid-template-columns:minmax(0,1fr)}.finding-card.agent-claim{padding:13px}.finding-card .finding-magnitude{font-size:1.35rem}.finding-timeline{padding:8px}.patient-finding .finding-card-heading h4{min-width:140px}}
