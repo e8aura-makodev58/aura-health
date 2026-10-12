@@ -167,6 +167,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+0000000. **WorkBuddy handoff (user, 2026-10-12):** after Codex finishes all remaining items (including anything beyond WP6) and Claude reviews, WorkBuddy creates its own branch and finishes the product. See `docs/WORKBUDDY_HANDOFF.md` (draft; section 3 filled at handoff). The user decides who runs tests, who merges and who deploys. Protected paths: safety, longitudinal, communication, detectors and agent code, schema.
 000000. **Review the implemented plain-language/voice follow-up:** patient wording is simplified; clinician factual measurements remain visible. Review mobile/laptop home, Why panels, full-data and appointment views against `docs/PLAIN_LANGUAGE_SPEC.md`. User voice sign-off is still pending, not inferred from implementation permission.
 00000. **Patient voice acceptance:** show five actual live/fallback outputs (B, flu, stable, gap, check-ins only) for user review before completion. Two full live attempts used fallback; later authenticated catalog/balance and minimal adapter generation probes pass. Investigate the request-specific/connection-test failure with sanitized diagnostics, not by replacing a demonstrably accepted key, increasing quotas or retrying until pass. `docs/PATIENT_VOICE_SPEC.md` is implemented, but its user acceptance gate remains open.
 0. **Next: review the newer patient voice (§46), then WP6 remaining evidence/reliability and Claude's final review.** WP2 passed; WP3–WP5 follow-ups implemented. Latest v7 live smoke 0/2 generated (provider unavailable); earlier v6 2/2, WP3–WP5 2/4 and noisy 8/20 evidence are historical small-sample engineering observations, not acceptance statistics. Complete all seven HTTPS simulator events/five story steps and 20-run/p95 gate within unchanged shared quotas. Report failures rather than weakening checks or retrying until pass. Optional clinician model synthesis wording remains deferred. No design lock yet.
@@ -231,6 +232,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-12 — Claude — WorkBuddy handoff brief; DeepSeek diagnosis delegated
+- Assessed the Tencent ADP/WorkBuddy guide (`ADP_...PDF`, untracked, marked Tencent-internal; do not commit it). Wrote `docs/WORKBUDDY_HANDOFF.md` (`ce39cac`, `00c027f`) with the user's decisions. Started a read-only diagnosis of the full-agent DeepSeek failure (`ProviderUnavailable` at MODEL_STEP) using sanitized evidence; results pending, no code changed yet.
 ### 2026-10-12 — Codex Sol — Diagnose DeepSeek key versus endpoint
 - Read-only configuration/authenticated catalog and balance checks: HTTP 200; saved model present and sufficient-balance flag true. One protected synthetic connection test UNAVAILABLE; one minimal native adapter synthetic probe PASS. No key/prose/balance amounts exposed, no runtime or provider configuration changes.
 - Verified: system-settings focused tests **10 PASS / 31.429 s**; previous full274/browser52 remain historical, not rerun for this documentation-only diagnostic. Exact earlier upstream cause cannot be reconstructed from generic stored errors; full assessment generation is not proven fixed.
