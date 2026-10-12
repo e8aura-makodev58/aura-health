@@ -237,6 +237,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-12 — Claude — Patient recap leads with the recent change (prompt v10)
+- Added one instruction (RECENT_PATTERN facts first; recency, not severity) to the patient prompt in `runtime.py` and `patient_insight/SKILL.md`; `aura-agent-v10`, `arrival-v11`. Verified: 56 related Python tests PASS; deployed; 3 of 3 live flu runs now open with "Your resting heart rate was higher than in your recent records since mid March." (two model-written, one record summary). Not rerun: full suite, reliability gate (closed for the demo).
 ### 2026-10-12 — Claude — Clinician number formatting fix (user-reported)
 - User found the clinician "Why?" detail unreadable: raw floats (`195.4231699500001 minutes since sleep-start midnight`), internal unit, duplicate dates line. Fixed in `aura_ui/agent.js` (`window.auraFormatValue`: sleep as clock time and hours/minutes, steps as whole numbers, others rounded; duplicate "Measurements ·" line removed) and `aura_ui/app.js` (same helper for the evidence panel; "Sleep sleep time" and "later relative to the baseline reference" wording). Facts kept: Difference, Recent average, Baseline, Median. Now reads e.g. "Difference: 3 h 15 min later. Recent average: 03:34. Baseline: 00:18. Median: 03:33." and "-2,130 steps a day".
 - Verified: browser cards 4, plain-language 2, agent 5, final-dash 3, impression 5 PASS (19). Plain-language test now fails on any 3-decimal float or "sleep-start midnight" in the clinician exact line. Python suite not rerun (UI-only). Deployed `app` only; checked on the live site (first fix) — second wording fix deployed after.
