@@ -6,7 +6,7 @@
   /* Lines */
   --line:#eee9e0; --line-soft:#f5f1ea;
   /* Accents — warm Headspace-like palette */
-  --accent:#e8950c; --accent-ink:#c2780a;
+  --accent:#9c5700; --accent-ink:#804600;
   --accent-sunny:#f5a623; --accent-coral:#f47e6b; --accent-blue:#7bc4e4;
   --accent-lilac:#c4b4e0; --accent-leaf:#8cc499;
   /* Warning / safety (retained from prior design) */
@@ -112,7 +112,7 @@ details[open]>summary::after {content:"−"}
 .data-strip p {font-size:.81rem;margin:0}
 .data-strip .text-button {font-size:.79rem}
 .data-symbol {font-size:1.8rem;line-height:1.2;color:var(--accent)}
-.primary {background:var(--accent);color:var(--ink);border-color:var(--accent)}
+.primary {background:var(--accent);color:var(--white);border-color:var(--accent)}
 .primary:hover {background:var(--accent-ink);color:var(--ink);box-shadow:var(--shadow-md)}
 .scope-note {font-size:.74rem;max-width:620px;margin-top:14px;color:var(--muted)}
 .help-dock {position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:0;right:0;z-index:8;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 20px 6px;background:linear-gradient(transparent,var(--paper) 14%)}
@@ -184,7 +184,7 @@ dd {margin:2px 0 8px;overflow-wrap:anywhere}
 .landing-tile-copy {display:flex;flex-direction:column;gap:4px;align-items:center}
 .landing-tile-copy strong {font-size:.95rem;font-weight:700}
 .landing-tile-copy .fine {font-size:.78rem;text-align:center}
-.landing-story-button {display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--accent);color:var(--ink);border:none;border-radius:var(--radius-pill);font-size:.95rem;font-weight:700;box-shadow:var(--shadow-pill);min-height:44px;cursor:pointer;transition:background var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out)}
+.landing-story-button {display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--accent);color:var(--white);border:none;border-radius:var(--radius-pill);font-size:.95rem;font-weight:700;box-shadow:var(--shadow-pill);min-height:44px;cursor:pointer;transition:background var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out)}
 .landing-story-button:hover {background:var(--accent-ink);box-shadow:var(--shadow-md)}
 .landing-honesty {font-size:.72rem;color:var(--muted);margin-top:16px}
 @media(max-width:380px) { .landing-tiles {grid-template-columns:1fr} .landing-hero-img {max-width:320px} }
@@ -242,7 +242,7 @@ main {padding-inline:24px}
 .demo-bar {gap:12px;flex-wrap:wrap;padding:8px 24px;font-size:.7rem}
 #role-switch {display:flex;gap:2px;border:1px solid var(--line);border-radius:var(--radius-pill);padding:2px}
 #role-switch button {font-size:.75rem;padding:7px 14px;min-height:44px;border:0;background:transparent;border-radius:var(--radius-pill);box-shadow:none}
-#role-switch button[aria-pressed=true] {background:var(--accent);color:var(--ink)}
+#role-switch button[aria-pressed=true] {background:var(--accent);color:var(--white)}
 .demo-bar>span {margin-right:auto}
 .demo-bar #demo-toggle {min-height:44px}
 .bottom-nav {position:static;max-width:1200px;margin:auto;justify-content:flex-start;border:0;background:transparent;padding:0 24px}

@@ -16,8 +16,8 @@
 | `--accent-blue` | `#7bc4e4` | Cool secondary accent |
 | `--accent-lilac` | `#c4b4e0` | Soft secondary accent |
 | `--accent-leaf` | `#8cc499` | Calm green accent (continuity with prior sage) |
-| `--accent` | `#e8950c` | Default interactive accent (darker sunny orange for AA on white) |
-| `--accent-ink` | `#c2780a` | Hover / pressed accent |
+| `--accent` | `#9c5700` | Default interactive accent (links, text buttons — AA on white) |
+| `--accent-ink` | `#804600` | Hover / pressed accent |
 | `--warning-bg` | `#fff4d6` | Safety panel background (retained) |
 | `--warning-border` | `#d4a943` | Safety panel border (retained) |
 | `--focus` | `#005c8a` | Focus outline — high-contrast blue |
@@ -55,7 +55,7 @@ Self-hosted **Nunito** (SIL OFL, variable or two weights: 400/700, `.woff2` unde
 | `--shadow-sm` | `0 1px 3px rgba(42,35,32,0.06)` | Cards default |
 | `--shadow-md` | `0 4px 16px rgba(42,35,32,0.08)` | Raised cards, buttons on hover |
 | `--shadow-lg` | `0 8px 32px rgba(42,35,32,0.10)` | Hero, modals, floating elements |
-| `--shadow-pill` | `0 3px 12px rgba(232,149,12,0.18)` | Help dock pill |
+| `--shadow-pill` | `0 3px 12px rgba(156,87,0,0.18)` | Help dock pill |
 
 ## Spacing scale (4/8 px grid)
 
