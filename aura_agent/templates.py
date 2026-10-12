@@ -29,11 +29,14 @@ def fallback(tools, role, query=None):
             prior = latest.get(key)
             if prior is None or (fact.get('at') or '') > (tools.facts[prior].get('at') or ''):
                 latest[key] = fid
-        ordered = sorted(latest.values(),key=lambda fid:tools.facts[fid].get('at') or '',reverse=True)
+        # A recent change leads a longer-running one; otherwise keep the existing order.
+        def recent_first(fid):
+            return 0 if tools.facts[fid].get('comparison') == 'RECENT_PATTERN' else 1
+        ordered = sorted(sorted(latest.values(), key=lambda fid: tools.facts[fid].get('at') or '', reverse=True), key=recent_first)
         # Readability selection, never clinical importance or severity: prefer
         # familiar sleep/activity channels in their existing source order.
-        basic = [fid for fid in latest.values() if tools.facts[fid]['signal'] in
-                 {'SLEEP_MIDPOINT','ACTIVITY','SLEEP_DURATION','RESTING_HEART_RATE'}]
+        basic = sorted([fid for fid in latest.values() if tools.facts[fid]['signal'] in
+                        {'SLEEP_MIDPOINT','ACTIVITY','SLEEP_DURATION','RESTING_HEART_RATE'}], key=recent_first)
         reports = [fid for fid in tools.groups['get_decisions'] if fid in tools.delivered
                    and (tools.facts[fid].get('checkin_summary') or tools.facts[fid].get('checkin_run'))]
         reports.sort(key=lambda fid:(tools.facts[fid].get('at') or '',bool(tools.facts[fid].get('checkin_summary'))),reverse=True)
@@ -43,6 +46,8 @@ def fallback(tools, role, query=None):
         ids = (basic or ordered)[:1]
         if reports: ids.append(reports[0])
         elif len(ids)<2: ids.extend([fid for fid in (basic or ordered) if fid not in ids][:1])
+        # A recent wearable gap makes the picture incomplete; say so when there is room.
+        if gaps and len(ids)<2: ids.append(gaps[0])
         if not ids: ids = gaps[:1] or held[:1]
     # Group all retained findings into bounded factual lines, never silently drop
     # them because a short brief has a smaller preferred number of sentences.
