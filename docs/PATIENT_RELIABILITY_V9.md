@@ -1,6 +1,14 @@
 # Patient reliability follow-up — 2026-10-12
 
-Ready for deployment approval; no v9 live reliability claim.
+Claude reviewed and deployed v9 on 2026-10-12, then started the user-approved
+fixed 80-assessment reliability trial at 08:01 UTC. The trial is active; no
+completed v9 reliability gate is claimed.
+
+At the 08:17 UTC saved checkpoint, 16/80 assessments were recorded: Case B
+clinician 8/8 validated and patient 7/8, with one UNSUPPORTED_CATEGORY rejection.
+Both groups are INCOMPLETE. These are interim counts, not final results.
+The active output remains untracked until completion; log `/tmp/v9_run.log`.
+Do not redeploy, run additional live calls or run heavy tests during this trial.
 
 ## Preserved v8 results
 
@@ -37,7 +45,7 @@ inspect actual runtime messages, exact verifier metadata without hidden IDs, and
 strict rejection of empty/fenced/truncated/wrong-shape output. These are offline
 contract tests, not measurements of live semantic reliability.
 
-## HTTPS rehearsal of the currently deployed version
+## HTTPS rehearsal before v9 deployment
 
 Seven real quick-event buttons and five story steps passed on phone/laptop;
 zero page errors. Evaluation substituted explicit three-day MODERATE, seed42,
@@ -85,7 +93,10 @@ deduplicated communication counts, not IDs or prose.
 
 ## Next gate
 
-User-authorized deployment, then one fresh fixed 20-per-role/scenario v9 trial
-within unchanged limits. Preserve the failed v8 trial, count every rejection,
-and do not reduce sample size or retry until pass. Matching live/fallback voice
-samples, user sign-off, Claude review and design lock remain pending.
+Allow the active fixed 20-per-role/scenario v9 trial to finish within unchanged
+limits, then verify all 80 entries and version consistency before committing its
+sanitized evidence. Preserve the failed v8 trial, count every rejection, and do
+not reduce sample size or retry until pass. Matching live/fallback voice samples,
+user sign-off, generated-swap paint timing, Claude review and design lock remain
+pending. Codex's handover reconciliation ran only the lightweight prompt-example
+budget test (1 PASS); the full 290-test result above predates deployment.
