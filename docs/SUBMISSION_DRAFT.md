@@ -1,7 +1,6 @@
 # Submission draft (Claude, 2026-10-12)
 
-Draft text for the hackathon form. Numbers marked **(fill)** are updated when the final run
-numbers are in. Nothing here claims clinical validity, diagnosis, prediction or treatment.
+Draft text for the hackathon form. Reliability numbers come from `docs/evidence/deepseek-v9-reliability.json`. Nothing here claims clinical validity, diagnosis, prediction or treatment.
 Requirements are in `docs/milestones/M8_SUBMISSION.md`.
 
 ## Title
@@ -59,10 +58,10 @@ picture instead of one app per condition.
 - Automated tests: **290 passing** (Python suite, 2026-10-12), plus 50+ browser checks across
   phone and laptop sizes.
 - Reliability of the AI headline on the live model (DeepSeek, 20 runs per group): clinician
-  **(fill)** of 20, patient **(fill)** of 20 validated; the rest fell back to the template.
-  No provider failures after the fix.
-- Speed: summary text appears in about 0.3 s; the AI headline swaps in at about
-  **(fill)** s (p95, HTTP timings).
+  **19 of 20**, patient **19 of 20** validated; the other two fell back to the template.
+  No provider failures after the fix. (Case B; the flu groups were not measured.)
+- Speed: summary text appears in about 0.3–0.5 s; the AI headline swaps in at about
+  4.5 s (p95, HTTP timings, not visual paint).
 - Seven simulated life events and six synthetic cases pass end to end on phone and laptop.
 
 ## Safety, limits and future work
