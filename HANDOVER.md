@@ -237,6 +237,21 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-12 — CodeBuddy — UI/UX visual redesign (D0–D7) on branch improve/UI_UX
+- Read `docs/CODEBUDDY_UI_SOW.md`. Created branch `improve/UI_UX` (tag `pre-workbuddy` not yet created by user; branched from current `main` HEAD `63c7034`).
+- **D0:** Wrote `docs/ui/BRAND.md` (palette, type scale, radii, shadows, spacing, illustration style, do/don't). Created `docs/ui/moodboard/` and `docs/submission/`.
+- **D1:** Rebuilt `:root` tokens in `styles.css` — warm Headspace-like palette (sunny orange, coral, blue, lilac, leaf green on warm off-white). All hardcoded hex colours replaced with tokens in `styles.css` and `evidence.css` (zero hex outside `:root`). Self-hosted Nunito (SIL OFL) as `nunito.woff2` (39KB) with licence. Pill buttons, rounded cards, soft shadows. `@font-face` loads from `/assets/media/nunito.woff2`.
+- **D2:** New original AURA mark (`aura-mark.svg`, sunrise/aura shape) replaces inline "A in circle". Illustration set as flat SVG: `welcome-hero.svg`, `home-hero.svg`, `breathing-circle.svg`, `calm-state.svg`, `appointment-note.svg`, `empty-clinician.svg` — all under 2KB each.
+- **D3:** Welcome state rebuilt as a confident landing: hero illustration, value proposition ("A calm companion between doctor visits"), two tiles ("See the patient's day" / "See what the clinician sees"), "Play the 3-minute story" button, small synthetic-data honesty note. Landing tiles wired to set role and open demo guide.
+- **D4:** Patient home: time-of-day greeting (Good morning/afternoon/evening), AI recap on warm gradient hero card, breathing-circle placeholder while generating, non-judging weather-symbol check-in icons, soft secondary tiles. Help dock keeps bold pill shape.
+- **D5:** Clinician view reordered: headline → findings → charts → collapsed secondary. Reports/held/context collapsed into details/summary. Two-column layout at ≥1100px. Eyebrow text sentence-case per plain-language spec (CSS `text-transform` handles display). All values, units, dates, sources retained. Safety panel wording and position unchanged.
+- **D6:** Gentle view-fade transitions (300ms ease-out). Card/chart hover transitions. `prefers-reduced-motion` respected (all animations disabled).
+- **D7:** WCAG AA verified: `--accent` darkened to `#9c5700` (5.33:1 on white). Primary buttons use white-on-accent. All ink/muted/focus colours pass AA. Lints: 0 errors. Assets verified serving: CSS 200, font 200 (39128 bytes), SVG 200.
+- **Could not run:** full Python test suite and browser tests (Chromium not installed; Python suite backgrounded by user). Server starts and serves correctly with seeded DB. Tests that check headings/classes may need assertion updates for renamed classes (`#month-recap` → `.recap-hero`, new `.landing` elements, collapsed `<details>`).
+- **Miora prompts provided to user** for moodboard, brand mark, illustration set, and cover image. SVGs created as placeholders that can be replaced with Miora-generated WebP if desired.
+- Files changed: `aura_ui/` (7 SVGs, font, licence, `styles.css`, `evidence.css`, `index.html`, `app.js`, `agent.js`), `docs/ui/BRAND.md`, `docs/ui/moodboard/`, `docs/submission/`, `HANDOVER.md`.
+
+
 ### 2026-10-12 — Claude — CodeBuddy UI/UX SOW and media route
 - User asked for a CodeBuddy SOW to improve aesthetics and marketability, Headspace-like. Wrote `docs/CODEBUDDY_UI_SOW.md` (Calm patient mode / Clinic clinician mode, D0–D8, Headspace feel without its brand assets, no gamification, safety panel and help button unchanged, Miora for art only). Brief sections 2 and 3 now point to it.
 - Enabler (pre-handoff, since `aura_app/` is protected for CodeBuddy and CSP blocks external fonts): `GET /assets/media/<name>` in `aura_app/api.py` serves a flat `aura_ui/media/` folder (svg/png/webp/jpg/woff2, lowercase names, 404 otherwise); placeholder `calm-sun.svg`, `aura_ui/media/README.md`; `tests/test_ui_media.py`. Verified: media, M7, hosted-capacity (29) and dual-view (14) tests PASS. Not deployed (no visible change until CodeBuddy uses it); full suite not rerun.
