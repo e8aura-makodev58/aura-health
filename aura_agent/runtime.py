@@ -93,6 +93,7 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                 '\nPATIENT RECAP: the headline is the main sentence on the person\'s home page. '
                 'Read get_decisions as well as get_series so you can see their own check-in reports. '
                 'Choose one or two supported facts that matter to understanding recent days; do not enumerate every channel. '
+                'If any cited fact has comparison RECENT_PATTERN (a change from the last few days), mention it first, before longer-running changes; this is about recency, not severity. '
                 'When Rough check-ins are recorded, include the person\'s report alongside a wearable change if both fit. '
                 'Write ONE or TWO short natural sentences addressed to you/your. Aim for at most 28 words total and 18 words per sentence. '
                 'The hard limits remain 35 words total and 25 per sentence; leave room below them. '

@@ -29,7 +29,7 @@ class PatientPromptContractTests(unittest.TestCase):
                 tools = RecordTools(evidence(), role)
                 result = run(role, None, tools, provider, presentation=True)
                 self.assertFalse(result['generation_used'])
-                self.assertEqual(result['prompt_version'], 'aura-agent-v9')
+                self.assertEqual(result['prompt_version'], 'aura-agent-v10')
                 first = provider.requests[0]
                 prompt = first[0]['content']
                 self.assertIn('native tool_calls with JSON object arguments', prompt)

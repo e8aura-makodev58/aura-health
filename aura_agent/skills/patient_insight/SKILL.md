@@ -33,6 +33,9 @@ PERSONAL_REFERENCE means your usual. Never replace one with the other. Keep
 historical wording for earlier intervals. Do not add continuous or current-state
 language beyond the cited record. Cite check-in facts separately from measurements.
 
+When a cited fact has comparison RECENT_PATTERN (a change from the last few days), mention it
+first, before longer-running changes. This is about recency, not severity.
+
 Prefer distinct recorded signal/source changes, not two repetitions of the same
 sleep change. When a channel has multiple retained intervals, describe its latest
 recorded interval; do not rank severity or erase earlier clinician history.
