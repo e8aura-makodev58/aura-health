@@ -87,6 +87,9 @@
     if(sameRecord&&last.signature===signature&&area.childElementCount)return;
     const disclosureSelectors=['.patient-summary-details','.patient-summary-sources','.patient-retained-sources'];
     const openDisclosures=sameRecord?disclosureSelectors.filter(selector=>area.querySelector(selector)?.open):[];
+    const findingKey=card=>JSON.stringify([card.dataset.channel,card.dataset.source,card.dataset.signal]);
+    const openFindings=sameRecord?new Set([...area.querySelectorAll('.clinician-finding')]
+      .filter(card=>card.querySelector('.finding-detail')?.hidden===false).map(findingKey)):new Set();
     const previous=priorLines.get(role)||new Set(), now=new Set();area.replaceChildren();
     if(paused||ctx.offline)rendered.delete(area);else rendered.set(area,{recordKey,signature});
     const bounded=['clinician_brief','patient_insight'].includes(role),visibleAI=result.generation_used&&(!bounded||Boolean(result.draft.headline))&&(role!=='patient_insight'||Boolean(result.headline_fact_ids?.length));
@@ -209,6 +212,9 @@
       const retained=node('details',null,'patient-retained-sources');retained.append(node('summary','All recorded details'));
       retained.append(factSources(result.sources,true),window.auraTechnical(trace));why.append(retained);area.append(why);
     }
+    // Preserve only the open explanation state for an identical evidence identity.
+    // Its contents come from this newly guarded result; technical folds stay closed.
+    for(const card of area.querySelectorAll('.clinician-finding'))if(openFindings.has(findingKey(card))){card.querySelector('.finding-detail').hidden=false;card.querySelector('.finding-why').setAttribute('aria-expanded','true');}
     if(role==='patient_insight'){document.getElementById('month-recap').hidden=!allClaims.length;document.getElementById('home-view').classList.toggle('has-recap',Boolean(allClaims.length));for(const selector of openDisclosures){const fold=area.querySelector(selector);if(fold)fold.open=true;}}
   }
   function valid(ticket,ctx){const latest=window.auraAgentContext();return ticket===requestEpoch&&latest.patientId===ctx.patientId&&latest.role===ctx.role&&!latest.offline&&navigator.onLine;}

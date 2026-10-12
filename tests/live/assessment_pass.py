@@ -17,6 +17,106 @@ from uuid import uuid4
 import httpx
 
 
+class CallBudget:
+    """Conservative local ledger of shared model calls, including failed attempts.
+
+    All calls in an HTTP run are timestamped at completion, so expiry is never
+    earlier than the server's reservation. Other clients remain unobservable.
+    """
+    def __init__(self, *, minute=10, hour=60, interval=35, initial_calls=0, now=0):
+        self.minute, self.hour, self.interval = minute, hour, interval
+        self.calls = [now] * initial_calls
+        self.last_start = None
+
+    def wait_seconds(self, now, reserve):
+        if not 1 <= reserve <= min(self.minute, self.hour):
+            raise ValueError('Request reservation exceeds shared quota')
+        waits = [0 if self.last_start is None else self.last_start + self.interval - now]
+        for window, limit in ((60, self.minute), (3600, self.hour)):
+            active = sorted(at for at in self.calls if now - at < window)
+            excess = len(active) + reserve - limit
+            if excess > 0:
+                waits.append(active[excess - 1] + window - now)
+        return max(0, *waits)
+
+    def start(self, now):
+        self.last_start = now
+
+    def record(self, now, count):
+        self.calls = [at for at in self.calls if now - at < 3600] + [now] * count
+
+
+def trace_usage(trace):
+    """Trace success entries follow calls; FALLBACK supplies a failed attempt.
+
+    Verifier validation can fail before its success trace is appended; reserve
+    that attempt once even when the error is a validator rejection.
+    """
+    steps = sum(row.get('action') == 'MODEL_STEP' for row in trace)
+    verifier = sum(row.get('action') == 'INDEPENDENT_VERIFIER' for row in trace)
+    failure = None
+    for row in trace:
+        if row.get('action') != 'FALLBACK':
+            continue
+        stage = row.get('stage')
+        if stage == 'MODEL_STEP':
+            steps += 1
+        elif stage == 'INDEPENDENT_VERIFIER' and not verifier:
+            verifier += 1
+        kind = row.get('provider_failure')
+        if kind:
+            # Never propagate arbitrary trace strings into saved evidence.
+            allowed = {'unknown', 'too_large', 'bad_json', 'request_error',
+                       'empty_content', 'bad_shape', 'bad_output', 'refusal',
+                       'finish_length', 'finish_content_filter', 'finish_insufficient_system_resource'}
+            http_kind = (isinstance(kind, str) and kind.startswith('http_')
+                         and len(kind) == 8 and kind[5:].isdigit()
+                         and 100 <= int(kind[5:]) <= 599)
+            failure = kind if kind in allowed or http_kind else 'unknown'
+    return steps + verifier, failure
+
+
+def flu_data():
+    """Evaluation truth goes only to the deterministic simulator, never agents."""
+    return {'days': 3, 'seed': 42, 'request': '', 'notes': False,
+            'plan': {'days': 3, 'events': [{'type': 'FLU', 'start_day': 1,
+                     'duration_days': 3, 'severity': 'MODERATE'}], 'feedback': []}}
+
+
+class DemoFixture:
+    """Recreate the same fixture through normal bootstrap after cookie expiry."""
+    def __init__(self, client, request):
+        self.client, self.request = client, request
+        self.base = None
+        self.scenario = None
+        self.bootstraps = 0
+
+    def ensure(self, scenario):
+        cookie_valid = any(cookie.name == 'aura_demo' and not cookie.is_expired(time.time() + 180)
+                           for cookie in self.client.cookies.jar)
+        if self.base is None or not cookie_valid:
+            # An almost-expired cookie must be allowed to expire normally; do not
+            # edit its expiry or keep an authenticated jar beyond Max-Age.
+            for cookie in self.client.cookies.jar:
+                if cookie.name == 'aura_demo' and cookie.expires is not None:
+                    remaining = cookie.expires - time.time()
+                    while remaining > 0 and remaining <= 180:
+                        time.sleep(min(remaining, 60))
+                        remaining = cookie.expires - time.time()
+            catalog = self.request('GET', '/demo/scenarios')
+            patient = next(r['patient_id'] for r in catalog['scenarios'] if r['id'] == 'B')
+            self.base = f'/patients/{patient}'
+            self.scenario = 'B'
+            self.bootstraps += 1
+        if scenario != self.scenario:
+            if scenario != 'B_PLUS_FLU_3_DAYS':
+                raise ValueError('Fixture cannot rewind an existing workspace')
+            self.request('POST', f'{self.base}/workflows/advance',
+                         json={'run_id': str(uuid4()), 'data': flu_data()})
+            self.scenario = scenario
+        return self.base
+
+
 def summarize(measurements):
     """Per-role/scenario evidence; HTTP timings are proxies, not DOM paint times."""
     groups = {}
@@ -93,13 +193,27 @@ def main():
     parser.add_argument('--confirm-live-synthetic-checks', action='store_true')
     parser.add_argument('--runs', type=int, default=1, help='fresh runs PER role PER scenario (20 for WP1 gate)')
     parser.add_argument('--interval', type=float, default=35, help='seconds between live requests')
+    parser.add_argument('--initial-budget-calls', type=int, default=0,
+        help='known recent shared calls, conservatively retained for one hour (0–60)')
     parser.add_argument('--roles',nargs='+',choices=('clinician_brief','patient_insight'),default=('clinician_brief','patient_insight'))
     parser.add_argument('--output', default='docs/evidence/final-dash-baseline.json')
     args = parser.parse_args()
-    if not args.confirm_live_synthetic_checks or not 1 <= args.runs <= 20 or args.interval < 35:
+    if (not args.confirm_live_synthetic_checks or not 1 <= args.runs <= 20
+            or args.interval < 35 or not 0 <= args.initial_budget_calls <= 60):
         parser.error('explicit paid synthetic confirmation, 1–20 runs and interval >=35 required')
-    report = {'version': 'final-dash-live-pass-v2', 'runs_per_role_per_scenario': args.runs,
+    engineering = json.loads((Path(__file__).resolve().parents[2] / 'aura_agent' /
+                              'engineering_config.json').read_text())
+    reservation = engineering['max_steps'] + 1
+    budget = CallBudget(interval=args.interval, initial_calls=args.initial_budget_calls,
+                        now=time.monotonic())
+    report = {'version': 'final-dash-live-pass-v3', 'runs_per_role_per_scenario': args.runs,
               'roles':args.roles,
+              'budget': {'calls_per_minute': 10, 'calls_per_hour': 60,
+                  'reserved_calls_per_assessment': reservation,
+                  'initial_calls': args.initial_budget_calls,
+                  'scope': 'local trace ledger; concurrent external callers are unobservable'},
+              'fixture': {'seed': 42, 'days': 3, 'notes': False,
+                  'plan': 'explicit MODERATE FLU, days 1–3; no model planner call'},
               'interval_seconds': args.interval, 'measurements': [], 'diagnostics': {}}
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -120,30 +234,26 @@ def main():
         if not status.get('synthetic_only') or not status.get('live_enabled'):
             raise SystemExit('An enabled synthetic-only provider is required')
         report['provider'] = {key: status.get(key) for key in ('provider', 'model', 'synthetic_only')}
-        catalog = request('GET', '/demo/scenarios')
-        patient = next(r['patient_id'] for r in catalog['scenarios'] if r['id'] == 'B')
-        base = f'/patients/{patient}'
-        last_call = None
+        fixture = DemoFixture(client, request)
 
         def wait_budget():
-            nonlocal last_call
-            if last_call is not None:
-                time.sleep(max(0, args.interval - (time.monotonic() - last_call)))
-            last_call = time.monotonic()
+            started = time.monotonic()
+            while remaining := budget.wait_seconds(time.monotonic(), reservation):
+                print(json.dumps({'event': 'quota_wait', 'seconds_remaining': round(remaining, 1)}), flush=True)
+                time.sleep(min(remaining, 60))
+            budget.start(time.monotonic())
+            return round(time.monotonic() - started, 3)
 
         for scenario in ('B', 'B_PLUS_FLU_3_DAYS'):
-            if scenario != 'B':
-                wait_budget()
-                simulated = request('POST', f'{base}/workflows/advance', json={
-                    'run_id': str(uuid4()), 'data': {'days': 3, 'seed': 42,
-                    'request': 'Three days of flu', 'notes': False}})
-                report['simulation'] = {'seed': 42, 'days': 3, 'notes': False, 'status': simulated['status']}
+            base = fixture.ensure(scenario)
             evidence = request('GET', f'{base}/evidence')
             report['diagnostics'][scenario] = diagnostic(evidence)
             save()
             for run in range(1, args.runs + 1):
                 for role in args.roles:
-                    wait_budget()
+                    quota_wait = wait_budget()
+                    base = fixture.ensure(scenario)
+                    evidence = request('GET', f'{base}/evidence')
                     start = time.monotonic()
                     preview = request('GET', f'{base}/assessment/{role}')
                     preview_ms = round((time.monotonic() - start) * 1000)
@@ -152,6 +262,12 @@ def main():
                     result = request('POST', f'{base}/agent/{role}', json={
                         'run_id': str(uuid4()), 'window_days': preview['window_days'],
                         'client_offline': False})
+                    call_count, provider_failure = trace_usage(result.get('trace', []))
+                    # TimeoutError has no FALLBACK stage in current runtime. Its
+                    # final attempt is unobservable: retain the full reservation.
+                    if result.get('reason') == 'MODEL_TIMEOUT':
+                        call_count, provider_failure = reservation, 'timeout'
+                    budget.record(time.monotonic(), call_count)
                     codes = [r['code'] for r in result.get('trace', []) if r.get('result') == 'REJECT' and 'code' in r]
                     verifier_rejections = sum(len(r.get('rejected_indices', [])) for r in result.get('trace', [])
                                               if r.get('action') == 'INDEPENDENT_VERIFIER')
@@ -171,6 +287,11 @@ def main():
                         'verifier_rejected_items': verifier_rejections,
                         'rejection_codes': codes or ([] if result['generation_used'] else [result['reason']]),
                         'claim_count': len(claims), 'finding_channel_count': len(channels)}
+                    row.update({'quota_wait_seconds': quota_wait, 'model_call_count': call_count,
+                                'provider_failure': provider_failure,
+                                'model_call_count_method': 'conservative reservation; timeout stage unobservable'
+                                if result.get('reason') == 'MODEL_TIMEOUT' else 'trace attempts including failures'})
+                    report['session_bootstraps'] = fixture.bootstraps
                     report['measurements'].append(row)
                     save()
                     print(json.dumps(row), flush=True)

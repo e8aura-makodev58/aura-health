@@ -22,7 +22,9 @@ if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Lo
     await page.waitForFunction(()=>document.querySelector('#agent-clinician_brief .finding-detail'));
     const firstFinding=page.locator('#agent-clinician_brief .finding-card').first();
     await firstFinding.locator('.finding-why').click();
+    await page.waitForLoadState('networkidle');
     await firstFinding.locator('.finding-detail:not([hidden])').waitFor();
+    assert.equal(await firstFinding.locator('.finding-why').getAttribute('aria-expanded'),'true');
     assert.match(await firstFinding.locator('.finding-detail').innerText(),/Watch readings|Your measurements/);
     await firstFinding.locator('.finding-detail [data-technical] > summary').first().click();
     assert.match(await firstFinding.locator('.finding-detail').innerText(),/Source:/);

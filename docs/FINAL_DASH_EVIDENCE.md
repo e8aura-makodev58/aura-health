@@ -1,5 +1,47 @@
 # Final-dash evidence
 
+## Deployed DeepSeek fix: reliability run in progress (2026-10-12)
+
+Claude's `33ab760` corrects the lost JSON instruction, adds a vendor JSON-word
+compatibility net and safe provider-error kinds, and disables reasoning for the
+short DeepSeek connection test. Claude deployed it on the user's order.
+The protected deployed synthetic connection test now **PASS**.
+
+Full Python suite: **284 PASS / 348.070 s**. Affected Chromium checkpoints:
+**26 PASS** across plain-language 2, final-dash 3, cards 4, impression 5,
+agent 5 and hosted safety/isolation 7. A source-panel refresh failure exposed by
+this run is fixed and tested locally: clinician Why stays open only for the same
+freshly guarded fingerprint and exact source/channel. Technical folds reset.
+That UI fix is **not deployed**; deployment remains the user's decision.
+
+```sh
+.venv/bin/python tests/live/assessment_pass.py \
+  --confirm-live-synthetic-checks --runs 20 --interval 35 \
+  --initial-budget-calls 1 \
+  --output docs/evidence/deepseek-fixed-reliability.json
+```
+
+The fixed run plans 20 samples for each role/scenario (80 assessments total), not
+retries until success. Every rejection counts. It is still active; its JSON file
+is an **in-progress, uncommitted report**. At the first checkpoint: B clinician
+9/9 validated; B patient 7/9 validated, with HEADLINE_BUDGET and VERIFIER_REJECTED.
+No provider failure in those samples. Neither group is complete; no p95 acceptance
+or 18/20 pass is claimed. HTTP timings are not visible-paint measurements.
+
+The evaluation harness now reserves at most eight model steps plus one verifier,
+counts actual traced calls/failures, and paces against the unchanged 10/minute,
+60/hour limits. It records quota waits separately from assessment latency and
+sanitizes provider_failure labels. Concurrent external clients remain unobservable.
+Expired demo cookies rebootstrap normally with the same deterministic fixtures;
+no cookie TTL, production budget or domain policy is changed. Seven harness
+regressions plus the five JSON-provider tests PASS independently.
+
+Five actual production fallback samples are ready in `PATIENT_VOICE_REVIEW.md`.
+Matching live samples, user sign-off, full HTTPS seven-event/five-story rehearsal,
+visible-paint p95 and Claude's final review remain open. WorkBuddy handoff stays draft.
+
+---
+
 Historical WP0 report, 2026-10-10. Scope: `FINAL_DASH_SOW.md`, **WP0 only**. User authorized following
 Claude's instructions. This is the first work-package gate, not design lock or
 M7 acceptance. No production behavior, validator, engine, schema, dependency,
