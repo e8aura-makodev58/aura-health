@@ -1,4 +1,6 @@
-# WorkBuddy handoff brief
+# WorkBuddy / CodeBuddy handoff brief
+
+**Tool choice (checked against the hackathon brief §8, 2026-10-12):** the brief requires the project to be built on at least one of CodeBuddy or WorkBuddy (Miora is also listed for development), so either is acceptable. Wherever this brief says WorkBuddy, CodeBuddy may be used instead. Proof is the genuine chat screenshots or recording (minimum 3) from whichever tool is used.
 
 2026-10-12. Claude. **User decisions (2026-10-12):** WorkBuddy creates its own branch, implements, and
 finishes the product, but only after Codex has finished **all** remaining items, including
