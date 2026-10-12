@@ -54,6 +54,8 @@ class RecordTools:
                     finding={"signal": key["signal"], "direction": direction, "since": finding["first_seen"][:10]}, at=finding["last_seen"][:10])
                 self.facts[f'f{len(self.facts)}']['comparison'] = (
                     'RECENT_PATTERN' if drift['kind'] == 'TRANSIENT_DEVIATION' else 'PERSONAL_REFERENCE')
+                self.facts[f'f{len(self.facts)}']['magnitude'] = {'value':delta, 'unit':signal['unit'],
+                    'field':'current_vs_rolling' if drift['kind'] == 'TRANSIENT_DEVIATION' else 'rolling_vs_anchor'}
                 metrics = []
                 for field, title in (("current_vs_rolling", "current versus rolling deviation"), ("rolling_vs_anchor", "rolling versus own reference deviation"), ("trend_magnitude_per_day", "stored trend magnitude per day")):
                     value = drift.get(field)
@@ -142,6 +144,10 @@ class RecordTools:
         add("get_review_snapshot", "committed:review", "Review draft status: Not sent.")
         for row in evidence.get("assessed_notes", []):
             add("get_context", row["event_id"], f"Patient note {row['at'][:10]}: {json.dumps(row['text'][:400])}.")
+        from .voice import prepare_fact
+        from .roles import AgentRole
+        for fact in self.facts.values():
+            prepare_fact(fact, self.keys, role == AgentRole.PATIENT_INSIGHT)
 
     def specs(self):
         specs = []
@@ -179,7 +185,21 @@ class RecordTools:
             if start is not None or end is not None:
                 self._window(start, end)
                 facts = [fact for fact in facts if fact["at"] is None or start <= fact["at"] <= end]
-        while len(json.dumps(facts)) > 24000:
+        def model_projection(fact):
+            from .roles import AgentRole
+            # These fields are presentation-only copies kept for UI disclosure.
+            # Budget the actual model payload, not duplicates never sent to it.
+            excluded = {'reading_source_refs','raw_text'}
+            if self.role != AgentRole.PATIENT_INSIGHT:
+                excluded.update({'patient','magnitude'})
+            model_fact = {**{k:v for k,v in fact.items() if k not in excluded},
+                          'source_ref':'ref:' + sha256(fact['source_ref'].encode()).hexdigest()[:16]}
+            for field in ('checkin_run','checkin_summary'):
+                if field in model_fact:
+                    model_fact[field] = {k:v for k,v in model_fact[field].items() if k != 'source_refs'}
+            return model_fact
+
+        while len(json.dumps([model_projection(fact) for fact in facts])) > 24000:
             # Keep the compact recent check-in view when a fragmented window
             # has many runs; retained findings keep the same mandatory budget.
             latest_run = next((fact['fact_id'] for fact in reversed(facts) if fact.get('checkin_run')),None)
@@ -191,14 +211,7 @@ class RecordTools:
         self.delivered.update({fact["fact_id"]: fact for fact in facts})
         # Demo event IDs can encode scenario names. The model receives opaque
         # reference aliases, while application/UI citations retain real source IDs.
-        model_facts = []
-        for fact in facts:
-            model_fact = {**{k:v for k,v in fact.items() if k != 'reading_source_refs'},
-                          'source_ref':'ref:' + sha256(fact['source_ref'].encode()).hexdigest()[:16]}
-            for field in ('checkin_run','checkin_summary'):
-                if field in model_fact:
-                    model_fact[field] = {k:v for k,v in model_fact[field].items() if k != 'source_refs'}
-            model_facts.append(model_fact)
+        model_facts = [model_projection(fact) for fact in facts]
         return {"facts": model_facts, 'retained_fact_ids':sorted(self.required & {fact['fact_id'] for fact in facts}), "scope": "selected record; selected window; bounded measurement sample"}
 
     def _window(self, start, end):

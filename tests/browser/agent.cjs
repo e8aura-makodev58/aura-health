@@ -23,6 +23,8 @@ if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Lo
     const firstFinding=page.locator('#agent-clinician_brief .finding-card').first();
     await firstFinding.locator('.finding-why').click();
     await firstFinding.locator('.finding-detail:not([hidden])').waitFor();
+    assert.match(await firstFinding.locator('.finding-detail').innerText(),/Watch readings|Your measurements/);
+    await firstFinding.locator('.finding-detail [data-technical] > summary').first().click();
     assert.match(await firstFinding.locator('.finding-detail').innerText(),/Source:/);
     console.log("AG_UI1_BRIEF_SOURCES_TRACE PASS");
     await page.locator('.suggested-questions button').first().click();

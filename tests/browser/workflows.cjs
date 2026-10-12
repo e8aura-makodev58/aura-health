@@ -23,7 +23,7 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Synt
   await page.locator('#demo-toggle').click();await page.locator('#sim-feedback').uncheck();
   await page.getByRole('button',{name:'Simulate: flu 3 days',exact:true}).click();
   await page.waitForFunction(()=>document.getElementById('notice').textContent.includes('Flu:'),null,{timeout:90000});
-  assert.ok(await page.locator('#evidence-charts .chart-card').count()>=11);assert.equal(await page.locator('#evidence-charts [data-signal="HRV"]').count(),1);await page.getByRole('button',{name:'Verify deterministic replay',exact:true}).click();
+  assert.ok(await page.locator('#evidence-charts .chart-card').count()>=11);assert.equal(await page.locator('#evidence-charts [data-signal="HRV"]').count(),1);await page.locator('#life-director [data-technical] > summary').click();await page.getByRole('button',{name:'Verify deterministic replay',exact:true}).click();
   await page.waitForFunction(()=>document.getElementById('notice').textContent.includes('Replay matched'));console.log('AW_UI4_OFFLINE_LIFE_DIRECTOR_REPLAY PASS');
   for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));}
   await page.locator('#demo-toggle').click();await page.locator('#patient-role').click();assert.equal(await page.locator('#life-director').isVisible(),false);

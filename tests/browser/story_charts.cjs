@@ -10,6 +10,7 @@ const {chromium}=require('playwright');
   try{
     await page.setContent(`<div class="workspace-heading"><select id="chart-range"><option value="56">Recent</option><option value="all">All</option></select></div><p id="workspace-patient"></p><div id="changes-overview"></div><p id="workspace-decision"></p><div id="evidence-charts"></div><div id="workspace-evidence"></div><div id="evidence-strip"></div><div id="safety-evidence"></div><section id="workspace-safety"></section><div id="evidence-review"></div><section id="workspace-review"></section><section id="month-recap">Patient text</section><div id="recap-charts"></div><p id="story-finding-1" tabindex="-1">Sourced change</p>`);
     await page.addStyleTag({path:path.resolve('aura_ui/evidence.css')});
+    await page.evaluate(()=>{window.auraPlain=text=>String(text??'');window.auraTechnical=(...children)=>{const fold=document.createElement('details');fold.dataset.technical='';const summary=document.createElement('summary');summary.textContent='Technical details';fold.append(summary,...children);return fold;};});
     await page.addScriptTag({path:path.resolve('aura_ui/evidence.js')});
     await page.evaluate(()=>{
       const channel=(name,source,event)=>({key:{signal:name,source,metric:''},label:name,unit:'units',registry:{enabled_in_engine:true},current:null,
@@ -39,7 +40,9 @@ const {chromium}=require('playwright');
     assert.equal(await page.locator('[data-signal="ACTIVITY"] .context-timing-marker').count(),1);
     assert.equal(await page.locator('.aligned-checkins').count(),4);
     assert.equal(await page.locator('.aligned-checkins circle').count(),4);
-    assert.equal(await page.locator('.chart-sources details').count(),0);
+    assert.equal(await page.locator('.chart-sources details:not([data-technical])').count(),0);
+    assert.ok(await page.locator('.chart-sources [data-technical]').count()>0);
+    assert.equal(await page.locator('.chart-sources [data-technical][open]').count(),0);
     assert.equal(await page.locator('#recap-charts svg').count(),0);
     assert.equal(await page.locator('#month-recap').isVisible(),true);
     console.log('I2_SIGNAL_SCOPED_CONTEXT_SHARED_CHECKIN_AXIS PASS');

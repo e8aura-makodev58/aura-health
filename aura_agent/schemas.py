@@ -24,7 +24,7 @@ class AgentDraft(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     claims: list[Claim] = Field(max_length=16)
     question_ids: list[str] = Field(max_length=3)
-    headline: str = Field(default="", max_length=160)
+    headline: str = Field(default="", max_length=300)
 
 
 OUTPUT_SCHEMA = AgentDraft.model_json_schema()

@@ -1,8 +1,17 @@
 /* Read-only presentation. Existing server guards own generation permission. */
 "use strict";
 (() => {
-  const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;};
-  let identity='',requestEpoch=0; const pending=new Map(), completed=new Map(), priorLines=new Map();
+  const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=window.auraPlain(text);if(cls)e.className=cls;return e;};
+  const technicalText=text=>{const p=node('p',null,'fine');p.textContent=text;return p;};
+  const friendly=fact=>fact.patient?fact.patient.text||'A measurement or note was included.':window.auraPlain(fact.text);
+  const sourceLine=fact=>`${fact.patient?.source_label|| (fact.checkin_summary?'Your check-ins':'Your measurements')}${fact.patient?.date_label?' · '+fact.patient.date_label:fact.at?' · '+date(fact.at):''}`;
+  function factSources(facts,patient=false){
+    const section=node('section',null,'friendly-sources');
+    for(const fact of facts.filter(Boolean))section.append(node('p',patient?friendly(fact):fact.text,'fine'),node('p',sourceLine(fact),'fine'));
+    section.append(window.auraTechnical(...facts.filter(Boolean).map(fact=>technicalText(`${fact.fact_id} · ${fact.raw_text||fact.text} · Source: ${fact.source_ref} · ${JSON.stringify(fact)}`))));
+    return section;
+  }
+  let identity='',requestEpoch=0; const pending=new Map(), completed=new Map(), priorLines=new Map(),rendered=new WeakMap();
   const prep=node('section',null,'card agent-card');prep.append(node('h2','Your visit note'),node('p','Choose what to bring. Not sent.','fine'));
   const button=node('button','Help prepare my note');button.dataset.agentRole='visit_prep';
   const output=node('div');output.id='agent-visit_prep';output.setAttribute('aria-live','polite');prep.append(button,output);document.getElementById('appointment-preview').before(prep);
@@ -19,6 +28,7 @@
       signal.key.signal===finding.signal&&row.event_id===fact.source_ref&&row.first_seen.slice(0,10)===finding.since&&row.last_seen.slice(0,10)===fact.at);
     if(matches.length!==1)return null;
     const {signal,row}=matches[0],delta=row.drift.kind==='TRANSIENT_DEVIATION'?row.drift.current_vs_rolling:row.drift.rolling_vs_anchor;
+    const snapshot=signal.history?.find(snapshot=>snapshot.event_id===fact.source_ref);
     const direction={LATER:'later',EARLIER:'earlier',HIGHER:'higher',LOWER:'lower'}[finding.direction];
     if(!direction)return null;
     const amount=Number.isFinite(delta)?Math.abs(delta):null;
@@ -34,7 +44,8 @@
     const wording=transient?`${label}: recent change`:(finding.signal==='SLEEP_MIDPOINT'?`Sleeping ${direction} than usual`:`${label} ${direction} than usual`);
     return {label,icon:icons[finding.signal]||'◌',magnitude,wording,delta,transient,channel:JSON.stringify(signal.key),lastSeen:row.last_seen,unit:signal.unit,since:finding.since,until:fact.at,
       line:`${transient?'Recent change':`${direction[0].toUpperCase()+direction.slice(1)} than usual`} · ${date(finding.since)}–${date(fact.at)}`,
-      source:fact.source_ref,method:row.drift.kind==='TRANSIENT_DEVIATION'?'Current versus recent rolling reference':'Recent rolling reference versus your usual',
+      source:fact.source_ref,method:row.drift.kind==='TRANSIENT_DEVIATION'?'Current reading compared with recent average':'Recent average compared with baseline',
+      exact:`Difference: ${delta} ${signal.unit}.${snapshot?` Recent average: ${snapshot.rolling.mean ?? 'unavailable'} ${signal.unit}. Baseline: ${snapshot.anchor?.center ?? 'still being learned'} ${signal.unit}. Median: ${snapshot.rolling.median ?? 'unavailable'} ${signal.unit}.`:''}`,
       recordStart:record.period.start?.slice(0,10),recordEnd:record.period.end?.slice(0,10)};
   }
   function findingCard(claim,result,role,number){
@@ -55,12 +66,11 @@
       card.append(node('p',`${['LOWER','EARLIER'].includes(finding.direction)?'↓':'↑'} ${display.magnitude}`,'finding-magnitude'));
       const span=node('div',null,'finding-span');span.dataset.since=display.since;span.dataset.until=display.until;span.setAttribute('aria-label',`Recorded span ${date(display.since)} to ${date(display.until)}`);
       span.append(node('span'));card.append(span,node('p',display.line,'finding-one-liner'));
+      card.append(node('p',display.exact,'finding-exact'),node('p',`Measurements · ${date(display.since)}–${date(display.until)}`,'fine'));
     }
     const detail=node('section',null,'claim-sources finding-detail');detail.hidden=true;detail.id=`finding-detail-${role}-${number}`;show.setAttribute('aria-controls',detail.id);
-    detail.append(node('p',patient?`${display.wording}, in the recorded dates shown here.`:display.method,'finding-method'));
-    if(!patient&&Number.isFinite(display.delta))detail.append(node('p',`Exact stored deviation: ${display.delta} ${display.unit}. Compared with your usual or recent reference as labelled above.`,'fine'));
-    for(const id of claim.fact_ids){const fact=result.sources.find(f=>f.fact_id===id);if(fact)detail.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));}
-    if(claim.earlier?.length){detail.append(node('h5','Earlier recorded spans'));for(const fact of claim.earlier)detail.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));}
+    detail.append(node('p',patient?display.wording:display.method,'finding-method'),factSources(claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)),patient));
+    if(claim.earlier?.length){detail.append(node('h5','Earlier dates'),factSources(claim.earlier,patient));}
     show.addEventListener('click',()=>{detail.hidden=!detail.hidden;show.setAttribute('aria-expanded',String(!detail.hidden));});card.append(detail);
     if(patient)card.addEventListener('click',event=>{if(!event.target.closest('button,a')&&!detail.contains(event.target))show.click();});
     return {card,link:{...finding,number,target_id:card.id,callout:display.line}};
@@ -68,9 +78,18 @@
   const displayText=text=>text.replace(/\b\d{4}-\d{2}-\d{2}\b/g,at=>everydayDate(at))
     .replace(/\b\d+\.\d+\b/g,value=>new Intl.NumberFormat('en-GB',{maximumFractionDigits:1}).format(Number(value)));
   function render(result,area,role){
+    const ctx=window.auraAgentContext(),paused=result.status==='BLOCKED'||result.status==='STALE';
+    const recordKey=result.state_fingerprint?JSON.stringify([ctx.patientId,ctx.revision,role,result.state_fingerprint]):null;
+    const signature=JSON.stringify(result),last=rendered.get(area);
+    // The caller has just checked a fresh server guard. Repeated unchanged
+    // responses need not replace the DOM under an actively inspected source panel.
+    const sameRecord=!paused&&!ctx.offline&&recordKey&&last?.recordKey===recordKey;
+    if(sameRecord&&last.signature===signature&&area.childElementCount)return;
+    const disclosureSelectors=['.patient-summary-details','.patient-summary-sources','.patient-retained-sources'];
+    const openDisclosures=sameRecord?disclosureSelectors.filter(selector=>area.querySelector(selector)?.open):[];
     const previous=priorLines.get(role)||new Set(), now=new Set();area.replaceChildren();
-    const paused=result.status==='BLOCKED'||result.status==='STALE';
-    const bounded=['clinician_brief','patient_insight'].includes(role),visibleAI=result.generation_used&&(!bounded||Boolean(result.draft.headline));
+    if(paused||ctx.offline)rendered.delete(area);else rendered.set(area,{recordKey,signature});
+    const bounded=['clinician_brief','patient_insight'].includes(role),visibleAI=result.generation_used&&(!bounded||Boolean(result.draft.headline))&&(role!=='patient_insight'||Boolean(result.headline_fact_ids?.length));
     const label=paused?'Assessment paused':visibleAI?'AI-written · sources checked':'Summary from the record';
     const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;if(role!=='patient_insight')area.append(chip);
     if(paused){document.getElementById('assessment-complete')?.replaceChildren();window.clearAuraStory?.();document.getElementById('agent-visit_prep')?.replaceChildren();area.append(node('p','Safety interaction or record evaluation comes first. See the separate safety panel.'));return;}
@@ -79,7 +98,7 @@
     if(role==='clinician_brief'&&summary?.synthesis){
       const line=node('section',null,'assessment-synthesis');line.append(node('p',summary.synthesis.text));
       const detail=node('details');detail.append(node('summary','Sources'));
-      for(const id of summary.synthesis.fact_ids){const fact=result.sources.find(f=>f.fact_id===id);if(fact)detail.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));}
+      detail.append(factSources(summary.synthesis.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id))));
       line.append(detail);area.append(line);
     }
     const allClaims=result.draft.claims||[],latest=new Map();
@@ -100,14 +119,14 @@
         area.append(node('p',result.draft.headline,'patient-recap'));
         recapSources=(result.headline_fact_ids||[]).map(id=>result.sources.find(f=>f.fact_id===id)).filter(Boolean);
       }
+      else if(result.draft.headline&&(!result.generation_used||result.fallback_headline_fact_ids?.length)){area.append(node('p',result.draft.headline,'patient-recap'));const ids=result.headline_fact_ids?.length?result.headline_fact_ids:result.fallback_headline_fact_ids?.length?result.fallback_headline_fact_ids:[...new Set(allClaims.flatMap(claim=>claim.fact_ids||[]))];recapSources=ids.map(id=>result.sources.find(f=>f.fact_id===id)).filter(Boolean);}
       else if(displayed.length){
         const everyday=displayed.filter(c=>['SLEEP_MIDPOINT','ACTIVITY','SLEEP_DURATION'].includes(c.findings[0].signal));
-        const selected=everyday.slice(0,2);
-        const recap=selected.map(c=>`your ${c.findings[0].signal==='SLEEP_MIDPOINT'?'sleep time':(patientTitles[c.findings[0].signal]||c.display.label).toLowerCase()} was ${c.findings[0].direction.toLowerCase()} than ${c.display.transient?'recently':'usual'}`).join(', and ');
-        area.append(node('p',recap?recap[0].toUpperCase()+recap.slice(1)+'.':'Your recent readings show a change.','patient-recap'));
-        recapSources=(selected.length?selected:displayed).flatMap(c=>c.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id))).filter(Boolean);
+        const selected=(everyday.length?everyday:displayed).slice(0,1);
+        recapSources=selected.flatMap(c=>c.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id))).filter(Boolean);
+        const fact=recapSources[0];area.append(node('p',fact?.patient?.recap_text||fact?.patient?.text||'Your recent entries are available below.','patient-recap'));
       }else if(summary?.checkins){
-        area.append(node('p',`You reported feeling ${summary.checkins.checkin_summary.state.toLowerCase()} in your recent check-ins.`,'patient-recap'));
+        area.append(node('p',`You've marked recent days as ${summary.checkins.checkin_summary.state} in your check-ins.`,'patient-recap'));
         recapSources=[summary.checkins];
       }
     }
@@ -124,7 +143,7 @@
       if(shaped){number++;if(previous.size&&!previous.has(key))shaped.card.classList.add('assessment-changed');(extraGrid&&number>cap?extraGrid:grid).append(shaped.card);if(role==='clinician_brief')linkage.push(shaped.link);continue;}
       const line=node('section',null,'agent-claim');if(!claim.findings?.length){line.classList.add('also-recorded','fine');line.append(node('span','Also recorded','fine'));}if(previous.size&&!previous.has(key))line.classList.add('assessment-changed');
       if(role==='clinician_brief'&&claim.findings?.length){number++;line.id=`story-finding-${number}`;line.tabIndex=-1;line.append(node('span',String(number),'finding-number'));for(const finding of claim.findings)linkage.push({...finding,number,target_id:line.id});}
-      line.append(node('p',claim.findings?.length?claim.text:displayText(claim.text)));
+      line.append(node('p',role==='clinician_brief'||claim.findings?.length?claim.text:displayText(claim.text)));
       if(role==='clinician_brief')for(const finding of claim.findings||[]){
         const origin=result.sources.find(f=>f.fact_id===finding.fact_id);
         const metric=result.sources.find(f=>f.source_ref===origin?.source_ref&&f.signal===finding.signal&&!f.finding&&/deviation/.test(f.text));
@@ -133,43 +152,41 @@
           line.append(node('p',`${deviation?`Compared with your usual: ${deviation[1]}`:metric.text} · Source extraction`,'fine'));
         }
       }
-      if(claim.fact_ids.some(id=>(result.extracted_fact_ids||[]).includes(id)))line.append(node('span','Source extraction','fine'));
       const sources=node('div',null,'claim-sources');sources.hidden=true;
-      for(const id of claim.fact_ids){const fact=result.sources.find(f=>f.fact_id===id);if(fact)sources.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));}
+      sources.append(factSources(claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)),role!=='clinician_brief'));
       const show=node('button','Sources','text-button');show.setAttribute('aria-expanded','false');show.addEventListener('click',()=>{sources.hidden=!sources.hidden;show.setAttribute('aria-expanded',String(!sources.hidden));});line.append(show,sources);
       if(role==='visit_prep'){const remove=node('button','Remove from this preview','text-button');remove.addEventListener('click',()=>line.remove());line.append(remove);}claimArea.append(line);
     }
     if(role==='patient_insight'&&allClaims.length&&summary?.checkins){
       const fact=summary.checkins,r=fact.checkin_summary,card=node('section',null,'checkin-summary-card patient-checkins');
       card.append(node('h4',`Recent check-ins: ${r.state}`),node('p',`${r.count} of the last ${r.window_days} days · patient-reported`));
-      const detail=node('details');detail.append(node('summary','Why? / Sources'),node('p',`${fact.text} Sources: ${r.source_refs.join(', ')}.`,'fine'));card.append(detail);grid.append(card);
+      const detail=node('details');detail.append(node('summary','Why? / Sources'),factSources([fact],true));card.append(detail);grid.append(card);
     }
     if(role==='clinician_brief'&&summary?.checkins){
       const fact=summary.checkins,r=fact.checkin_summary,card=node('section',null,'checkin-summary-card clinician-checkins');
       card.append(node('h4','Check-ins'),node('p','Patient-reported','fine'),
         node('p',`${r.state} on ${r.count} of the last ${r.window_days} days`),
         node('p',`${r.run_days} consecutive recorded days, since ${date(r.run_start)}`,'fine'));
-      const detail=node('details');detail.append(node('summary','Why? / Sources'),node('p',`${fact.text} Sources: ${r.source_refs.join(', ')}.`,'fine'));card.append(detail);grid.append(card);
+      const detail=node('details');detail.append(node('summary','Why? / Sources'),factSources([fact]));card.append(detail);grid.append(card);
     }
     priorLines.set(role,now);
     if(role==='clinician_brief'){
       const readings=result.sources.filter(f=>f.reading);
       if(readings.length){const group=node('section',null,'recent-readings');group.append(node('h4','Recent readings'));for(const fact of readings){
-        const r=fact.reading,fmt=value=>new Intl.NumberFormat('en-GB',{maximumFractionDigits:1}).format(value);
-        const row=node('details',null,'reading-item');row.dataset.signal=fact.signal;
-        row.append(node('summary',`${r.label}: ${fmt(r.latest)} ${r.unit} · ${r.count} readings · ${date(r.start)}–${date(r.end)}`));
-        row.append(node('p',`Recorded range: ${fmt(r.minimum)}–${fmt(r.maximum)} ${r.unit}.`));
-        row.append(node('p',`${fact.text} Sources: ${(fact.reading_source_refs||[fact.source_ref]).join(', ')}.`,'fine'));group.append(row);
+        const r=fact.reading;
+        const row=node('section',null,'reading-item');row.dataset.signal=fact.signal;
+        row.append(node('h5',`${r.label}: ${r.latest} ${r.unit} · ${r.count} readings · ${date(r.start)}–${date(r.end)}`));
+        row.append(node('p',`${r.median==null?'':`Median: ${r.median} ${r.unit}. `}Range: ${r.minimum}–${r.maximum} ${r.unit}.`),factSources([fact]));group.append(row);
       }area.append(group);}
       for(const [title,kind,empty] of [['Context recorded','get_context','No associated context in these facts.'],['Data gaps','get_gaps','No gaps in the retrieved facts.']]){
-        const facts=result.sources.filter(f=>kind==='get_gaps'?/SENSING_GAP|SENSING_RETURN/.test(f.text):/context recorded|patient-reported context/.test(f.text));
+        const facts=result.sources.filter(f=>kind==='get_gaps'?/SENSING_GAP|SENSING_RETURN/.test(f.raw_text||f.text):/context recorded|patient-reported context/.test(f.raw_text||f.text));
         if(!facts.length)continue;
         const group=node('section',null,'assessment-subsection');group.append(node('h4',title));
         for(const fact of facts.slice(0,2))group.append(node('p',fact.text,'fine'));area.append(group);
       }
       const questions=node('section');questions.append(node('h4','Worth asking'));
       if(result.draft.question_ids?.length)area.append(questions);
-      const complete=document.getElementById('assessment-complete');if(complete){complete.replaceChildren(node('h3','Complete sourced assessment'));for(const c of allClaims)complete.append(node('p',c.text));for(const f of result.sources)complete.append(node('p',`${f.fact_id} · ${f.text} · Source: ${f.source_ref}`,'fine'));}
+      const complete=document.getElementById('assessment-complete');if(complete){complete.replaceChildren(node('h3','Complete sourced assessment'));for(const c of allClaims)complete.append(node('p',c.text));complete.append(factSources(result.sources));}
       window.linkAuraStoryFindings?.(linkage,result.sources);
       window.setAuraComparisonAssessment?.(result);
     }
@@ -180,15 +197,19 @@
     const trace=node('section',null,'agent-trace');trace.hidden=true;
     trace.append(node('p',`Run ${result.run_id} · ${result.model_id||'not called'} · ${result.reason} · ${result.elapsed_ms||0} ms`,'fine'));
     for(const entry of result.trace||[])trace.append(node('p',entry.tool?`${entry.tool}: ${(entry.fact_ids||[]).length} linked facts`:entry.action,'fine'));
-    if(role!=='patient_insight'){const showTrace=node('button','Inspect assistant steps','text-button');showTrace.addEventListener('click',()=>{trace.hidden=!trace.hidden;});area.append(showTrace,trace);}
+    trace.hidden=false;
+    if(role!=='patient_insight')area.append(window.auraTechnical(trace));
     else{
-      const why=node('details',null,'patient-summary-sources');why.append(node('summary','Why this summary?'),chip,node('p',result.disclosure,'fine'));
-      for(const fact of recapSources){const refs=fact.checkin_summary?.source_refs||[fact.source_ref];why.append(node('p',`${fact.text} Source: ${refs.join(', ')}.`,'fine patient-recap-source'));}
+      const why=node('details',null,'patient-summary-sources');why.append(node('summary','Why this summary?'),chip,node('h4','What we looked at'),node('p',[...new Set(recapSources.map(fact=>fact.patient?.source_label||'Your measurements'))].join(' and ')||'Your recent entries.'));
+      why.append(node('h4','What we saw'));
+      for(const fact of recapSources){const line=node('p',friendly(fact),'fine patient-recap-source');line.dataset.factId=fact.fact_id;why.append(line);}
+      why.append(node('h4','Where it comes from'));
+      for(const fact of recapSources)why.append(node('p',sourceLine(fact),'fine'));
+      why.append(window.auraTechnical(...recapSources.map(fact=>technicalText(`${fact.fact_id} · ${fact.raw_text||fact.text} · Source: ${fact.source_ref} · ${JSON.stringify(fact)}`))));
       const retained=node('details',null,'patient-retained-sources');retained.append(node('summary','All recorded details'));
-      for(const fact of result.sources)retained.append(node('p',`${fact.text} Source: ${fact.source_ref}.`,'fine'));
-      trace.hidden=false;retained.append(trace);why.append(retained);area.append(why);
+      retained.append(factSources(result.sources,true),window.auraTechnical(trace));why.append(retained);area.append(why);
     }
-    if(role==='patient_insight'){document.getElementById('month-recap').hidden=!allClaims.length;document.getElementById('home-view').classList.toggle('has-recap',Boolean(allClaims.length));}
+    if(role==='patient_insight'){document.getElementById('month-recap').hidden=!allClaims.length;document.getElementById('home-view').classList.toggle('has-recap',Boolean(allClaims.length));for(const selector of openDisclosures){const fold=area.querySelector(selector);if(fold)fold.open=true;}}
   }
   function valid(ticket,ctx){const latest=window.auraAgentContext();return ticket===requestEpoch&&latest.patientId===ctx.patientId&&latest.role===ctx.role&&!latest.offline&&navigator.onLine;}
   async function arrival(){
@@ -237,7 +258,7 @@
   });
   window.addEventListener('aura-record-view',()=>{
     const ctx=window.auraAgentContext(),key=`${ctx.patientId}:${ctx.revision}:${ctx.offline}:${ctx.role}`;
-    if(key!==identity){identity=key;requestEpoch++;for(const id of ['agent-clinician_brief','agent-patient_insight','agent-record_qa','agent-question_ranker','agent-visit_prep','assessment-complete'])document.getElementById(id)?.replaceChildren();window.clearAuraStory?.();}
+    if(key!==identity){identity=key;requestEpoch++;for(const id of ['agent-clinician_brief','agent-patient_insight','agent-record_qa','agent-question_ranker','agent-visit_prep','assessment-complete']){const area=document.getElementById(id);if(area){rendered.delete(area);area.replaceChildren();}}window.clearAuraStory?.();}
     for(const trigger of document.querySelectorAll('[data-agent-role]'))trigger.disabled=ctx.offline;
     arrival();
   });

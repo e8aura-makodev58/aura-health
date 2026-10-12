@@ -248,6 +248,8 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     ui = Path(__file__).resolve().parent.parent / "aura_ui"
     @app.get("/assets/{asset_name}", include_in_schema=False)
     def patient_asset(asset_name: str):
+        if asset_name == "plain_terms.json":
+            return FileResponse(ui.parent / "aura_agent" / "plain_terms.json")
         if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "evidence.css", "agent.js", "features.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)

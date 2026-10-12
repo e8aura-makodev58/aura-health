@@ -35,7 +35,7 @@ class ImpressionTests(unittest.TestCase):
         result=self.arrival.get('demo-B-7','clinician_brief');draft=result['preview']['draft']
         self.assertTrue(draft['headline']);self.assertGreaterEqual(len(draft['claims']),2)
         self.assertTrue(all(c['findings'] for c in draft['claims'][:2]))
-        self.assertTrue(all('deviation' in c['text'] for c in draft['claims'][:2]))
+        self.assertTrue(all('difference' in c['text'] for c in draft['claims'][:2]))
         self.assertEqual(self.provider.calls,0)
         with self.repo.transaction() as repo:self.assertIsNone(repo.agent_run('demo-B-7',result['run_id']))
 
@@ -77,10 +77,14 @@ class ImpressionTests(unittest.TestCase):
     def test_i6_patient_fallback_plain_short_cited_and_quiet_when_empty(self):
         draft=self.arrival.get('demo-B-7','patient_insight')['preview']['draft']
         self.assertLessEqual(len(draft['claims']),2);self.assertTrue(draft['claims'])
-        self.assertEqual([c['findings'][0]['signal'] for c in draft['claims']],['SLEEP_MIDPOINT','ACTIVITY'])
+        self.assertEqual(draft['claims'][0]['findings'][0]['signal'],'SLEEP_MIDPOINT')
+        self.assertIn('check-ins',draft['claims'][1]['text'])
         for c in draft['claims']:
             self.assertTrue(c['fact_ids']);self.assertNotRegex(c['text'].lower(),r'baseline|drift|anchor')
-        self.assertFalse(self.arrival.get('demo-stable-7','patient_insight')['preview']['draft']['claims'])
+        stable=self.arrival.get('demo-stable-7','patient_insight')['preview']['draft']
+        self.assertTrue(stable['claims'])
+        self.assertTrue(all(not claim['findings'] for claim in stable['claims']))
+        self.assertIn('check-ins',stable['headline'])
 
     def test_i1_all_required_history_remains_behind_display_cap(self):
         result=self.arrival.get('demo-D-7','clinician_brief')['preview']

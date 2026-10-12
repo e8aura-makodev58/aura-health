@@ -52,7 +52,10 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   assert.equal(await page.locator('#agent-patient_insight .patient-finding:visible').count(),6);
   await page.locator('#agent-patient_insight .patient-summary-sources > summary').click();
   assert.match(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/Summary from the record|AI-written/);
-  assert.match(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/Source:.*\d{4}-\d{2}-\d{2}|\d{4}-\d{2}-\d{2}.*Source:/s);
+  assert.match(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/What we looked at.*What we saw.*Where it comes from/s);
+  assert.doesNotMatch(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/demo-B-|\d{4}-\d{2}-\d{2}/);
+  await page.locator('#agent-patient_insight .patient-summary-sources > [data-technical] > summary').click();
+  assert.match(await page.locator('#agent-patient_insight .patient-summary-sources > [data-technical]').innerText(),/Source:/);
   await page.screenshot({path:`${out}/final-dash-flu-patient-390.png`,fullPage:true});
   console.log('FD_BROWSER3_PATIENT_CALM_RECAP_AND_FULL_DISCLOSURES PASS');
   assert.deepEqual(errors,[]);

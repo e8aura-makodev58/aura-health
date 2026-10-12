@@ -326,3 +326,25 @@ communication policy, questions, actions or clinical conclusions. Existing sourc
 claim and independent verification gates still apply; rejected/unavailable generation
 uses a clearly identified factual record fallback. Safety precedence, direct patient
 help and pinned resources remain independent of ordinary recap rendering.
+
+## 46. Warm patient voice; clinicians retain factual data (2026-10-11)
+
+User direction recorded in Claude's patient-voice/plain-language specs and taken up
+by Codex after the user's request to continue the work. Patient summaries may use
+two or three short sentences, at most 35 words total and 25 per sentence. This
+replaces §45's one-sentence/20-word patient presentation limit, not the clinician
+headline limit or any factual/safety restriction.
+
+Versioned style examples guide language, never supply patient facts. Human dates,
+rounded quantities and source labels are deterministic projections of actual data;
+exact records remain inspectable. Never call sleep midpoint bedtime, infer how a
+person feels from a check-in, or assert that nothing changed from missing data.
+Optional offers remain the existing deterministic UI controls, not new model-owned
+questions, actions or instructions.
+
+Patient explanations use everyday wording. Clinicians keep exact values, units,
+dates, coverage and sources. Internal identifiers, enum labels, model steps and
+versions belong in explicitly collapsed Technical details; demo seed/replay/trace
+controls belong in Developer tools. One shared term catalogue drives wording
+checks and browser lint. No engine, clinical threshold or safety policy change is
+authorized by this copy/layout refinement. User sign-off on voice is still required.

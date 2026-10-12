@@ -127,6 +127,23 @@ class ApprovedWorkflowTests(unittest.TestCase):
             self.assertTrue(after['HRV']['anchor']);self.assertTrue(any(o['signal']=='BODY_TEMPERATURE' for o in repo.observations(self.patient)))
             committed=[r['payload'] for r in repo.events(self.patient) if r['source']=='SIMULATOR']
         self.assertNotIn('FLU',json.dumps(committed));self.assertNotIn('expected_outcome',json.dumps(committed))
+    def test_flu_clinician_model_budget_keeps_temperature_readings_and_ui_sources(self):
+        self.flow.advance(self.patient,run_id='flu-reading-budget',days=3,notes=False,request='flu')
+        tools=RecordTools(EvidenceViewService(self.service).get(self.patient),AgentRole.CLINICIAN_BRIEF)
+        original=next(f for f in tools.facts.values() if f.get('reading') and f['signal']=='BODY_TEMPERATURE')
+        self.assertEqual(original['reading']['count'],3)
+        # Raw/UI duplicate text must not consume a budget for model-only facts.
+        for fact in tools.facts.values():
+            fact['raw_text'] += ' UI-only technical disclosure'*200
+        payload=tools.call('get_series',{})
+        temperature=next(f for f in payload['facts'] if f.get('reading') and f['signal']=='BODY_TEMPERATURE')
+        self.assertEqual(temperature['reading'],original['reading'])
+        self.assertLessEqual(len(json.dumps(payload['facts'])),24000)
+        self.assertTrue(all('raw_text' not in f and 'patient' not in f for f in payload['facts']))
+        retained=tools.delivered[temperature['fact_id']]
+        self.assertEqual(retained['reading_source_refs'],original['reading_source_refs'])
+        self.assertIn('UI-only technical disclosure',retained['raw_text'])
+
     def test_aw14_numeric_replay_sparse_cadence_and_no_drug_effect(self):
         effects=load_effects();profile=effects['profile'];base={'days':14,'events':[]}
         one=generate(LifePlan.model_validate(base),seed=42,patient_id='test',start='2026-04-01',profile=profile)
@@ -252,8 +269,10 @@ class ApprovedWorkflowTests(unittest.TestCase):
                 reads=[message for message in messages if message['role']=='tool']
                 if {message['name'] for message in reads} != {'get_series','get_review_snapshot'}:
                     return {'content':json.dumps({'claims':[],'question_ids':[],'headline':''})}
-                facts=[fact for message in reads for fact in json.loads(message['content'])['facts']]
-                selected=[fact for fact in facts if fact.get('finding') or 'EXPLAINED_HELD_FOR_REVIEW' in fact['text']]
+                payloads=[json.loads(message['content']) for message in reads]
+                facts=[fact for payload in payloads for fact in payload['facts']]
+                retained={fid for payload in payloads for fid in payload['retained_fact_ids']}
+                selected=[fact for fact in facts if fact['fact_id'] in retained]
                 return {'content':json.dumps({'claims':[{'text':fact['text'],'fact_ids':[fact['fact_id']],
                     'findings':[{'fact_id':fact['fact_id'],**fact['finding']}] if fact.get('finding') else []}
                     for fact in selected],'question_ids':[],'headline':'Recorded changes'})}

@@ -29,14 +29,29 @@ def fallback(tools, role, query=None):
             prior = latest.get(key)
             if prior is None or (fact.get('at') or '') > (tools.facts[prior].get('at') or ''):
                 latest[key] = fid
-        ids = sorted(latest.values(),key=lambda fid:tools.facts[fid].get('at') or '',reverse=True)[:2]
-        if len(ids)<2:ids.extend(held[:2-len(ids)])
+        ordered = sorted(latest.values(),key=lambda fid:tools.facts[fid].get('at') or '',reverse=True)
+        # Readability selection, never clinical importance or severity: prefer
+        # familiar sleep/activity channels in their existing source order.
+        basic = [fid for fid in latest.values() if tools.facts[fid]['signal'] in
+                 {'SLEEP_MIDPOINT','ACTIVITY','SLEEP_DURATION','RESTING_HEART_RATE'}]
+        reports = [fid for fid in tools.groups['get_decisions'] if fid in tools.delivered
+                   and (tools.facts[fid].get('checkin_summary') or tools.facts[fid].get('checkin_run'))]
+        reports.sort(key=lambda fid:(tools.facts[fid].get('at') or '',bool(tools.facts[fid].get('checkin_summary'))),reverse=True)
+        gaps = [fid for fid in tools.groups['get_gaps'] if fid in tools.delivered
+                and tools.facts[fid].get('patient',{}).get('text')]
+        gaps.sort(key=lambda fid:tools.facts[fid].get('at') or '',reverse=True)
+        ids = (basic or ordered)[:1]
+        if reports: ids.append(reports[0])
+        elif len(ids)<2: ids.extend([fid for fid in (basic or ordered) if fid not in ids][:1])
+        if not ids: ids = gaps[:1] or held[:1]
     # Group all retained findings into bounded factual lines, never silently drop
     # them because a short brief has a smaller preferred number of sentences.
     def wording(fid):
         fact = tools.facts[fid]
         if role != AgentRole.PATIENT_INSIGHT:
             return fact['text'][:600]
+        if fact.get('patient',{}).get('recap_text'):
+            return fact['patient']['recap_text']
         finding = fact.get('finding')
         labels = {'SLEEP_MIDPOINT': 'Your sleep time', 'SLEEP_DURATION': 'Your sleep duration',
                   'ACTIVITY': 'Your activity', 'RESTING_HEART_RATE': 'Your resting heart rate',
@@ -52,17 +67,23 @@ def fallback(tools, role, query=None):
         if fid in tools.groups['get_review_snapshot']:
             return 'Your explanation is saved for your next review. Your usual has not been changed.'
         return fact['text'][:600]
-    claims = [{"text": wording(fid), "fact_ids": [fid], "section": "review" if fid in tools.groups['get_review_snapshot'] else "changes",
+    if role == AgentRole.PATIENT_INSIGHT:
+        selected = []
+        for fid in ids:
+            sentence = wording(fid)
+            if len(sentence.split()) <= 25 and sum(len(wording(value).split()) for value in selected)+len(sentence.split()) <= 35:
+                selected.append(fid)
+        ids = selected
+    claims = [{"text": wording(fid), "fact_ids": [fid], "section": "review" if fid in tools.groups['get_review_snapshot'] else "gaps" if fid in tools.groups['get_gaps'] else "routine" if fid in tools.groups['get_decisions'] else "changes",
                "findings": [{"fact_id": fid, **tools.facts[fid]['finding']}] if tools.facts[fid].get('finding') else []} for fid in ids]
     headline = "Recorded changes" if claims else ""
     if role == AgentRole.PATIENT_INSIGHT and claims:
-        phrases = [claim['text'].split(', recorded from ')[0] for claim in claims
-                   if claim['findings']]
+        phrases = [claim['text'].rstrip('.') for claim in claims]
         if phrases:
             headline = phrases[0]
             if len(phrases) > 1:
-                combined = headline + ', and ' + phrases[1][0].lower() + phrases[1][1:]
-                if len(combined.split()) <= 20 and len(combined) < 160:
+                combined = headline + '. ' + phrases[1]
+                if len(combined.split()) <= 35 and len(combined) < 300:
                     headline = combined
             headline += '.'
         else:

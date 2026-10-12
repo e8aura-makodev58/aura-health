@@ -6,10 +6,13 @@ import unicodedata
 from aura_communication.validation import prohibited_claims
 from .roles import AgentRole, QUESTIONS
 from .schemas import AgentDraft
+from .voice import jargon
 
 
 def validate(raw, tools, role):
     draft = AgentDraft.model_validate(raw)
+    if draft.headline and jargon(draft.headline,role == AgentRole.PATIENT_INSIGHT):
+        raise ValueError('HEADLINE_JARGON')
     if draft.headline and (prohibited_claims(draft.headline) or re.search(r'causes?|proves?|healthy|pathological|risk level|normal range',draft.headline,re.I)):
         raise ValueError('PROHIBITED_CLAIM')
     if len(set(draft.question_ids)) != len(draft.question_ids) or any(q not in QUESTIONS for q in draft.question_ids):
@@ -17,6 +20,11 @@ def validate(raw, tools, role):
     used = set()
     for claim in draft.claims:
         text = unicodedata.normalize("NFKC", claim.text)
+        if role == AgentRole.PATIENT_INSIGHT:
+            if jargon(text,True):
+                raise ValueError('HEADLINE_JARGON')
+            if re.search(r'<[A-Z_]+>|\d{4}-\d{2}-\d{2}|\bbedtime\b|later nights|!|\b(?:you feel|you are feeling|you\x27re feeling)\b',text,re.I):
+                raise ValueError('PATIENT_HEADLINE_STYLE')
         if prohibited_claims(text) or re.search(r"normal range|caus(?:e[ds]?|ing)|proves?|mental deterioration|risk level|healthy|pathological|guarantee|ignore .*instructions|system prompt", text, re.I):
             raise ValueError("PROHIBITED_CLAIM")
         if any(fid not in tools.delivered for fid in claim.fact_ids):
@@ -59,6 +67,10 @@ def validate(raw, tools, role):
         raise ValueError('OMITTED_RETAINED_FINDING')
     if role == AgentRole.QUESTION_RANKER and draft.claims:
         raise ValueError("QUESTION_RANKER_CONTENT")
-    if len(draft.headline.split()) > 20:
+    if len(draft.headline.split()) > (35 if role == AgentRole.PATIENT_INSIGHT else 20):
         raise ValueError("HEADLINE_BUDGET")
+    if role != AgentRole.PATIENT_INSIGHT and len(draft.headline) > 160:
+        raise ValueError('HEADLINE_BUDGET')
+    if role == AgentRole.PATIENT_INSIGHT and any(len(sentence.split()) > 25 for sentence in re.split(r'[.!?]+',draft.headline)):
+        raise ValueError('HEADLINE_BUDGET')
     return draft.model_dump()

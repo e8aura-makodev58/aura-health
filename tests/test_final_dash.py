@@ -176,7 +176,7 @@ class FinalDashTests(unittest.TestCase):
 
     def test_patient_natural_sentence_retains_citations_and_independent_verifier(self):
         tools=RecordTools(evidence(),AgentRole.PATIENT_INSIGHT)
-        sentence='Your resting heart rate was higher than usual in the recorded days.'
+        sentence='Your resting heart rate was higher than usual in your recent entries.'
         provider=HeadlineProvider(sentence)
         original_step=provider.step
         prompts=[]
@@ -214,7 +214,7 @@ class FinalDashTests(unittest.TestCase):
                ('You reported Rough days.','UNSUPPORTED_CATEGORY'),
                ('Your heart rate changed because of flu.','PROHIBITED_CLAIM'),
                ('Depression is worsening.','PROHIBITED_CLAIM'),
-               ('Your heart rate '+ 'was '*21,'HEADLINE_BUDGET')]
+               ('Your heart rate '+ 'was '*26,'HEADLINE_BUDGET')]
         for text,code in cases:
             with self.subTest(text=text):
                 result=run(AgentRole.PATIENT_INSIGHT,None,
@@ -233,7 +233,7 @@ class FinalDashTests(unittest.TestCase):
             HeadlineProvider('Your resting heart rate was lower than usual.',supported=False),presentation=True)
         self.assertFalse(result['generation_used'])
         self.assertFalse(result['headline_fact_ids'])
-        self.assertIn('Your resting heart rate was higher',result['draft']['headline'])
+        self.assertRegex(result['draft']['headline'],r'Your resting heart rate was .*higher')
         self.assertTrue(any(t.get('code')=='VERIFIER_REJECTED' for t in result['trace']))
 
     def test_patient_extraction_names_research_channels_in_ordinary_words(self):
@@ -246,7 +246,7 @@ class FinalDashTests(unittest.TestCase):
                 tools=RecordTools(only,AgentRole.PATIENT_INSIGHT);tools.call('get_series',{})
                 draft=fallback(tools,AgentRole.PATIENT_INSIGHT)
                 self.assertNotRegex(draft['headline'].lower(),r'rmssd|\bhrv\b|respiratory|deviation')
-                self.assertLessEqual(len(draft['headline'].split()),20)
+                self.assertLessEqual(len(draft['headline'].split()),35)
                 self.assertEqual(draft['claims'][0]['findings'][0]['signal'],signal)
                 validate(draft,tools,AgentRole.PATIENT_INSIGHT)
 
@@ -273,7 +273,7 @@ class FinalDashTests(unittest.TestCase):
                         for name in ('get_series','get_decisions')]}
                 facts=[fact for m in completed for fact in json.loads(m['content'])['facts']]
                 finding=next(f for f in facts if f.get('finding'))
-                report=next(f for f in facts if 'Patient check-in' in f['text'])
+                report=next(f for f in facts if f.get('patient',{}).get('source_label') == 'Your check-ins')
                 return {'role':'assistant','content':json.dumps({'headline':self.text,
                     'fact_ids':[finding['fact_id'],report['fact_id']],'question_ids':[]})}
         good=run(AgentRole.PATIENT_INSIGHT,None,RecordTools(source,AgentRole.PATIENT_INSIGHT),
@@ -287,7 +287,7 @@ class FinalDashTests(unittest.TestCase):
         overreach=run(AgentRole.PATIENT_INSIGHT,None,RecordTools(source,AgentRole.PATIENT_INSIGHT),
             ReportProvider('You feel worse now.',supported=False),presentation=True)
         self.assertFalse(overreach['generation_used'])
-        self.assertTrue(any(t.get('code')=='VERIFIER_REJECTED' for t in overreach['trace']))
+        self.assertTrue(any(t.get('code')=='PATIENT_HEADLINE_STYLE' for t in overreach['trace']))
 
 
 if __name__=='__main__':unittest.main()

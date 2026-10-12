@@ -1,0 +1,42 @@
+{
+  "version": "plain-terms-v1",
+  "patient": [
+    {"term":"anchored", "replacement":"your usual"},
+    {"term":"anchor", "replacement":"your usual"},
+    {"term":"rolling", "replacement":"recent"},
+    {"term":"deviation", "replacement":"change"},
+    {"term":"midpoint", "replacement":"sleep time"},
+    {"term":"extraction", "replacement":"summary"},
+    {"term":"baseline", "replacement":"your usual"},
+    {"term":"drift", "replacement":"change"},
+    {"term":"consecutive", "replacement":"in a row"},
+    {"term":"recorded days", "replacement":"days with entries"},
+    {"term":"reestablishing", "replacement":"your usual is still being learned"},
+    {"term":"HRV", "replacement":"time between heartbeats"},
+    {"term":"RMSSD", "replacement":"time between heartbeats"},
+    {"term":"SpO2", "replacement":"oxygen reading"},
+    {"term":"physiology", "replacement":"readings"},
+    {"term":"physiological", "replacement":"readings"},
+    {"term":"respiratory", "replacement":"breathing"},
+    {"term":"systolic", "replacement":"upper blood pressure"},
+    {"term":"diastolic", "replacement":"lower blood pressure"},
+    {"term":"variability", "replacement":"variation"},
+    {"term":"telemetry", "replacement":"readings"},
+    {"term":"biomarker", "replacement":"measure"}
+  ],
+  "clinician": [
+    {"term":"anchored", "replacement":"baseline"},
+    {"term":"rolling", "replacement":"recent"},
+    {"term":"deviation", "replacement":"difference"},
+    {"term":"midpoint", "replacement":"sleep time"},
+    {"term":"extraction", "replacement":"summary"},
+    {"term":"Governed personal reference", "replacement":"Baseline"},
+    {"term":"Stored rolling mean", "replacement":"Recent average"},
+    {"term":"Research tier", "replacement":"Newer measure"},
+    {"term":"Trust state", "replacement":"Baseline status"},
+    {"term":"sensing state", "replacement":"Watch data"},
+    {"term":"fingerprint", "replacement":"Technical details"},
+    {"term":"idempotent", "replacement":"Technical details"},
+    {"term":"committed events", "replacement":"entries"}
+  ]
+}

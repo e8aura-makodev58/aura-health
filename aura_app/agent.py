@@ -9,6 +9,7 @@ import threading
 from aura_agent.guard import blocked_reason
 from aura_agent.providers import ScriptedAgentProvider
 from aura_agent.roles import AgentRole, QUERIES, QUESTIONS, QUESTION_CATALOG
+from aura_agent.roles import PROMPT_VERSION
 from aura_agent.runtime import load_config, run
 from aura_agent.tools import RecordTools
 from .evidence import EvidenceViewService
@@ -52,6 +53,7 @@ class AgentService:
                             "agent_config": asdict(self.config),
                             "signal_registry": self.events.signal_registry.fingerprint,
                             'question_catalog': QUESTION_CATALOG,
+                            'prompt_version': PROMPT_VERSION,
                             "references": references, "model": self.provider.model_id, "blocked": reason})
         return signature, reason, (rows[-1] if rows else None), state
 
@@ -143,8 +145,8 @@ class AgentService:
                             from aura_agent.templates import fallback
                             result.update(draft=fallback(tools, role), generation_used=False, reason='PLAIN_LANGUAGE_EXTRACTION')
                     # Patient recap is optional; no new interruption authorization.
-                    if role == AgentRole.PATIENT_INSIGHT and not tools.required:
-                        result["draft"] = {"claims": [], "question_ids": []}
+                    if role == AgentRole.PATIENT_INSIGHT and not result.get('generation_used'):
+                        result['fallback_headline_fact_ids'] = [fid for claim in result['draft']['claims'] for fid in claim['fact_ids']]
                     if role == AgentRole.QUESTION_RANKER and evidence["current_decision"] == "STAY_QUIET":
                         result["draft"]["question_ids"] = []
             with self.events.repositories.transaction() as repo:
@@ -153,6 +155,7 @@ class AgentService:
                     blocked = new_block or "STATE_CHANGED_DURING_GENERATION"
                 if blocked:
                     result.update(draft={"claims": [], "question_ids": []}, sources=[], generation_used=False, reason=blocked)
+                    result.pop('fallback_headline_fact_ids',None)
                     result.pop('record_presentation',None)
                 result.update(run_id=run_id, patient_id=patient_id, role=role.value,
                     query_id=query_id, window_days=window_days, status="BLOCKED" if blocked else "COMPLETE",
@@ -161,7 +164,7 @@ class AgentService:
                     question_options=QUESTIONS, share_status="NOT_SENT", automatically_sent=False,
                     disclosure=("Assistant paused: safety interaction or record evaluation comes first." if blocked else
                                 "Checked AI claims; unsupported claims removed. Required history uses labelled source extraction where needed." if result.get('reason')=='VALIDATED_PARTIAL_MODEL_DRAFT' else
-                                "AI draft from synthetic records — check the linked sources." if result["generation_used"] else
+                                "" if result["generation_used"] else
                                 "Summary from the record; generated wording is unavailable or was not validated."))
                 repo.append_agent_run(result)
                 repo.append_audit({"patient_id": patient_id, "event_id": latest["event_id"] if latest else "agent-no-event",

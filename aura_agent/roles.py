@@ -27,8 +27,14 @@ if set(QUESTIONS)!={'context','recording','visit'} or any(not isinstance(text,st
 TOOLS = ("get_status", "get_series", "get_context", "get_decisions", "get_review_snapshot", "get_gaps",
          "compare_windows", "day_of_week", "summarize_gaps")
 ROLE_TOOLS = {role: TOOLS for role in AgentRole}
-PROMPT_VERSION = "aura-agent-v6"
+PROMPT_VERSION = "aura-agent-v8"
 
 
 def instructions(role: AgentRole) -> str:
-    return (Path(__file__).parent / "skills" / role.value / "SKILL.md").read_text()
+    from .voice import PLAIN_TERMS, VOICE_EXAMPLES
+    examples = VOICE_EXAMPLES['patient' if role == AgentRole.PATIENT_INSIGHT else 'clinician']
+    # Vary by role without randomness so identical cached requests remain reproducible.
+    examples = examples[1:] + examples[:1]
+    return ((Path(__file__).parent / "skills" / role.value / "SKILL.md").read_text()+
+            '\nAvoid these internal terms in prose: '+json.dumps(PLAIN_TERMS['patient' if role == AgentRole.PATIENT_INSIGHT else 'clinician'])+
+            '\nStyle examples only; NEVER copy wording or placeholders, numbers or dates. Every claim must come from cited facts: '+json.dumps(examples))

@@ -2,7 +2,7 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 const labels = {SLEEP_MIDPOINT: "Sleep time", SLEEP_DURATION: "Sleep duration", ACTIVITY: "Activity", RESTING_HEART_RATE: "Resting heart rate"};
-const trustLabels = {PROVISIONAL: "Provisional reference", TRUSTED: "Governed reference", REESTABLISHING: "Re-establishing reference"};
+const trustLabels = {PROVISIONAL: "Usual still being learned", TRUSTED: "Usual established", REESTABLISHING: "Usual being learned again"};
 const sensingLabels = {OBSERVED: "Data available", UNOBSERVED: "Data unavailable"};
 const recordLabels = {PATIENT_CHECKIN: "Check-in", MEDICATION_EVENT: "Medication routine", CONTEXT_EVENT: "Context added", CONTEXT_EXPLANATION: "Explanation added", HELD_FOR_REVIEW: "Held for review", SENSING_GAP: "Wearable data unavailable", SENSING_RETURN: "Wearable data returned", SAFETY_BOUNDARY: "Safety boundary", CLINICIAN_REVIEW_ITEM: "Review item prepared", INPUT_HELD_FOR_SAFETY: "Input held for safety evaluation", ANCHOR_COMMAND: "Governed reference event", PATIENT_FREE_TEXT: "Patient note", REVIEW_COMMAND: "Review preparation"};
 // Built-in last-known-good development resource, matching aura_safety/resources.py.
@@ -15,6 +15,8 @@ let hosted = false, presentationRole = "patient";
 window.auraAgentContext = () => ({patientId, record: current?.evidence,
   revision: current?.view.latest_event_id, offline: offline || Boolean(pending), role: presentationRole});
 const selections = new Set();
+let plainTerms={patient:[],clinician:[]};
+fetch('/assets/plain_terms.json').then(r=>r.json()).then(terms=>{plainTerms=terms;if(current)render();}).catch(()=>{});
 // randomUUID requires a secure context; getRandomValues also works on the
 // operator-approved synthetic LAN HTTP host. IDs never classify patient input.
 window.auraUniqueId = () => {
@@ -25,16 +27,31 @@ window.auraUniqueId = () => {
   return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
 };
 
-function element(tag, text, className) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; }
-function setText(id, text) { $(id).textContent = text ?? ""; }
+// Presentation vocabulary only: original facts remain in the API and explicit technical folds.
+window.auraPlain = text => {
+  const patient=presentationRole==='patient';
+  let copy=String(text??'');
+  copy=copy.replace(/\bdegC(?: deviation)?\b/g,'°C');
+  copy=copy.replace(/\bUNOBSERVED\b/g,'No watch readings').replace(/\bOBSERVED\b/g,'Readings available').replace(/\bTRUSTED\b/g,patient?'Your usual established':'Baseline established').replace(/\bPROVISIONAL\b/g,'Usual still being learned').replace(/\bREESTABLISHING\b/g,'Usual being learned again');
+  if(patient)copy=copy.replace(/Nightly HRV \(RMSSD\)/g,'Time between heartbeats').replace(/minutes since sleep-start midnight/g,'sleep time').replace(/\(\+1d\)/g,'(next day)').replace(/\(\+0d\)/g,'');
+  copy=copy.replace(/No configured descriptive drift was found for ([^.]+)\./gi,'No change flagged for $1.').replace(/Insufficient covered data to compare ([^.]+) with its reference\./gi,'Still gathering readings for $1.').replace(/relative to the anchored reference/gi,patient?'than your usual':'than baseline').replace(/relative to the recent rolling pattern/gi,'than your recent pattern');
+  const replacements=[[/sleep midpoint/gi,'sleep time'],[/anchored reference|governed personal reference|governed reference/gi,patient?'your usual':'baseline'],[/recent rolling reference|rolling reference|stored rolling mean/gi,'recent average'],[/reference trust/gi,'usual pattern'],[/re-establishing reference|reference being re-established/gi,'usual being learned again'],[/provisional reference/gi,'usual still being learned'],[/personal reference/gi,patient?'your usual':'baseline'],[/rolling versus own reference deviation/gi,'difference from baseline'],[/deviation/gi,'change'],[/consecutive recorded days/gi,'days in a row'],[/recorded days/gi,'days'],[/source extraction/gi,'record summary'],[/transient_change|TRANSIENT_DEVIATION/g,'Recent change'],[/PERSISTENT_DRIFT/g,'Longer change'],[/SENSING_GAP/g,'Watch data unavailable'],[/SENSING_RETURN/g,'Watch data returned'],[/E3_RESEARCH/g,'Newer measure'],[/EXPLAINED_HELD_FOR_REVIEW/g,'Explained, held for review'],[/INPUT_HELD_FOR_SAFETY/g,'Held for safety review']];
+  for(const [pattern,replacement] of replacements)copy=copy.replace(pattern,replacement);
+  for(const {term,replacement} of plainTerms[patient?'patient':'clinician']||[]){const escaped=term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');copy=copy.replace(new RegExp(`\\b${escaped}\\b`,'gi'),replacement);}
+  if(patient)copy=copy.replace(/\bbaseline\b/gi,'your usual').replace(/\bmedian\b/gi,'middle reading').replace(/\bdrift\b/gi,'change').replace(/\brolling\b/gi,'recent').replace(/\banchored\b/gi,'usual');
+  return copy.replace(/\b\d{4}-\d{2}-\d{2}(?:T[\d:.]+(?:Z|[+-]\d\d:\d\d))?\b/g,at=>dateLabel(at));
+};
+window.auraTechnical = (...children) => {const fold=document.createElement('details');fold.className='technical-details';fold.dataset.technical='';const label=document.createElement('summary');label.textContent='Technical details';fold.append(label,...children);return fold;};
+function element(tag, text, className) { const node = document.createElement(tag); if (text !== undefined) node.textContent = window.auraPlain(text); if (className) node.className = className; return node; }
+function setText(id, text) { $(id).textContent = id.startsWith('safety-') ? text??'' : window.auraPlain(text); }
 function tell(message, error = false) { setText("notice", message); $("notice").classList.toggle("error", error); $("notice").hidden = false; }
 function dateLabel(at) {
   if (!at) return "No record yet";
-  const options = {day:"numeric", month:"short", year:"numeric", timeZone:current?.view.patient.timezone || "UTC"};
+  const options = {day:"numeric", month:"short", year:"numeric", timeZone:/^\d{4}-\d{2}-\d{2}$/.test(at)?'UTC':current?.view.patient.timezone || "UTC"};
   try { return new Intl.DateTimeFormat("en-GB", options).format(new Date(at)); }
   catch { return new Intl.DateTimeFormat("en-GB", {...options,timeZone:"UTC"}).format(new Date(at)); }
 }
-function signalLabel(key) { return labels[key.signal] || key.signal; }
+function signalLabel(key) { return labels[key.signal] || current?.evidence?.signals.find(s=>sameSignal(s.key,key))?.label || 'Wearable reading'; }
 function sameSignal(a, b) { return a.signal === b.signal && a.source === b.source && (a.metric || "") === (b.metric || ""); }
 // Finite hosted demo action, not context credibility or a clinical classification.
 function explanationOptions() { return current.view.explanation_options; }
@@ -55,13 +72,14 @@ async function api(path, body) {
 
 function renderResources(bundle) {
   const area = $("safety-resources"); area.replaceChildren();
-  area.append(element("strong", "Separate safety resources"));
+  const resourceNode=(tag,text,cls)=>{const node=element(tag,undefined,cls);node.textContent=text;return node;};
+  area.append(resourceNode("strong", "Separate safety resources"));
   for (const resource of (bundle || offlineBundle).resources) {
-    area.append(element("div", resource.label));
-    if (resource.contact_method) area.append(element("div", resource.contact_method));
+    area.append(resourceNode("div", resource.label));
+    if (resource.contact_method) area.append(resourceNode("div", resource.contact_method));
   }
-  area.append(element("div", `Resource version: ${(bundle || offlineBundle).version}. ${bundle?.notice || "Unverified development fallback; review pending."}`, "fine"));
-  if (!bundle || bundle.stale) area.append(element("div", "Older or unverified resources are still shown; no verified contact is supplied in this prototype.", "fine"));
+  area.append(resourceNode("div", `Resource version: ${(bundle || offlineBundle).version}. ${bundle?.notice || "Unverified development fallback; review pending."}`, "fine"));
+  if (!bundle || bundle.stale) area.append(resourceNode("div", "Older or unverified resources are still shown; no verified contact is supplied in this prototype.", "fine"));
 }
 
 function showSafety(output) {
@@ -80,6 +98,8 @@ function goPage() {
   let page = requested==='disclaimer'?'about':["home", "patterns", "review", "about"].includes(requested) ? requested : "home";
   if (presentationRole === "clinician" && page !== "about") page = "patterns";
   document.body.dataset.role = presentationRole;
+  $('baseline-legend').textContent=presentationRole==='patient'?'Your usual':'Baseline';
+  $('agent-workspace').hidden=presentationRole==='patient';
   document.body.dataset.page = page;
   $("patient-help").hidden = presentationRole !== "patient" || !current;
   document.querySelector(".bottom-nav").hidden = presentationRole !== "patient" || page === "home" || !current;
@@ -145,8 +165,8 @@ function render() {
   const rebuilding = status.signals.some(signal => signal.trust_state === "REESTABLISHING");
   if (!communication?.pinned_resources && unavailable) setText("home-subtitle", "Wearable data is unavailable. You can still check in.");
   else if (!communication?.pinned_resources && rebuilding) setText("home-subtitle", "Data is back. Your personal reference is being re-established.");
-  setText("data-heading", !status.signals.length ? "No wearable observations yet" : unavailable ? "Wearable data unavailable" : rebuilding ? "Data is back. Reference is re-establishing." : "Personal context, at your pace.");
-  setText("data-summary", !status.signals.length ? "No wearable records available." : unavailable ? "Wearable data unavailable." : rebuilding ? "Reference is being re-established." : "Wearable records available.");
+  setText("data-heading", !status.signals.length ? "No wearable observations yet" : unavailable ? "Wearable data unavailable" : rebuilding ? "Data is back. Your usual is being learned again." : "Personal context, at your pace.");
+  setText("data-summary", !status.signals.length ? "No wearable records available." : unavailable ? "Wearable data unavailable." : rebuilding ? "Your usual is being learned again." : "Wearable records available.");
   setText("privacy-notice", view.privacy_notice);
   if(hosted) setText("dialog-privacy",`Synthetic examples only; safety gate first. ${view.privacy_notice}`);
   renderPatterns(); renderReview(); window.renderAuraEvidence(current.evidence); goPage();
@@ -165,11 +185,11 @@ function renderPatterns() {
     body.append(element("p", drift?.description || "No current descriptive observation available."));
     if (drift?.attenuated) body.append(element("p", `Relevant context retained: ${drift.benign_contexts.join("; ")}. Other evidence is not cleared.`, "fine"));
     if (signal.sensing_state === "UNOBSERVED") body.append(element("p", "No current value is inferred from the gap.", "fine"));
-    if (signal.trust_state === "REESTABLISHING") body.append(element("p", "Reference trust is being re-established. No automatic exit rule is configured.", "fine"));
+    if (signal.trust_state === "REESTABLISHING") body.append(element("p", "Your usual is being learned again. Review is still needed.", "fine"));
     const button = element("button", "Reference, coverage & context", "text-button"); button.addEventListener("click", () => showWhy(signal)); body.append(button);card.append(body); container.append(card);
   }
   if (!status.signals.length) container.append(element("p", "No wearable observations yet. You can still check in or raise a concern."));
-  setText("patterns-summary",view.decision_reason || "Inspect recorded signals below.");
+  setText("patterns-summary","Your measurements and check-ins, with their sources.");
   $("held-list").replaceChildren();
   $("held-section").hidden = !status.held_for_review.length;
   for (const row of status.held_for_review) {
@@ -196,21 +216,21 @@ function showWhy(selected = null) {
   if (!current) return;
   const area = $("why-content"); area.replaceChildren();
   const drifts = current.status.active_longitudinal_observations.filter(drift => !selected || sameSignal(drift.key, selected));
-  area.append(element("p", current.view.decision_reason || "Patient-requested inspection of recorded context."));
+  area.append(element("p", "Your measurements and check-ins help explain this summary."));
   for (const drift of drifts) {
     const section = element("section", undefined, "why-entry"), baseline = current.status.signals.find(signal => sameSignal(drift.key, signal));
     section.append(element("h3", signalLabel(drift.key)), element("p", drift.description));
     const dl = element("dl");
     const fields = [["Source", drift.key.source], ["Anchored reference", baseline?.anchor ? `Version ${baseline.anchor.version} · ${baseline.anchor.reference_start || ""} — ${baseline.anchor.reference_end || ""}` : "Not created"], ["Current vs recent rolling reference", deviation(drift.current_vs_rolling,drift.key)], ["Rolling vs anchored reference", deviation(drift.rolling_vs_anchor,drift.key)], ["Recorded context", (drift.benign_contexts || []).concat(drift.risk_contexts || []).join("; ") || "None linked"], ["Coverage (0–1)", number(drift.coverage)]];
     for (const [title, value] of fields) dl.append(element("dt", title), element("dd", value));
-    const technical=element("details",undefined,"technical-details");technical.append(element("summary","Technical details & reference provenance"),dl);
+    const technical=window.auraTechnical(dl);
+    if(presentationRole==='clinician')section.append(element('p',`Current reading compared with recent average: ${drift.current_vs_rolling} ${current.evidence.signals.find(s=>sameSignal(s.key,drift.key))?.unit||''}. Recent average compared with baseline: ${drift.rolling_vs_anchor} ${current.evidence.signals.find(s=>sameSignal(s.key,drift.key))?.unit||''}. Data coverage: ${drift.coverage}.`),element('p',baseline?.anchor?`Baseline dates: ${dateLabel(baseline.anchor.reference_start)}–${dateLabel(baseline.anchor.reference_end)}.`:'Baseline still being learned.'));
     section.append(technical); area.append(section);
   }
   if (!drifts.length) {
     area.append(element("p", "No current drift observation is available."));
     for(const baseline of current.status.signals.filter(signal=>!selected || sameSignal(signal,selected))){
-      const technical=element("details",undefined,"technical-details"),dl=element("dl");
-      technical.append(element("summary",`${signalLabel(baseline)} · reference details`));
+      const dl=element("dl"),technical=window.auraTechnical(dl);
       for(const [title,value] of [["Source",baseline.source],["Anchored reference",baseline.anchor?`Version ${baseline.anchor.version} · ${baseline.anchor.reference_start || ""} — ${baseline.anchor.reference_end || ""}`:"Not created"],["Reference trust",trustLabels[baseline.trust_state]],["Coverage (0–1)",number(baseline.rolling.coverage_ratio)]])dl.append(element("dt",title),element("dd",value));
       technical.append(dl);area.append(technical);
     }
@@ -237,7 +257,7 @@ function renderReview() {
   setText("appointment-ready", `${ready} item${ready===1?"":"s"} ready · Not sent`);
   const preview=$("appointment-preview"); preview.replaceChildren(element("h2","A note to look through"));
   for(const change of snapshot.meaningful_longitudinal_changes.slice(0,3)) preview.append(element("p",`${change.latest.description} Recorded ${dateLabel(change.first_seen)} — ${dateLabel(change.last_seen)}.`));
-  if(!snapshot.meaningful_longitudinal_changes.length)preview.append(element("p","No meaningful longitudinal change is retained in this snapshot."));
+  if(!snapshot.meaningful_longitudinal_changes.length)preview.append(element("p","No recent changes to include."));
   const last=snapshot.patient_checkin_trend.at(-1);
   if(last)preview.append(element("p",`Latest check-in you recorded: ${last.state}, ${dateLabel(last.at)}.`));
   for(const row of snapshot.explained_held_for_review){const held=row.record||row;preview.append(element("p",`${held.detected_drift.description} Your explanation: ${held.explanation}. The observation and your own reference are retained.`));}
@@ -252,7 +272,7 @@ function renderReview() {
   reviewGroup("Explained & held for review", snapshot.explained_held_for_review.map(row => { const held = row.record || row; return `${held.detected_drift.description} Explanation: ${held.explanation}. Anchored reference retained.`; }));
   reviewGroup("Unresolved review items", snapshot.unresolved_items.map(item => item.summary));
   // Present only real episode references. The underlying accepted snapshot stays intact.
-  reviewGroup("Safety episode references", snapshot.safety_episode_references.filter(reference => reference.episode_id).map(reference => `Episode ${reference.episode_id} · recorded sequence ${reference.sequence}`));
+  reviewGroup("Safety interactions", snapshot.safety_episode_references.filter(reference => reference.episode_id).map(reference => 'Safety interaction recorded'));
   reviewGroup("Questions you recorded", snapshot.patient_selected_questions);
   selectionSummary();
 }
@@ -327,7 +347,7 @@ $("why-home").addEventListener("click", () => showWhy());
 $("why-patterns").addEventListener("click", () => showWhy());
 $("chart-range").addEventListener("change", () => { if(current) window.renderAuraEvidence(current.evidence); });
 for (const role of ["patient", "clinician"]) $(`${role}-role`).addEventListener("click", () => {
-  presentationRole = role; location.hash = "home"; goPage(); window.scrollTo(0,0);
+  presentationRole = role; location.hash = "home"; if(current)render();else goPage(); window.scrollTo(0,0);
 });
 $("close-dialog").addEventListener("click", () => $("input-dialog").close()); $("close-why").addEventListener("click", () => $("why-dialog").close());
 $("explanation-context").addEventListener("change", populateExplanation);

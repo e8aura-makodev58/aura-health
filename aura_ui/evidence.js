@@ -3,14 +3,14 @@
 (() => {
   const node = (tag, text, className) => {
     const result = document.createElement(tag);
-    if (text != null) result.textContent = text;
+    if (text != null) result.textContent = window.auraPlain(text);
     if (className) result.className = className;
     return result;
   };
   const svgNode = (tag, attrs = {}, text) => {
     const result = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    for (const [key, value] of Object.entries(attrs)) result.setAttribute(key, value);
-    if (text != null) result.textContent = text;
+    for (const [key, value] of Object.entries(attrs)) result.setAttribute(key, key==='aria-label'?window.auraPlain(value):value);
+    if (text != null) result.textContent = window.auraPlain(text);
     return result;
   };
   const dayMs = 86400000;
@@ -52,7 +52,7 @@
       const at=day(row.at),index=states.indexOf(row.state);
       if(at<start||at>end||index<0||row.deferred)continue;
       const point=svgNode('circle',{cx:x(at),cy:11+index*19,r:3,class:`checkin-point checkin-${row.state.toLowerCase()}`,'data-event-id':row.event_id});
-      point.append(svgNode('title',{},`${row.at.slice(0,10)} · ${row.state} · patient report · ${row.event_id}`));svg.append(point);
+      point.append(svgNode('title',{},`${shortDate(day(row.at))} · ${row.state} · your check-in`));svg.append(point);
     }
     return svg;
   }
@@ -65,8 +65,9 @@
     card.append(heading);
     const enabled = signal.registry?.enabled_in_engine !== false;
     const current = enabled ? signal.current : null;
-    card.append(node("p", !enabled ? "Display only · recorded measurements" : current ? `${current.sensing_state === "UNOBSERVED" ? "Data unavailable" : "Data observed"} · ${current.trust_state === "REESTABLISHING" ? "Reference being re-established" : current.trust_state === "TRUSTED" ? "Governed personal reference" : "Provisional reference"}` : "Current reference unavailable", "chart-status"));
-    if (signal.registry?.evidence_tier === "E3_RESEARCH") card.append(node("p", `Research tier · ${signal.registry.cadence_class.toLowerCase().replaceAll("_", " ")}`, "fine"));
+    const patient=document.body.dataset.role==='patient';
+    card.append(node("p", !enabled ? "Readings only" : current ? `${current.sensing_state === "UNOBSERVED" ? "Watch data unavailable · " : ""}${current.trust_state === "REESTABLISHING" ? "Usual being learned again" : current.trust_state === "TRUSTED" ? patient?'Your usual':'Baseline established' : "Usual still being learned"}` : "Usual still being learned", "chart-status"));
+    if (signal.registry?.evidence_tier === "E3_RESEARCH") card.append(node("p", "Newer measure", "fine"));
     const inside = stamp => stamp >= start && stamp <= end;
     const raw = signal.observations.filter(row => inside(day(row.day)) && !row.deferred);
     // Last committed snapshot per record-date, for drawing only. Full snapshots stay in the API.
@@ -99,7 +100,7 @@
       const linked=(context.affected_signals||[]).includes(signal.key.signal);
       const band = linked ? svgNode("rect",{x:x(a),y:25,width:Math.max(2,x(b)-x(a)),height:140,class:context.category === "BENIGN_CONTEXT" ? "context-band" : "risk-context-band",'data-context-linked':'true','data-context-id':context.event_id})
         : svgNode('line',{x1:x(a),x2:x(a),y1:25,y2:165,class:'context-timing-marker','data-context-linked':'false','data-context-id':context.event_id});
-      band.append(svgNode("title",{},`${context.explanation || "Reported context"}; ${linked?'explicitly linked to this signal':'timing only — not linked to this signal; no attenuation'}; ${context.category}`));
+      band.append(svgNode("title",{},`${context.explanation || "Reported context"}; ${linked?'linked to this measure':'timing only; not linked to this measure'}`));
       chart.append(band);
     }
     for(const finding of storyFor(signal)) {
@@ -123,28 +124,30 @@
     lineSeries("anchor"); lineSeries("rolling");
     for (const row of raw) {
       const point = svgNode("circle",{cx:x(day(row.day)),cy:y(row.value),r:3,class:"chart-observed","data-event-id":row.event_id});
-      point.append(svgNode("title",{},`${row.day}: ${valueLabel(row.value,signal)} · ${signal.unit} · reported coverage ${row.coverage}, data quality ${row.data_quality} · ${row.event_id}`)); chart.append(point);
+      point.append(svgNode("title",{},`${shortDate(day(row.day))}: ${patient?valueLabel(row.value,signal):row.value} ${signal.unit} · data coverage ${row.coverage}, measurement quality ${row.data_quality}`)); chart.append(point);
     }
     if (!raw.length) chart.append(svgNode("text",{x:(width+42)/2,y:98,"text-anchor":"middle",class:"chart-empty"},"No observed values in these dates"));
     card.append(chart,drawCheckins(start,end,width));
     if (current) {
       const availability = current.rolling.coverage_ratio;
-      card.append(node("p",`Recent data: ${availability == null ? "unavailable" : `${Math.round(availability*100)}%`} · ${current.rolling.sample_count} samples.`,"fine"));
-      if (current.trust_state === "REESTABLISHING") card.append(node("p","Reference trust remains uncertain; no automatic exit rule is configured.","fine"));
+      card.append(node("p",`Data for ${availability == null ? 'an unknown number of' : Math.round(availability*14)} of 14 days · ${current.rolling.sample_count} readings.`,"fine"));
+      if (current.trust_state === "REESTABLISHING") card.append(node("p","Usual being learned again; review still needed.","fine"));
     }
     const sources = node("section",null,"chart-sources"); sources.append(node("h3",`${signal.label} — dates, sources & exact values`));
-    sources.append(node("p",`Source: ${signal.key.source}${signal.key.metric ? ` · ${signal.key.metric}` : ""}. Values are unchanged from committed records. Rolling chart: last committed snapshot per record-date; insufficient windows are not plotted.`,"fine"));
-    if (signal.key.signal === "SLEEP_MIDPOINT") sources.append(node("p","Sleep clock uses minutes from the source-local sleep-start midnight; +1d means the following day. No conversion to the viewer's timezone or circular re-analysis is performed.","fine"));
+    sources.append(node("p","From: your measurements. Missing days are left blank.","fine"));
+    const internal=node('p');internal.textContent=`Source: ${signal.key.source} · ${signal.key.metric||''}`;sources.append(window.auraTechnical(internal));
+    if (signal.key.signal === "SLEEP_MIDPOINT") {const note=node("p","Sleep clock uses minutes from the source-local sleep-start midnight; +1d means the following day. No conversion to the viewer's timezone or circular re-analysis is performed.","fine");sources.append(patient?window.auraTechnical(note):note);}
     const anchors = new Map();
     for (const row of signal.history) if (row.anchor) anchors.set(row.anchor.version,{...row.anchor,event_id:row.event_id});
-    for (const anchor of anchors.values()) sources.append(node("p",`Your own reference v${anchor.version}: ${valueLabel(anchor.center,signal)} · reference ${anchor.reference_start} to ${anchor.reference_end} · created ${anchor.created_at}. Reviewer: ${anchor.reviewed_by || "not recorded"}.`,"fine"));
+    for (const anchor of anchors.values()) {sources.append(node("p",`${patient?'Your usual':'Baseline'}: ${patient?valueLabel(anchor.center,signal):anchor.center} ${signal.unit} · ${shortDate(day(anchor.reference_start))}–${shortDate(day(anchor.reference_end))}.`,"fine"));const raw=node('p');raw.textContent=JSON.stringify(anchor);sources.append(window.auraTechnical(raw));}
     const tableWrap = node("div",null,"table-scroll"), table = node("table");
     const caption = node("caption","Recorded observations in selected dates");
-    const head = node("tr"); for (const label of ["Date","Value","Source event"]) { const th=node("th",label); th.scope="col"; head.append(th); }
+    const head = node("tr"); for (const label of ["Date","Value","From"]) { const th=node("th",label); th.scope="col"; head.append(th); }
     const thead=node("thead"); thead.append(head); table.append(caption,thead);
     const tbody=node("tbody");
-    for (const row of raw) { const tr=node("tr"); tr.append(node("td",row.day),node("td",valueLabel(row.value,signal)),node("td",row.event_id)); tbody.append(tr); }
+    for (const row of raw) { const tr=node("tr");tr.dataset.eventId=row.event_id; tr.append(node("td",shortDate(day(row.day))),node("td",`${patient?valueLabel(row.value,signal):row.value} ${signal.unit}`),node("td","Measurement")); tbody.append(tr); }
     table.append(tbody); tableWrap.append(table); sources.append(tableWrap);
+    const rawRecords=node('pre');rawRecords.textContent=JSON.stringify(raw,null,2);sources.append(window.auraTechnical(rawRecords));
     document.getElementById('chart-exact-sources')?.append(sources);
     return card;
   }
@@ -155,7 +158,7 @@
     // Home recap visibility and text belong to the arrival presentation service.
     // Patient charts exist only in the explicitly opened full-data workspace.
     const byId = id => document.getElementById(id);
-    byId("workspace-patient").textContent = `${evidence.patient.display_name} · ${evidence.patient.age} · ${evidence.patient.timezone} · ${evidence.patient.treatment?.medication_name || "Recorded treatment context"}`;
+    byId("workspace-patient").textContent = `Demo patient · ${evidence.patient.age}`;
     const overview = byId("changes-overview"); overview.replaceChildren();
     // One latest descriptive finding per signal, in the server's fixed signal order.
     // This is display selection by date, not severity ranking or a new drift decision.
@@ -163,11 +166,11 @@
       [signal.findings.reduce((latest,row) => day(row.last_seen) > day(latest.last_seen) ? row : latest)] : []);
     for (const finding of findings.slice(0,3)) {
       const text = node("p",`${finding.drift.description.replace(/\.$/,"")} — recorded ${shortDate(day(finding.first_seen))}–${shortDate(day(finding.last_seen))}.`);
-      const detail = node("div",null,"finding-source"); detail.append(node("p",`${finding.drift.key.source} · latest event ${finding.event_id}. ${finding.drift.attenuated ? "Linked benign context attenuates this observation only." : "No benign attenuation recorded for this finding."}`,"fine"));
+      const detail = node("div",null,"finding-source"); detail.append(node("p",finding.drift.attenuated?'Patient context is linked to this change.':'From: watch readings.',"fine"));const raw=node('p');raw.textContent=`Source: ${finding.drift.key.source} · ${finding.event_id}`;detail.append(window.auraTechnical(raw));
       const section=node("section"); section.append(text,detail); overview.append(section);
     }
     if (!findings.length) overview.append(node("p","No descriptive change is retained in these records."));
-    byId("workspace-decision").textContent = `Current communication: ${evidence.current_decision === "STAY_QUIET" ? "no question pending" : evidence.current_decision === "SAFETY_REVIEW_REQUIRED" ? "safety policy takes priority" : "an approved interaction is available in Patient view"}. Retained changes are history, not a new prompt.`;
+    byId("workspace-decision").textContent = evidence.current_decision === "STAY_QUIET" ? "No question pending." : evidence.current_decision === "SAFETY_REVIEW_REQUIRED" ? "Safety interaction comes first." : "A question is available in your day view.";
     const charts = byId("evidence-charts"),otherOpen=Boolean(byId('other-measurements')?.open); charts.replaceChildren();
     let timeline=byId('finding-timeline');if(!timeline){timeline=node('section',null,'finding-timeline');timeline.id='finding-timeline';charts.before(timeline);}timeline.replaceChildren();timeline.hidden=true;
     let exact=byId('chart-exact-sources');
@@ -182,7 +185,7 @@
       }
       const spans=evidence.signals.flatMap(signal=>storyFor(signal)).filter(item=>day(item.until)>=start&&day(item.since)<=end);
       if(spans.length){
-        timeline.hidden=false;timeline.append(node('p','Finding dates · same chart window','fine'));
+        timeline.hidden=false;timeline.append(node('p','When things changed','fine'));
         const width=640,x=at=>66+(width-90)*(at-start)/Math.max(dayMs,end-start),strip=svgNode('svg',{viewBox:`0 0 ${width} ${spans.length*22+24}`,role:'img','aria-label':'Retained finding dates on the shared chart axis'});
         spans.forEach((item,index)=>{const y=index*22+8,a=Math.max(start,day(item.since)),b=Math.min(end,day(item.until));const link=svgNode('a',{href:`#${item.target_id}`,'aria-label':`Finding ${item.number}, ${shortDate(a)} to ${shortDate(b)}`});link.append(svgNode('text',{x:56,y:y+10,'text-anchor':'end',class:'chart-axis'},String(item.number)),svgNode('rect',{x:66,y,width:width-90,height:10,rx:5,class:'finding-timeline-track'}),svgNode('rect',{x:x(a),y,width:Math.max(3,x(b)-x(a)),height:10,rx:5,class:'finding-timeline-span','data-finding-number':item.number}));link.addEventListener('click',event=>{const target=document.getElementById(item.target_id);if(target){event.preventDefault();target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});}});strip.append(link);});
         for(const at of [start,end])strip.append(svgNode('text',{x:x(at),y:spans.length*22+18,'text-anchor':at===start?'start':'end',class:'chart-axis'},shortDate(at)));timeline.append(strip);
@@ -200,7 +203,7 @@
       if(groups.other.length){const other=node('details',null,'chart-group other-measurements');other.id='other-measurements';other.open=otherOpen;other.append(node('summary',`Other measurements (${groups.other.length})`));const grid=node('div',null,'chart-group-grid');for(const signal of groups.other)grid.append(drawChart(signal,start,end));other.append(grid);charts.append(other);}
     } else charts.append(node("p","No recorded history yet."));
     const strip = byId("evidence-strip"); strip.replaceChildren();
-    for (const [title,rows,field] of [["Check-ins · patient reports",evidence.checkins,"state"],["Medication routine · not verified ingestion",evidence.medication,"status"]]) {
+    for (const [title,rows,field] of [["Check-ins · patient reports",evidence.checkins,"state"],["Medication: patient-reported",evidence.medication,"status"]]) {
       const section=node("section"), entries=node("div",null,"categorical-strip");
       const end=evidence.period.end ? day(evidence.period.end) : 0;
       const start=byId("chart-range").value === "all" ? -Infinity : end-55*dayMs;
@@ -211,13 +214,14 @@
       if(!visibleRows.length) preview.append(node("span","None recorded in chart dates", "fine"));
       for (const row of visibleRows) {
         const entry=node("span",`${shortDate(day(row.at))} · ${row[field]}${row.deferred ? " · held pending safety evaluation" : ""}`,"report-dot");
-        entry.title=`Source event: ${row.event_id}`; entries.append(entry);
+        entry.title=`${shortDate(day(row.at))} · patient-reported`;entry.dataset.eventId=row.event_id; entries.append(entry);
       }
       section.append(preview); strip.append(section);
       exact.append(node('h3',`${title} · exact records`),entries);
     }
     const safety=byId("safety-evidence"); safety.replaceChildren();
-    for (const ref of evidence.safety.references) safety.append(node("p",`${ref.at || "Date unavailable"} · episode ${ref.episode_id || "none — degraded overlay"} · ${ref.state.episode_status} · sequence ${ref.sequence} · ${ref.state.degraded ? "degraded" : "not degraded"} · source episode ${ref.source_episode_id || "none"} · previous episode ${ref.previous_episode_id || "none"}. Source event: ${ref.event_id}.`,"fine"));
+    const safetyStatus={OPEN:'active',CLOSED:'closed',RECHECK_REQUIRED:'another check pending',DROPOUT:'follow-up interrupted',NONE:'no open interaction'};
+    for (const ref of evidence.safety.references) {safety.append(node('p',`${ref.at?shortDate(day(ref.at)):'Date unavailable'} · Safety interaction: ${safetyStatus[ref.state.episode_status]||'recorded'}${ref.state.degraded?' · Some safety information unavailable':''}.`,'fine'));const raw=node('pre');raw.textContent=JSON.stringify(ref,null,2);safety.append(window.auraTechnical(raw));}
     if (!evidence.safety.references.length) safety.append(node("p","No safety episode references recorded."));
     safety.append(node("p","No clinician or emergency service is automatically notified. Current policy output and separate resources stay outside this history section.","fine"));
     if(byId("workspace-safety")?.tagName==='DETAILS')byId("workspace-safety").open = Boolean(evidence.safety.state?.episode_id || evidence.safety.state?.degraded);
@@ -252,7 +256,8 @@
     const rows=evidence.signals.flatMap(signal=>signal.observations.filter(row=>day(row.day)>=dates.start&&day(row.day)<=dates.end).map(row=>({date:row.day,signal:signal.label,source:signal.key.source,metric:signal.key.metric||'',value:row.value,unit:signal.unit,coverage:row.coverage,quality:row.data_quality,deferred:row.deferred,event:row.event_id})))
       .sort((a,b)=>a.date.localeCompare(b.date)||a.signal.localeCompare(b.signal)||a.source.localeCompare(b.source)||a.metric.localeCompare(b.metric)||a.event.localeCompare(b.event));
     const table=node('table'),thead=node('thead'),head=node('tr');for(const label of ['Date','Signal / source','Value','Coverage']){const th=node('th',label);th.scope='col';head.append(th);}thead.append(head);table.append(node('caption','Actual records only; absent days are not filled or interpolated'),thead);
-    const tbody=node('tbody');for(const row of rows){const tr=node('tr');tr.append(node('td',row.date),node('td',`${row.signal} · ${row.source}${row.metric?' · '+row.metric:''}`),node('td',`${row.value} ${row.unit}${row.deferred?' · held':''}`),node('td',String(row.coverage)));tbody.append(tr);}table.append(tbody);
+    const tbody=node('tbody');for(const row of rows){const tr=node('tr');tr.append(node('td',row.date),node('td',row.signal),node('td',`${document.body.dataset.role==='patient'?Math.round(row.value*10)/10:row.value} ${row.unit}${row.deferred?' · held':''}`),node('td',String(row.coverage)));tbody.append(tr);}table.append(tbody);
+    const internal=node('pre');internal.textContent=JSON.stringify(rows,null,2);raw.append(window.auraTechnical(internal));
     const wrap=node('div',null,'table-scroll');wrap.append(table);raw.append(wrap,node('p',`${rows.length} committed measurement rows. Missing days have no row.`,'fine'));
     const download=node('button','Export these raw dates (CSV)','secondary');download.type='button';download.addEventListener('click',()=>{
       const fields=['date','signal','source','metric','value','unit','coverage','quality','deferred','event'];
@@ -263,7 +268,7 @@
     // Comparison selection is by committed dates, not clinical ranking or new analysis.
     for(const signal of evidence.signals)for(const finding of signal.findings){
       if(day(finding.last_seen)<dates.start||day(finding.first_seen)>dates.end)continue;
-      summary.append(node('p',`${finding.drift.description} ${finding.first_seen.slice(0,10)}–${finding.last_seen.slice(0,10)} · ${signal.key.source}${signal.key.metric?' · '+signal.key.metric:''}`));
+      summary.append(node('p',`${finding.drift.description} ${shortDate(day(finding.first_seen))}–${shortDate(day(finding.last_seen))}. From: measurements.`));
     }
     if(summary.children.length===1)summary.append(node('p','No retained descriptive finding in these dates.'));
     if(comparisonAssessment?.draft?.claims?.length){
@@ -278,7 +283,7 @@
           return fact.at&&day(fact.at)>=dates.start&&day(fact.at)<=dates.end;
         });
         if(!matches)continue;
-        const line=node('p',claim.text);line.append(node('span',` Sources: ${facts.map(fact=>fact.source_ref).join(', ')}.`,'fine'));sourced.append(line);
+        const line=node('p',claim.text);line.append(node('span',` From: ${facts.map(fact=>fact.patient?.source_label||'measurements').join(', ')}.`,'fine'));const internal=node('p');internal.textContent=`Sources: ${facts.map(fact=>fact.source_ref).join(', ')}`;line.append(window.auraTechnical(internal));sourced.append(line);
       }
       if(sourced.children.length===1)sourced.append(node('p','No checked assessment claim is wholly dated within this selected range. Retained observations above still describe these dates.','fine'));
       summary.append(sourced);

@@ -95,7 +95,8 @@ class MilestoneSix(unittest.TestCase):
 
     def test_ui7_reestablishing_shows_uncertainty(self):
         self.assertTrue(all(s["trust_state"] == "REESTABLISHING" for s in self.status("E")["signals"]))
-        self.assertIn("No automatic exit rule is configured.", self.js)
+        self.assertIn('signal.trust_state === "REESTABLISHING"', self.js)
+        self.assertIn("Your usual is being learned again. Review is still needed.", self.js)
 
     def test_ui8_medication_records_without_dose_controls(self):
         result = self.ingest("stable", "MEDICATION_EVENT", {"scheduled_time":"2026-01-21T12:00:00+00:00", "status":"ACKNOWLEDGED"})

@@ -32,18 +32,19 @@ async function main() {
     await page.waitForSelector("#patterns-view:not([hidden])");
     await page.waitForFunction(() => document.getElementById("notice").hidden);
     assert.equal(await page.locator("#evidence-charts .chart-card").count(), 12);
+    await page.locator('#other-measurements > summary').click();
     const chart = signal => page.locator(`#evidence-charts [data-signal="${signal}"]`);
     for (const signal of ["HRV", "RESPIRATORY_RATE", "SKIN_TEMPERATURE_DEVIATION"]) {
-      assert.match(await chart(signal).innerText(), /Research tier/);
+      assert.match(await chart(signal).innerText(), /Newer measure/);
       assert.equal(await chart(signal).locator(".chart-observed").count(), 1);
     }
     for (const signal of ["SPO2", "BLOOD_PRESSURE_SYSTOLIC", "BLOOD_PRESSURE_DIASTOLIC", "BODY_TEMPERATURE", "WEIGHT"]) {
-      assert.match(await chart(signal).innerText(), /Display only/);
+      assert.match(await chart(signal).innerText(), /Readings only/);
       assert.equal(await chart(signal).locator(".chart-observed").count(), 1);
       assert.equal(await chart(signal).locator(".chart-rolling,.chart-anchor,.chart-rolling-point,.chart-anchor-point").count(), 0);
     }
-    assert.match(await chart("BODY_TEMPERATURE").innerText(), /degC/);
-    assert.match(await chart("SKIN_TEMPERATURE_DEVIATION").innerText(), /degC deviation/);
+    assert.match(await chart("BODY_TEMPERATURE").innerText(), /°C/);
+    assert.match(await chart("SKIN_TEMPERATURE_DEVIATION").innerText(), /°C/);
     console.log("SR_UI2_RESEARCH_AND_DISPLAY_ONLY_VISIBLE PASS");
     for (const width of [390,1280]) {
       await page.setViewportSize({width,height:900});

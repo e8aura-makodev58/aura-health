@@ -5,7 +5,7 @@
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;};
   const notice=byId('notice');
   let working=false,proposal=null,contextProposal=null,lastRun=null,loadedPatient=null;
-  function report(text,error=false){notice.hidden=false;notice.textContent=text;notice.classList.toggle('error',error);}
+  function report(text,error=false){notice.hidden=false;notice.textContent=window.auraPlain(text).replace(/committed events/g,'new entries');notice.classList.toggle('error',error);}
   async function call(action,data,runId=window.auraUniqueId()){
     const ctx=window.auraAgentContext();
     if(!ctx.patientId||ctx.offline||!navigator.onLine)throw new Error('Reconnect before submitting. Safety resources remain available.');
@@ -83,7 +83,8 @@
   // Arrival uses the committed record fingerprint; never launch a second random-ID run.
   window.addEventListener('aura-input-committed',()=>window.refreshAuraAssessment?.());
   const request=labelled(sim,'What happens next?',el('textarea'));request.rows=2;request.maxLength=2000;request.placeholder='e.g. three days of flu, or a week away from the wearable';
-  const seed=labelled(sim,'Random seed',input('number','sim-seed'));seed.value='7';seed.min='0';seed.max='2147483647';
+  const developer=window.auraTechnical();developer.querySelector('summary').textContent='Developer tools';
+  const seed=labelled(developer,'Random seed',input('number','sim-seed'));seed.value='7';seed.min='0';seed.max='2147483647';
   const notes=input('checkbox','sim-feedback');notes.checked=true;const notesLabel=el('label');notesLabel.append(notes,el('span','Simulated feedback: check-ins, routine and safety-gated notes'));sim.append(notesLabel);
   const quick=el('div',null,'settings-actions');for(const theme of ['Flu','Travel','Work stress','Alcohol','Missed medication','Wearable off','Exercise'])quick.append(button(theme==='Flu'?'Simulate: flu 3 days':`Simulate: ${theme.toLowerCase()}`,async()=>{request.value=theme;report('Generating synthetic events; first use may prepare reference history…');lastRun=await call('advance',{days:3,seed:Number(seed.value),request:theme,notes:notes.checked});await reload();report(`${theme}: ${lastRun.event_ids.length} committed events. Assessment refreshed from the new record.`);}));sim.append(quick);
   const advances=el('div',null,'settings-actions');const trace=el('details');trace.append(el('summary','Inspect last simulator run'));const traceBody=el('pre');trace.append(traceBody);
@@ -91,13 +92,14 @@
     report('Planning synthetic life events and generating measurements…');lastRun=await call('advance',{days,seed:Number(seed.value),request:request.value,notes:notes.checked});
     traceBody.textContent=JSON.stringify({run_id:lastRun.run_id,status:lastRun.status,plan:lastRun.plan,event_count:lastRun.event_ids.length,seed:lastRun.seed,config:lastRun.effects.version},null,2);
     await reload();report(`Advanced ${days} days. ${lastRun.event_ids.length} events recorded.`);
-  }));sim.append(advances,trace);
-  sim.append(button('Verify deterministic replay',async()=>{if(!lastRun)throw new Error('Advance the life first');const response=await fetch(`/patients/${encodeURIComponent(window.auraAgentContext().patientId)}/simulator-runs/${lastRun.run_id}/replay`);const result=await response.json();if(!response.ok)throw new Error(result.error?.message||'Replay failed');report(result.matched?`Replay matched all ${result.days} generated days exactly; no state written.`:'Replay mismatch',!result.matched);}),button('Save trace',async()=>{if(!lastRun)throw new Error('Advance the life first');const blob=new Blob([JSON.stringify(lastRun,null,2)],{type:'application/json'});const a=el('a');a.href=URL.createObjectURL(blob);a.download='aura-simulator-trace.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}));byId('demo-panel').append(sim);
+  }));sim.append(advances,developer);developer.append(trace);
+  developer.append(button('Verify deterministic replay',async()=>{if(!lastRun)throw new Error('Advance the life first');const response=await fetch(`/patients/${encodeURIComponent(window.auraAgentContext().patientId)}/simulator-runs/${lastRun.run_id}/replay`);const result=await response.json();if(!response.ok)throw new Error(result.error?.message||'Replay failed');report(result.matched?`Replay matched all ${result.days} generated days exactly; no state written.`:'Replay mismatch',!result.matched);}),button('Save trace',async()=>{if(!lastRun)throw new Error('Advance the life first');const blob=new Blob([JSON.stringify(lastRun,null,2)],{type:'application/json'});const a=el('a');a.href=URL.createObjectURL(blob);a.download='aura-simulator-trace.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}));byId('demo-panel').append(sim);
   const print=button('Print / save visit pack',async()=>{location.hash='review';document.body.classList.add('printing-review');window.print();document.body.classList.remove('printing-review');});print.id='print-visit-pack';byId('review-view').append(print);
   window.addEventListener('aura-record-view',()=>{const ctx=window.auraAgentContext();if(ctx.patientId!==loadedPatient){loadedPatient=ctx.patientId;proposal=contextProposal=lastRun=null;contextConfirm.hidden=true;mapping.hidden=confirm.hidden=true;traceBody.textContent='';}if(ctx.record?.period.end)day.value=ctx.record.period.end.slice(0,10);});
 
   // Assessment first; one visible record-question input rather than an accordion.
   const workspace=byId('agent-workspace');workspace.querySelector('h2').textContent='AURA assessment';
+  workspace.querySelector('.eyebrow').textContent='Summary';
   workspace.querySelector('[data-agent-role="clinician_brief"]').textContent='Refresh assessment';
   const patterns=byId('patterns-view');patterns.querySelector('.workspace-heading').after(workspace);
   const qa=byId('agent-query').closest('details');const qaPanel=el('section',null,'record-questions');
@@ -121,7 +123,7 @@
   for(const entry of [byId('workspace-review'),byId('workspace-safety'),byId('recorded-details')])detailsGroup.append(entry);
   patterns.append(evidenceGroup,contextGroup,detailsGroup);
   // Existing IDs remain, but extra nested '+' sections become ordinary inspectable sections.
-  function simplify(){for(const d of patterns.querySelectorAll('details')){if(d.classList.contains('workspace-disclosure')||d.classList.contains('other-measurements')||d.classList.contains('more-changes'))continue;const section=el('section',null,d.className);if(d.id)section.id=d.id;for(const child of [...d.childNodes]){if(child.tagName==='SUMMARY'){const heading=el('h3',child.textContent);section.append(heading);}else section.append(child);}d.replaceWith(section);}}
+  function simplify(){for(const d of patterns.querySelectorAll('details')){if(d.closest('[data-technical]')||d.classList.contains('workspace-disclosure')||d.classList.contains('other-measurements')||d.classList.contains('more-changes'))continue;const section=el('section',null,d.className);if(d.id)section.id=d.id;for(const child of [...d.childNodes]){if(child.tagName==='SUMMARY'){const heading=el('h3',child.textContent);section.append(heading);}else section.append(child);}d.replaceWith(section);}}
   simplify();window.addEventListener('aura-record-view',simplify);
   function disclosureCounts(){
     const record=window.auraAgentContext().record;if(!record)return;

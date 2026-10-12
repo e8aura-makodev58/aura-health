@@ -69,18 +69,18 @@ async function main(){
     });
     await check("DV5_HELD_REFERENCE_VISIBLE",async()=>{
       await choose("D");assert.equal(await page.locator(".held-item").count(),2);
-      assert.match(await page.locator("#held-list").textContent(),/reference is unchanged/);
+      assert.match(await page.locator("#held-list").textContent(),/baseline is unchanged/);
       assert.match(await page.locator("#held-list").textContent(),/Repeat prompts/);
       assert.match(await page.locator("#context-list").textContent(),/new stable work schedule/);
       await page.screenshot({path:path.join(out,"clinician-d-phone.png"),fullPage:true});
     });
     await check("DV6_GAP_RETURN_NO_ZERO_INTERPOLATION",async()=>{
-      await choose("E-gap");assert.match(await page.locator(".chart-status").first().innerText(),/Data unavailable/);
+      await choose("E-gap");assert.match(await page.locator(".chart-status").first().innerText(),/data unavailable/i);
       await page.locator("#chart-range").selectOption("all");
       const evidence=await(await context.request.get(base+`/patients/${id("E-gap")}/evidence`)).json();
       const rawCount=evidence.signals.reduce((sum,row)=>sum+row.observations.filter(point=>!point.deferred).length,0);
       assert.equal(await page.locator(".chart-observed").count(),rawCount);
-      await choose("E");assert.match(await page.locator(".chart-status").first().innerText(),/re-established/);
+      await choose("E");assert.match(await page.locator(".chart-status").first().innerText(),/being learned again/);
       assert.match(await page.locator("#about-view").textContent(),/no governed automatic exit/);
       await page.screenshot({path:path.join(out,"clinician-e-return-phone.png"),fullPage:true});
     });

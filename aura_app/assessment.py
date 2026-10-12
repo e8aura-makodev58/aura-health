@@ -6,7 +6,7 @@ from .models import AppError
 
 
 def arrival_id(role, window_days, signature):
-    return 'arrival-' + digest({'version': 'arrival-v7', 'role': role.value,
+    return 'arrival-' + digest({'version': 'arrival-v9', 'role': role.value,
                                 'window': window_days, 'state': signature})
 
 
@@ -47,12 +47,14 @@ class AssessmentService:
             for name in ('get_series', 'get_context', 'get_gaps', 'get_decisions', 'get_review_snapshot'):
                 tools.call(name, {})
             result['draft'] = fallback(tools, role)
+            if role == AgentRole.PATIENT_INSIGHT:
+                result['fallback_headline_fact_ids'] = [fid for claim in result['draft']['claims'] for fid in claim['fact_ids']]
             # Attach numerical companion facts without modifying required finding coverage.
             if role == AgentRole.CLINICIAN_BRIEF:
                 for claim in result['draft']['claims']:
                     fact = tools.facts[claim['fact_ids'][0]]
                     numeric = next((row for row in tools.facts.values() if row['source_ref'] == fact['source_ref']
-                        and row['signal'] == fact['signal'] and not row['finding'] and 'deviation' in row['text']), None)
+                        and row['signal'] == fact['signal'] and not row['finding'] and 'deviation' in row.get('raw_text',row['text'])), None)
                     if numeric:
                         claim['text'] = (claim['text'] + ' ' + numeric['text'])[:600]
                         claim['fact_ids'].append(numeric['fact_id'])
@@ -64,6 +66,7 @@ class AssessmentService:
                 current, new_block, _, _ = self.agent._approval(repo, patient_id, client_offline)
             if current != signature:
                 result.update(status='STALE', draft={'claims': [], 'question_ids': []}, sources=[], reason=new_block or 'STATE_CHANGED')
+                result.pop('fallback_headline_fact_ids',None)
                 result.pop('record_presentation',None)
                 cached = None
         return {'preview': result, 'cached': cached, 'run_id': run_id, 'state_fingerprint': signature,

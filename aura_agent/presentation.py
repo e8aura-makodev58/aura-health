@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 from .grounding import validate
 from .roles import AgentRole
+from .voice import jargon
 
 SYNTHESIS_LABELS = {
     'SLEEP_MIDPOINT':'Sleep timing', 'SLEEP_DURATION':'Sleep duration',
@@ -23,12 +24,16 @@ def checked_headline(raw, tools, role=None):
             or any(not isinstance(fid,str) or fid not in tools.delivered for fid in raw['fact_ids'])
             or len(set(raw['fact_ids'])) != len(raw['fact_ids'])):
         raise ValueError('HEADLINE_SCHEMA')
-    if re.search(r'\b(?:anchored|rolling|deviation|midpoint|extraction)\b', raw['headline'], re.I):
+    if jargon(raw['headline'], role == AgentRole.PATIENT_INSIGHT):
         raise ValueError('HEADLINE_JARGON')
     if re.search(r'\bbecause\b|\bdue to\b|\bled to\b',raw['headline'],re.I):
         raise ValueError('PROHIBITED_CLAIM')
     if role == AgentRole.PATIENT_INSIGHT:
         text = raw['headline']
+        if re.search(r'<[A-Z_]+>|\d{4}-\d{2}-\d{2}|\bbedtime\b|later nights|[!😀-🙏]|\b(?:you feel|you are feeling|you\x27re feeling)\b',text,re.I):
+            raise ValueError('PATIENT_HEADLINE_STYLE')
+        if re.search(r'\bnothing (?:else )?(?:has )?(?:changed|moved)|\b(?:steady|stable)\b',text,re.I):
+            raise ValueError('PROHIBITED_CLAIM')
         if re.search(r'\b(?:baseline|drift|anchor|reestablishing|hrv|rmssd|spo2|'
                      r'physiology|physiological|respiratory|systolic|diastolic|'
                      r'variability|telemetry|biomarker)\b', text, re.I):
@@ -48,9 +53,10 @@ def checked_headline(raw, tools, role=None):
                      r'you(?: are|\'re) (?:fine|okay|safe))\b', text, re.I):
             raise ValueError('PROHIBITED_CLAIM')
         for pattern, signal in ((r'\bsleep time\b', 'SLEEP_MIDPOINT'),
+                                (r'\bsleep (?:has been |was |is )?(?:shorter|longer)\b', 'SLEEP_DURATION'),
                                 (r'\bmoving (?:more|less)\b', 'ACTIVITY'),
                                 (r'\bbreathing\b', 'RESPIRATORY_RATE'),
-                                (r'\btime between .*heartbeats\b', 'HRV')):
+                                (r'\btime between .*heartbeats\b|\bheartbeat timing\b', 'HRV')):
             if re.search(pattern, text, re.I) and not any(
                     tools.delivered[fid]['signal'] == signal for fid in raw['fact_ids']):
                 raise ValueError('UNSUPPORTED_SIGNAL')
@@ -61,7 +67,7 @@ def checked_headline(raw, tools, role=None):
     validate({'headline':raw['headline'], 'question_ids':raw['question_ids'], 'claims':[{
         'text':raw['headline'], 'fact_ids':raw['fact_ids'],
         'findings':[{'fact_id':fact['fact_id'],**fact['finding']} for fact in facts if fact.get('finding')]}]},
-        tools, AgentRole.RECORD_QA)
+        tools, AgentRole.PATIENT_INSIGHT if role == AgentRole.PATIENT_INSIGHT else AgentRole.RECORD_QA)
     return facts
 
 
@@ -75,7 +81,7 @@ def checked_synthesis(raw, tools, group):
         raise ValueError('SYNTHESIS_GROUP_MISMATCH')
     if re.search(r'\bbecause\b|\bdue to\b|\bled to\b', raw['text'], re.I):
         raise ValueError('PROHIBITED_CLAIM')
-    if re.search(r'\b(?:anchored|rolling|deviation|midpoint|extraction)\b', raw['text'], re.I):
+    if jargon(raw['text']):
         raise ValueError('SYNTHESIS_JARGON')
     validate({'headline':'', 'question_ids':[], 'claims':[{
         'text':raw['text'], 'fact_ids':raw['fact_ids'], 'findings':[
@@ -101,7 +107,7 @@ def record_presentation(tools, config):
             spans.append((fact, run['start'], run['end']))
     groups = []
     gap_facts = [tools.delivered[fid] for fid in tools.groups['get_gaps']
-                 if fid in tools.delivered and 'SENSING_GAP' in tools.delivered[fid]['text']]
+                 if fid in tools.delivered and 'SENSING_GAP' in tools.delivered[fid].get('raw_text',tools.delivered[fid]['text'])]
     for start in sorted({start for _,start,_ in spans}):
         finish = (date.fromisoformat(start)+timedelta(days=config.co_occurrence_days-1)).isoformat()
         overlap = [(fact,a,b) for fact,a,b in spans if a <= start and b >= finish and
@@ -129,7 +135,7 @@ def record_presentation(tools, config):
     missing_context = any(not any(context['key_id']==fact['key_id'] and context.get('context_span') and
         context['context_span']['start'] <= fact['at'] and context['context_span']['end'] >= fact['finding']['since']
         for context in contexts) for fact in latest.values())
-    gaps = any(fid in tools.delivered and 'SENSING_GAP' in tools.delivered[fid]['text'] for fid in tools.groups['get_gaps'])
+    gaps = any(fid in tools.delivered and 'SENSING_GAP' in tools.delivered[fid].get('raw_text',tools.delivered[fid]['text']) for fid in tools.groups['get_gaps'])
     questions = []
     if missing_context: questions.append('context')
     if gaps: questions.append('recording')
