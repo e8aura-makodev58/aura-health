@@ -32,8 +32,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (as of 2026-10-12)
 
-- **DeepSeek v8 reliability trial stopped, not active:** Claude interrupted at53/80 and committed `docs/evidence/deepseek-fixed-reliability.json`. B clinician18/20 PASS; patient16/20 FAIL. Flu clinician7/7 and patient5/6 incomplete; no provider failures. Session49601 no longer exists. JSON compatibility/connection fix remains deployed; a smaller minimal probe never established full reliability.
-- **Patient reliability v9 deployed; fresh gate active:** Claude reviewed/deployed `f32cf40` and started one fixed 80-assessment trial at 08:01 UTC on 2026-10-12. Prompt `aura-agent-v9`, examples `patient-voice-v2`, arrival cache `arrival-v10`; hard limits/validators/engines/quotas/schema/dependencies unchanged. At 08:17 UTC the saved checkpoint contained 16/80 assessments: B clinician8/8 validated, patient7/8 (one UNSUPPORTED_CATEGORY rejection); both groups INCOMPLETE. Do not redeploy, run extra live calls or heavy tests while it runs. Log `/tmp/v9_run.log`; output `docs/evidence/deepseek-v9-reliability.json` remains untracked until completion. See `docs/PATIENT_RELIABILITY_V9.md`.
+- **DeepSeek v8 reliability trial (historical):** interrupted at 53/80; B clinician 18/20, patient 16/20. Superseded by the v9 result above.
+- **Patient reliability v9: Case B gate PASS (2026-10-12).** `aura-agent-v9` deployed. Run stopped by design at 40 samples (user: flu groups not needed for a demo). Clinician 19/20 and patient 19/20 validated headlines (gate 18/20), two fallbacks (UNSUPPORTED_CATEGORY, VERIFIER_REJECTED), no provider failures; HTTP preview p95 0.33–0.50 s, AI swap p95 4.2–4.5 s (not visual paint). Evidence `docs/evidence/deepseek-v9-reliability.json`. Flu groups not measured. No further reliability runs needed (demo priority).
 - **Fallback/source-panel fixes retained in deployed v9:** `372e4ad` leads recent changes and mentions signal-specific gaps when there is room; updated samples in `docs/PATIENT_VOICE_REVIEW.md`. Same-fingerprint/source-protected disclosure handling remains. Codex made no deployment this session.
 
 - **Project name:** officially **aura-health** (user, 2026-09-23). Care Plan Bridge (`PRODUCT_FRAMEWORK*.md`, `FRAMEWORK_CRITIQUE.md`) was dropped; those docs are marked superseded and kept for background only.
@@ -237,6 +237,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-12 — Claude — v9 reliability result and submission numbers
+- Run stopped after Case B as the user chose: clinician 19/20, patient 19/20, no provider failures. Numbers are in `docs/SUBMISSION_DRAFT.md` and the evidence file is committed. Reliability work is closed for the demo. Remaining: voice sign-off (user), WorkBuddy UI/UX pass, cover image, video, WorkBuddy chat evidence.
 ### 2026-10-12 — Codex Sol — Reconcile handover with Claude's deployed v9 trial
 - Read Claude's `a63f1ec` instructions; corrected stale deployment/approval/process snapshots and `docs/PATIENT_RELIABILITY_V9.md`. At 08:17 UTC:16/80 saved v9 entries, B clinician8/8 and patient7/8 validated; one UNSUPPORTED_CATEGORY rejection. Incomplete, not acceptance evidence; output left untracked while writer is active.
 - Verified: prompt-example budget test1 PASS/0.000s; prior full290 remains historical. No heavy suite, extra live calls, runtime edits, redeploy or restarted trial. Active log `/tmp/v9_run.log` continues quota waits normally. User PDF preserved; final voice review/paint timing/Claude review/M7 acceptance remain open.
