@@ -73,6 +73,8 @@ main {max-width:900px;margin:auto;padding:0 20px 28px}
 .page-intro {padding:24px 0 16px;max-width:620px}
 .page-intro h1 {margin-bottom:6px}
 .page-intro>p:last-child {font-size:.9rem;max-width:520px;margin-bottom:0}
+.page-hero-img {width:100%;max-width:360px;height:auto;border-radius:var(--radius-lg);margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.clinician-hero-img {width:100%;max-width:220px;height:auto;border-radius:var(--radius-lg);flex-shrink:0;align-self:center;box-shadow:var(--shadow-sm)}
 #patient-label {font-size:.7rem;letter-spacing:.03em}
 .card {border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--white);padding:20px;box-shadow:var(--shadow-sm)}
 .quiet-card {display:flex;align-items:center;gap:16px;border-radius:var(--radius-xl);background:var(--accent-lilac);padding:24px 20px;margin-bottom:18px}
@@ -174,7 +176,7 @@ dd {margin:2px 0 8px;overflow-wrap:anywhere}
 /* Landing / first impression (D3) */
 .landing {max-width:640px;margin:0 auto;padding:24px 0 40px;text-align:center}
 .landing-hero {display:flex;flex-direction:column;align-items:center;margin-bottom:32px}
-.landing-hero-img {width:100%;max-width:400px;height:auto;border-radius:var(--radius-xl);margin-bottom:24px}
+.landing-hero-img {width:100%;max-width:480px;height:auto;border-radius:var(--radius-xl);margin-bottom:24px;box-shadow:var(--shadow-md)}
 .landing-hero h1 {font-size:clamp(2rem,5vw,2.6rem);line-height:1.2;margin-bottom:12px}
 .landing-tagline {font-size:1rem;max-width:420px;margin:0 auto;color:var(--ink-soft)}
 .landing-tiles {display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
@@ -187,7 +189,7 @@ dd {margin:2px 0 8px;overflow-wrap:anywhere}
 .landing-story-button {display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--accent);color:var(--white);border:none;border-radius:var(--radius-pill);font-size:.95rem;font-weight:700;box-shadow:var(--shadow-pill);min-height:44px;cursor:pointer;transition:background var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out)}
 .landing-story-button:hover {background:var(--accent-ink);box-shadow:var(--shadow-md)}
 .landing-honesty {font-size:.72rem;color:var(--muted);margin-top:16px}
-@media(max-width:380px) { .landing-tiles {grid-template-columns:1fr} .landing-hero-img {max-width:320px} }
+@media(max-width:380px) { .landing-tiles {grid-template-columns:1fr} .landing-hero-img {max-width:360px} }
 dialog {border:1px solid var(--line);border-radius:var(--radius-xl);max-width:580px;width:calc(100% - 24px);max-height:90dvh;overflow-y:auto;padding:22px;color:var(--ink);background:var(--paper);box-shadow:var(--shadow-lg)}
 dialog::backdrop {background:rgba(42,35,32,0.4);backdrop-filter:blur(3px)}
 dialog h2 {font-size:1.5rem;margin-top:8px}
@@ -258,13 +260,13 @@ main {padding-inline:24px}
 #home-view .quiet-card h2 {font-size:1.12rem}
 #home-view .quiet-card p {font-size:.84rem;max-width:310px;margin:8px auto 0}
 /* D4: Recap hero and breathing placeholder */
-.recap-hero {border-radius:var(--radius-xl);background:linear-gradient(135deg,var(--accent-sunny) 0%,var(--accent-coral) 100%);padding:28px 24px;margin:16px 0 20px;box-shadow:var(--shadow-md);opacity:1;transition:opacity var(--dur-med) var(--ease-out)}
-#home-view.has-recap .recap-hero {background:linear-gradient(135deg,var(--accent-sunny) 0%,var(--accent-coral) 100%)}
+.recap-hero {border-radius:var(--radius-xl);background-image:url('/assets/media/home-hero.webp');background-size:cover;background-position:center;background-blend-mode:overlay;padding:28px 24px;margin:16px 0 20px;box-shadow:var(--shadow-md);opacity:1;transition:opacity var(--dur-med) var(--ease-out)}
+#home-view.has-recap .recap-hero {background-image:url('/assets/media/home-hero.webp');background-size:cover;background-position:center;background-color:var(--accent-sunny)}
 #home-view.has-recap .recap-hero .patient-recap {color:var(--ink)}
 #home-view.has-recap .recap-hero .patient-summary-details>summary,
 #home-view.has-recap .recap-hero .patient-summary-sources>summary {color:var(--ink)}
 .recap-placeholder {display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 20px;border-radius:var(--radius-xl);background:var(--surface-soft);margin:16px 0 20px;animation:breath-pulse 3s var(--ease-out) infinite}
-.breathing-icon {width:80px;height:80px;animation:breath-scale 3s var(--ease-out) infinite}
+.breathing-icon {width:120px;height:120px;animation:breath-scale 3s var(--ease-out) infinite}
 .placeholder-text {font-size:.88rem;color:var(--ink-soft);text-align:center;max-width:280px}
 @keyframes breath-pulse {0%,100%{opacity:.7}50%{opacity:1}}
 @keyframes breath-scale {0%,100%{transform:scale(.92)}50%{transform:scale(1.08)}}
@@ -345,6 +347,8 @@ caption {text-align:left;padding:8px 0;font-size:.72rem;color:var(--muted)}
   #home-view {margin-top:8px}
   .workspace-heading {align-items:flex-start;flex-direction:column;gap:0}
   .workspace-heading .page-intro {padding-bottom:8px}
+  .clinician-hero-img {max-width:160px;align-self:flex-start}
+  .page-hero-img {max-width:300px}
   .range-control {margin:8px 0 16px;min-width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px}
   .range-control select {width:auto;margin:0}
   .evidence-charts {grid-template-columns:1fr}
