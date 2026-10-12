@@ -19,7 +19,7 @@ class UiMediaRouteTests(unittest.TestCase):
         cls.temp.cleanup()
 
     def test_media_serves_allowed_art_with_type_and_csp(self):
-        response = self.client.get("/assets/media/calm-sun.svg")
+        response = self.client.get("/assets/media/aura-mark.svg")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["content-type"], "image/svg+xml")
         self.assertIn("script-src 'self'", response.headers["content-security-policy"])
@@ -27,7 +27,7 @@ class UiMediaRouteTests(unittest.TestCase):
     def test_media_rejects_other_types_paths_and_names(self):
         for path in ("/assets/media/README.md", "/assets/media/missing.svg",
                      "/assets/media/..%2Fapp.js", "/assets/media/../index.html",
-                     "/assets/media/Calm-Sun.svg", "/assets/media/calm-sun.svg.md",
+                     "/assets/media/Aura-Mark.svg", "/assets/media/aura-mark.svg.md",
                      "/assets/media/.hidden.svg", "/assets/media/sub/x.svg"):
             self.assertEqual(self.client.get(path).status_code, 404, path)
 

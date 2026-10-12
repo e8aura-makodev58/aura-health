@@ -237,6 +237,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-12 — Claude — Reviewed, merged and deployed CodeBuddy UI redesign (`improve/UI_UX`)
+- User: "merge to main then build and deploy"; approved illustration size budget up to 500 KB. Review: only allowed paths changed; safety panel wording/position, help button and "Not sent" intact; no Headspace assets; Miora WebP illustrations (100–245 KB, replacing CodeBuddy's earlier SVG placeholders). Fast-forwarded `main` to `96022ec`.
+- Fixes on top: `agent.js` recap placeholder is null-safe (it broke `cards.cjs`: patient recap never rendered when the element is absent); greeting uses the current time, not the record time, and drops "Winding down"; media README/SOW size budget 500 KB; `test_ui_media.py` uses `aura-mark.svg` (`calm-sun.svg` was deleted).
+- Verified: full Python suite 292 OK; browser (hosted mode) cards, plain-language, impression, dual-view, agent, final-dash, final-dash-polish, workflows, story-charts, milestone7, settings PASS. `redesign.cjs` FAILS on both `main` before the merge and after (`#input-text` readonly assertion, UX2) — pre-existing, not investigated. Non-hosted `plain_language.cjs` fails on fixture advance on old `main` too; hosted mode passes.
+- Browser tests on this host need `LD_LIBRARY_PATH=/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu` (missing libgbm) and Playwright in a temp prefix.
 ### 2026-10-12 — CodeBuddy — UI/UX visual redesign (D0–D7) on branch improve/UI_UX
 - Read `docs/CODEBUDDY_UI_SOW.md`. Created branch `improve/UI_UX` (tag `pre-workbuddy` not yet created by user; branched from current `main` HEAD `63c7034`).
 - **D0:** Wrote `docs/ui/BRAND.md` (palette, type scale, radii, shadows, spacing, illustration style, do/don't). Created `docs/ui/moodboard/` and `docs/submission/`.

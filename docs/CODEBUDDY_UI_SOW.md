@@ -92,9 +92,9 @@ circle" SVG in the masthead. Then make an illustration set in one consistent sty
 - appointment note / review page
 - an empty clinician state
 
-Keep each file under 60 KB if SVG or 150 KB if WebP. Illustrations are decorative and use
+Keep each illustration under 500 KB (user-approved budget, 2026-10-12). Illustrations are decorative and use
 `alt=""` or `aria-hidden="true"`. Miora is a good tool for this (see section 7).
-`aura_ui/media/calm-sun.svg` is only a placeholder.
+The placeholder `calm-sun.svg` was replaced by CodeBuddy's set.
 
 **D3. First impression and demo entry.** Turn the welcome state (`#empty-state`) into a
 confident landing. It needs a one-line value proposition, the hero illustration, and two

@@ -148,8 +148,8 @@ async function refresh() {
 function render() {
   const {view, status} = current;
   setText("patient-label", `${view.patient.display_name} · ${dateLabel(view.latest_occurred_at)}`);
-  const hr = new Date(view.latest_occurred_at || Date.now()).getHours();
-  const greeting = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : hr < 21 ? "Good evening" : "Winding down";
+  const hr = new Date().getHours();
+  const greeting = hr >= 5 && hr < 12 ? "Good morning" : hr >= 12 && hr < 17 ? "Good afternoon" : "Good evening";
   setText("home-heading", `${greeting}. Your day, with AURA.`);
   $("quiet-card").hidden = Boolean(communication?.message && !communication.pinned_resources);
   setText("quiet-heading",communication?.pinned_resources ? "The safety pathway is active." : "No question from AURA right now.");

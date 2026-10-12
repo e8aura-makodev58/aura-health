@@ -231,14 +231,14 @@
     // Preserve only the open explanation state for an identical evidence identity.
     // Its contents come from this newly guarded result; technical folds stay closed.
     for(const card of area.querySelectorAll('.clinician-finding'))if(openFindings.has(findingKey(card))){card.querySelector('.finding-detail').hidden=false;card.querySelector('.finding-why').setAttribute('aria-expanded','true');}
-    if(role==='patient_insight'){document.getElementById('month-recap').hidden=!allClaims.length;document.getElementById('recap-placeholder').hidden=true;document.getElementById('home-view').classList.toggle('has-recap',Boolean(allClaims.length));for(const selector of openDisclosures){const fold=area.querySelector(selector);if(fold)fold.open=true;}}
+    if(role==='patient_insight'){document.getElementById('month-recap').hidden=!allClaims.length;const placeholder=document.getElementById('recap-placeholder');if(placeholder)placeholder.hidden=true;document.getElementById('home-view').classList.toggle('has-recap',Boolean(allClaims.length));for(const selector of openDisclosures){const fold=area.querySelector(selector);if(fold)fold.open=true;}}
   }
   function valid(ticket,ctx){const latest=window.auraAgentContext();return ticket===requestEpoch&&latest.patientId===ctx.patientId&&latest.role===ctx.role&&!latest.offline&&navigator.onLine;}
   async function arrival(){
     const ctx=window.auraAgentContext();if(!ctx.patientId||!ctx.record||document.body.dataset.page==='about')return;
     const role=ctx.role==='clinician'?'clinician_brief':'patient_insight',area=document.getElementById(`agent-${role}`),ticket=requestEpoch;
     if(ctx.offline||!navigator.onLine){area.replaceChildren(node('p','Assessment paused while offline. Safety resources remain separate.'));return;}
-    if(role==='patient_insight'&&!area.querySelector('.patient-recap'))document.getElementById('recap-placeholder').hidden=false;
+    const placeholder=document.getElementById('recap-placeholder');if(role==='patient_insight'&&placeholder&&!area.querySelector('.patient-recap'))placeholder.hidden=false;
     const key=`${ctx.patientId}:${role}:${ctx.revision}`;
     if(pending.has(key))return pending.get(key);
     const work=(async()=>{
