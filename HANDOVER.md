@@ -237,6 +237,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-12 — Claude — Clinician number formatting fix (user-reported)
+- User found the clinician "Why?" detail unreadable: raw floats (`195.4231699500001 minutes since sleep-start midnight`), internal unit, duplicate dates line. Fixed in `aura_ui/agent.js` (`window.auraFormatValue`: sleep as clock time and hours/minutes, steps as whole numbers, others rounded; duplicate "Measurements ·" line removed) and `aura_ui/app.js` (same helper for the evidence panel; "Sleep sleep time" and "later relative to the baseline reference" wording). Facts kept: Difference, Recent average, Baseline, Median. Now reads e.g. "Difference: 3 h 15 min later. Recent average: 03:34. Baseline: 00:18. Median: 03:33." and "-2,130 steps a day".
+- Verified: browser cards 4, plain-language 2, agent 5, final-dash 3, impression 5 PASS (19). Plain-language test now fails on any 3-decimal float or "sleep-start midnight" in the clinician exact line. Python suite not rerun (UI-only). Deployed `app` only; checked on the live site (first fix) — second wording fix deployed after.
+- Open: in a fresh flu workspace the patient recap showed "Safety interaction or record evaluation comes first. See the separate safety panel." instead of a recap; not yet investigated.
 ### 2026-10-12 — Claude — v9 reliability result and submission numbers
 - Run stopped after Case B as the user chose: clinician 19/20, patient 19/20, no provider failures. Numbers are in `docs/SUBMISSION_DRAFT.md` and the evidence file is committed. Reliability work is closed for the demo. Remaining: voice sign-off (user), WorkBuddy UI/UX pass, cover image, video, WorkBuddy chat evidence.
 ### 2026-10-12 — Codex Sol — Reconcile handover with Claude's deployed v9 trial

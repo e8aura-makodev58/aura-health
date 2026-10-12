@@ -35,7 +35,7 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
     await lint('clinician',label+' clinician '+width);
     const facts=await page.evaluate(()=>window.auraAgentContext().record.signals.filter(s=>s.current));
     for(const signal of facts){const chart=page.locator(`.chart-card[data-signal="${signal.key.signal}"]`).first();if(await chart.isVisible())assert.match(await chart.innerText(),new RegExp(`${signal.current.rolling.sample_count} readings`));}
-    const exact=page.locator('#agent-clinician_brief .finding-exact');if(await exact.count())assert.match(await exact.first().innerText(),/Difference: -?\d.*(?:minutes|hours|steps|bpm|beats|°C|ms|breaths)/);
+    const exact=page.locator('#agent-clinician_brief .finding-exact');if(await exact.count()){const text=await exact.first().innerText();assert.match(text,/Difference: [+\-−]?\d.*(?:min|hours|steps|bpm|beats|°C|ms|breaths)/);assert.doesNotMatch(text,/\d+\.\d{3,}|sleep-start midnight/,'raw float or internal unit in clinician exact line');}
     if(label==='Case B')await page.screenshot({path:`${out}/plain-clinician-exact-${width}.png`,fullPage:true});
     await page.locator('#patient-role').click();await page.waitForFunction(()=>document.getElementById('agent-patient_insight').textContent.trim());await page.waitForLoadState('networkidle');await lint('patient',label+' patient '+width);
     if(label==='Case B')await page.screenshot({path:`${out}/plain-patient-home-${width}.png`,fullPage:true});

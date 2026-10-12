@@ -2,6 +2,18 @@
 "use strict";
 (() => {
   const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=window.auraPlain(text);if(cls)e.className=cls;return e;};
+  // Readable clinician values: clock times for sleep, rounded numbers elsewhere.
+  const clockOf=value=>{const m=((Math.round(value)%1440)+1440)%1440;return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;};
+  const hoursMinutes=minutes=>{const m=Math.round(Math.abs(minutes)),h=Math.floor(m/60),r=m%60;return h?`${h} h${r?` ${r} min`:''}`:`${r} min`;};
+  const plainNumber=value=>new Intl.NumberFormat('en-GB',{maximumFractionDigits:Math.abs(value)<1?2:Math.abs(value)<100?1:0}).format(value);
+  function formatValue(signalName,unit,value,{difference=false}={}){
+    if(typeof value!=='number'||!Number.isFinite(value))return 'unavailable';
+    if(signalName==='SLEEP_MIDPOINT'||String(unit).startsWith('minutes since'))return difference?`${hoursMinutes(value)} ${value>=0?'later':'earlier'}`:clockOf(value);
+    const sign=difference&&value>0?'+':'';
+    if(signalName==='ACTIVITY'&&['steps','step'].includes(unit))return `${sign}${new Intl.NumberFormat('en-GB',{maximumFractionDigits:0}).format(Math.round(value))} steps a day`;
+    return `${sign}${plainNumber(value)} ${signalName==='SKIN_TEMPERATURE_DEVIATION'?'°C':unit}`;
+  }
+  window.auraFormatValue=formatValue;
   const technicalText=text=>{const p=node('p',null,'fine');p.textContent=text;return p;};
   const friendly=fact=>fact.patient?fact.patient.text||'A measurement or note was included.':window.auraPlain(fact.text);
   const sourceLine=fact=>`${fact.patient?.source_label|| (fact.checkin_summary?'Your check-ins':'Your measurements')}${fact.patient?.date_label?' · '+fact.patient.date_label:fact.at?' · '+date(fact.at):''}`;
@@ -45,7 +57,7 @@
     return {label,icon:icons[finding.signal]||'◌',magnitude,wording,delta,transient,channel:JSON.stringify(signal.key),lastSeen:row.last_seen,unit:signal.unit,since:finding.since,until:fact.at,
       line:`${transient?'Recent change':`${direction[0].toUpperCase()+direction.slice(1)} than usual`} · ${date(finding.since)}–${date(fact.at)}`,
       source:fact.source_ref,method:row.drift.kind==='TRANSIENT_DEVIATION'?'Current reading compared with recent average':'Recent average compared with baseline',
-      exact:`Difference: ${delta} ${signal.unit}.${snapshot?` Recent average: ${snapshot.rolling.mean ?? 'unavailable'} ${signal.unit}. Baseline: ${snapshot.anchor?.center ?? 'still being learned'} ${signal.unit}. Median: ${snapshot.rolling.median ?? 'unavailable'} ${signal.unit}.`:''}`,
+      exact:`Difference: ${formatValue(finding.signal,signal.unit,delta,{difference:true})}.${snapshot?` Recent average: ${formatValue(finding.signal,signal.unit,snapshot.rolling.mean)}. Baseline: ${snapshot.anchor?formatValue(finding.signal,signal.unit,snapshot.anchor.center):'still being learned'}. Median: ${formatValue(finding.signal,signal.unit,snapshot.rolling.median)}.`:''}`,
       recordStart:record.period.start?.slice(0,10),recordEnd:record.period.end?.slice(0,10)};
   }
   function findingCard(claim,result,role,number){
@@ -66,7 +78,7 @@
       card.append(node('p',`${['LOWER','EARLIER'].includes(finding.direction)?'↓':'↑'} ${display.magnitude}`,'finding-magnitude'));
       const span=node('div',null,'finding-span');span.dataset.since=display.since;span.dataset.until=display.until;span.setAttribute('aria-label',`Recorded span ${date(display.since)} to ${date(display.until)}`);
       span.append(node('span'));card.append(span,node('p',display.line,'finding-one-liner'));
-      card.append(node('p',display.exact,'finding-exact'),node('p',`Measurements · ${date(display.since)}–${date(display.until)}`,'fine'));
+      card.append(node('p',display.exact,'finding-exact'));
     }
     const detail=node('section',null,'claim-sources finding-detail');detail.hidden=true;detail.id=`finding-detail-${role}-${number}`;show.setAttribute('aria-controls',detail.id);
     detail.append(node('p',patient?display.wording:display.method,'finding-method'),factSources(claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)),patient));
