@@ -1,8 +1,9 @@
 # WorkBuddy handoff brief (DRAFT until WP6 is reviewed)
 
-2026-10-12. Claude. **User decision (2026-10-12):** after WP6 (and the voice and plain-language
-specs) WorkBuddy creates its own branch, implements, and finishes the product. Codex and
-Claude stop building at that point; Claude reviews. The user owns the merge. This brief is
+2026-10-12. Claude. **User decisions (2026-10-12):** WorkBuddy creates its own branch, implements, and
+finishes the product, but only after Codex has finished **all** remaining items, including
+anything beyond WP6 (the voice and plain-language specs, leftover Next steps). Claude reviews.
+The user decides who tests, who merges and who deploys. This brief is
 what WorkBuddy reads first. It is a draft until Claude's WP6 review is recorded in
 `HANDOVER.md`; section 3 is filled in at handoff.
 
@@ -84,7 +85,10 @@ Keep your own genuine, dated WorkBuddy conversation logs from this work (at leas
 screenshots or a recording). Do not recreate or stage them later. Record in the Log which
 sessions produced which changes.
 
-## 8. Open points for the user
-- Confirm Codex and Claude stop building after WP6 and the review.
-- Confirm whether WorkBuddy can run tests and the browser suites; if not, who runs them.
-- Decide who deploys after merge (the host, port and Cloudflare steps are in `HANDOVER.md`).
+## 8. Decisions (user, 2026-10-12)
+1. Anything remaining beyond WP6 is finished by Codex (reviewed by Claude) **before**
+   WorkBuddy starts. WorkBuddy begins from a state with no open build items except polish.
+2. Who runs the tests and browser suites is decided on the fly: WorkBuddy if it can,
+   otherwise Codex or Claude. Never record a test as passing unless it was actually run;
+   state who ran it.
+3. The user decides who merges and who deploys. No agent merges or deploys unprompted.
