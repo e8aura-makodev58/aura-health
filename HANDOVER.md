@@ -32,7 +32,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (as of 2026-10-12)
 
-- **DeepSeek diagnostic (2026-10-12):** saved-key authenticated `/models` HTTP 200, configured `deepseek-flash` present; `/user/balance` HTTP 200 with sufficient-credit flag true (no balance amounts printed). One minimal synthetic `VendorProvider.agent_step` probe PASS. Protected connection-test route returned UNAVAILABLE; no key/model/endpoint/code change made. Earlier generic ProviderUnavailable errors do not identify an exact upstream cause; full agent/connection-test failure remains unexplained, not fixed by the control probe. No credentials or model prose printed.
+- **DeepSeek v7 failure root cause (2026-10-12, Claude; fix committed, not yet deployed):** the patient headline prompt lost the word "json" in `868280a` (`+=` became `=`), so DeepSeek rejected every patient call with HTTP 400 (JSON mode needs the word). Clinician prompts were unaffected; earlier v5/WP3–5 fallbacks were validator rejections. Fix: prompt wording, a vendor safety net that adds the word when missing, `thinking` disabled for DeepSeek `generate` (connection test: reasoning tokens and the 5 s deadline, inferred, not caught failing), safe `ProviderUnavailable.kind` labels recorded as `provider_failure` in the fallback trace, tests `tests/test_provider_json.py` (5 PASS; the prompt test fails without the fix). Evidence from 10 live calls: with the fix patient and clinician runs ended `VALIDATED_MODEL_DRAFT`. Needs a deploy and a fresh live pass.
 
 - **Project name:** officially **aura-health** (user, 2026-09-23). Care Plan Bridge (`PRODUCT_FRAMEWORK*.md`, `FRAMEWORK_CRITIQUE.md`) was dropped; those docs are marked superseded and kept for background only.
 - **Product being built:** a longitudinal, wearable-first companion for adults on stable antidepressant maintenance treatment. Spec: `aura_health_framework_v1.0.md`. Safety policy: `aura_deterministic_safety_policy_state_machine_v1.2.md`.
@@ -167,6 +167,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+00000000. **Deploy the DeepSeek prompt fix (user decides deploy), then rerun the live pass:** `tests/live/assessment_pass.py` (20-run/p95 gate), the five voice outputs for user sign-off, and the connection test. Check `provider_failure` in traces if any run still falls back.
 0000000. **WorkBuddy handoff (user, 2026-10-12):** after Codex finishes all remaining items (including anything beyond WP6) and Claude reviews, WorkBuddy creates its own branch and finishes the product. See `docs/WORKBUDDY_HANDOFF.md` (draft; section 3 filled at handoff). The user decides who runs tests, who merges and who deploys. Protected paths: safety, longitudinal, communication, detectors and agent code, schema.
 000000. **Review the implemented plain-language/voice follow-up:** patient wording is simplified; clinician factual measurements remain visible. Review mobile/laptop home, Why panels, full-data and appointment views against `docs/PLAIN_LANGUAGE_SPEC.md`. User voice sign-off is still pending, not inferred from implementation permission.
 00000. **Patient voice acceptance:** show five actual live/fallback outputs (B, flu, stable, gap, check-ins only) for user review before completion. Two full live attempts used fallback; later authenticated catalog/balance and minimal adapter generation probes pass. Investigate the request-specific/connection-test failure with sanitized diagnostics, not by replacing a demonstrably accepted key, increasing quotas or retrying until pass. `docs/PATIENT_VOICE_SPEC.md` is implemented, but its user acceptance gate remains open.
@@ -232,6 +233,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-12 — Claude — Fixed DeepSeek patient-generation failure (not deployed)
+- An Opus subagent diagnosed it with 10 sanitized live calls (no key printed); I verified the cause in `git show 868280a`. Changes: `aura_agent/runtime.py` (prompt says "plain JSON"; fallback trace adds `provider_failure`), `aura_communication/vendor.py` (json-word safety net, DeepSeek `generate` thinking disabled, failure kinds), `aura_communication/provider.py` (`ProviderUnavailable.kind`), `tests/test_provider_json.py`.
+- Verified: new tests 5 PASS (the prompt test fails on the old code); `test_agent`, `test_final_dash`, `test_system_settings`, `test_provider_json` 51 PASS. Not run: full suite, browser suites, live calls with the patched code in the container. Not deployed; user decides.
 ### 2026-10-12 — Claude — WorkBuddy handoff brief; DeepSeek diagnosis delegated
 - Assessed the Tencent ADP/WorkBuddy guide (`ADP_...PDF`, untracked, marked Tencent-internal; do not commit it). Wrote `docs/WORKBUDDY_HANDOFF.md` (`ce39cac`, `00c027f`) with the user's decisions. Started a read-only diagnosis of the full-agent DeepSeek failure (`ProviderUnavailable` at MODEL_STEP) using sanitized evidence; results pending, no code changed yet.
 ### 2026-10-12 — Codex Sol — Diagnose DeepSeek key versus endpoint

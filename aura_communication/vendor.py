@@ -18,6 +18,22 @@ PROVIDERS = {
 }
 
 
+def _output_kind(result):
+    """Short non-sensitive label for an unusable provider reply."""
+    try:
+        choice = result["choices"][0]
+        if choice["message"].get("refusal"):
+            return "refusal"
+        reason = str(choice.get("finish_reason") or "")
+        if reason and reason not in {"stop", "tool_calls"}:
+            return "finish_" + "".join(c for c in reason if c.isalnum() or c == "_")[:30]
+        if not (choice["message"].get("content") or choice["message"].get("tool_calls")):
+            return "empty_content"
+    except (KeyError, IndexError, TypeError, AttributeError):
+        return "bad_shape"
+    return "bad_output"
+
+
 class VendorProvider:
     def __init__(self, provider, model, api_key, *, variant=None, config=None, transport=None):
         self.provider, self.model = provider, model
@@ -39,13 +55,17 @@ class VendorProvider:
                     for chunk in response.iter_bytes():
                         if monotonic()>deadline: raise TimeoutError("Provider deadline exceeded")
                         body.extend(chunk)
-                        if len(body)>limit: raise ProviderUnavailable("Provider response too large")
+                        if len(body)>limit: raise ProviderUnavailable("Provider response too large", kind="too_large")
             if monotonic()>deadline: raise TimeoutError("Provider deadline exceeded")
             return json.loads(body)
         except httpx.TimeoutException as exc:
             raise TimeoutError("Provider timed out") from exc
+        except httpx.HTTPStatusError as exc:
+            raise ProviderUnavailable("Provider request failed", kind=f"http_{exc.response.status_code}") from exc
+        except json.JSONDecodeError as exc:
+            raise ProviderUnavailable("Provider request failed", kind="bad_json") from exc
         except (httpx.HTTPError,ValueError) as exc:
-            raise ProviderUnavailable("Provider request failed") from exc
+            raise ProviderUnavailable("Provider request failed", kind="request_error") from exc
 
     def models(self):
         data=self._request("GET","/models")
@@ -66,6 +86,9 @@ class VendorProvider:
             # Legacy Hunyuan has no assumed JSON-mode support; exact validation still wins.
             if not (self.provider=="tencent" and self.base.endswith("hunyuan.cloud.tencent.com/v1")):
                 payload["response_format"]={"type":"json_object"}
+            if self.provider=="deepseek":
+                # Reasoning tokens would use the 1024-token budget and the short communication deadline.
+                payload["thinking"]={"type":"disabled"}
         result=self._request("POST","/chat/completions",payload)
         try:
             choice=result["choices"][0]
@@ -73,7 +96,7 @@ class VendorProvider:
                 raise ValueError("Incomplete or refused output")
             return json.loads(choice["message"]["content"])
         except (KeyError,IndexError,TypeError,ValueError) as exc:
-            raise ProviderUnavailable("Invalid provider output") from exc
+            raise ProviderUnavailable("Invalid provider output", kind=_output_kind(result)) from exc
 
     def agent_step(self, messages, tools):
         """Native function calling, separate from unchanged M5 candidate wording."""
@@ -84,6 +107,9 @@ class VendorProvider:
                 payload["parallel_tool_calls"] = True
         if not (self.provider=='tencent' and self.base.endswith('hunyuan.cloud.tencent.com/v1')):
             payload["response_format"] = {"type": "json_object"}
+            # JSON mode providers (DeepSeek) reject a request whose prompt never says "json".
+            if not any("json" in str(m.get("content") or "").lower() for m in messages):
+                payload["messages"] = [dict(messages[0], content=str(messages[0].get("content") or "") + "\nReturn plain JSON only."), *messages[1:]]
         if self.provider=='deepseek':
             payload['thinking']={'type':'disabled'}
             # Stable endpoint: local strict validation remains authoritative.
@@ -101,4 +127,4 @@ class VendorProvider:
             return {"role": "assistant", "content": message.get("content"),
                     "tool_calls": message.get("tool_calls", [])}
         except (KeyError, IndexError, TypeError, ValueError) as exc:
-            raise ProviderUnavailable("Invalid agent provider output") from exc
+            raise ProviderUnavailable("Invalid agent provider output", kind=_output_kind(result)) from exc

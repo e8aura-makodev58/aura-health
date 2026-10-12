@@ -13,7 +13,11 @@ from .config import CommunicationConfig
 
 
 class ProviderUnavailable(Exception):
-    pass
+    """kind is a short, non-sensitive failure label for traces (never message text)."""
+
+    def __init__(self, message="", kind="unknown"):
+        super().__init__(message)
+        self.kind = kind
 
 
 class GenerationProvider(Protocol):
