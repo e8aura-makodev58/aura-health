@@ -1,13 +1,13 @@
 {
-  "version":"patient-voice-v1",
+  "version":"patient-voice-v2",
   "patient":[
-    {"facts":"Sleep time later than own reference since <PERIOD>; Rough check-in reports on <COUNT> days.","remark":"Your sleep time has been later than usual since <PERIOD>. You've marked <COUNT> days as Rough in your check-ins."},
-    {"facts":"Activity lower than own reference since <PERIOD>.","remark":"Your activity has dipped below your usual since <PERIOD>."},
-    {"facts":"Resting heart rate higher than recent pattern since <PERIOD>.","remark":"Your resting heart rate was higher than in your recent records, starting <PERIOD>."},
-    {"facts":"Sleep duration lower than own reference since <PERIOD>.","remark":"Your sleep has been shorter than usual since <PERIOD>."},
+    {"facts":"Sleep time later than own reference since <PERIOD>; Rough check-in reports on <COUNT> days.","remark":"Your sleep time shifted later than usual. You marked Rough in your check-ins."},
+    {"facts":"Activity lower than own reference since <PERIOD>.","remark":"You were moving less than your usual since <PERIOD>."},
+    {"facts":"Resting heart rate higher than recent pattern since <PERIOD>.","remark":"Your resting heart rate was higher than in your recent records."},
+    {"facts":"Sleep duration lower than own reference since <PERIOD>.","remark":"Your sleep was shorter than usual since <PERIOD>."},
     {"facts":"Watch-data gap for a specific measure on <DATE>; do not generalize to the whole watch.","remark":"There was a gap in your <MEASURE> readings on <DATE>."},
-    {"facts":"Check-ins Rough on <COUNT> actual consecutive calendar days.","remark":"You've marked <COUNT> days in a row as Rough in your check-ins."},
-    {"facts":"Patient's travel context explicitly linked to sleep time; observed later sleep time since <PERIOD>.","remark":"You mentioned travel alongside the change in your sleep time. It was later than usual since <PERIOD>."}
+    {"facts":"Check-ins Rough on <COUNT> actual consecutive calendar days.","remark":"You marked <COUNT> days in a row as Rough in your check-ins."},
+    {"facts":"Patient's travel context explicitly linked to sleep time; observed later sleep time since <PERIOD>.","remark":"You mentioned travel alongside your sleep time change. Your sleep time shifted later than usual."}
   ],
   "clinician":[
     {"facts":"Sleep time later than personal reference since <PERIOD>; exact values retained separately.","remark":"Sleep timing later than baseline since <PERIOD>."},

@@ -94,7 +94,9 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                 'Read get_decisions as well as get_series so you can see their own check-in reports. '
                 'Choose one or two supported facts that matter to understanding recent days; do not enumerate every channel. '
                 'When Rough check-ins are recorded, include the person\'s report alongside a wearable change if both fit. '
-                'Write two or three short natural sentences addressed to you/your, at most 35 words total and 25 words per sentence. '
+                'Write ONE or TWO short natural sentences addressed to you/your. Aim for at most 28 words total and 18 words per sentence. '
+                'The hard limits remain 35 words total and 25 per sentence; leave room below them. '
+                'Prefer a concise paraphrase of patient.recap_text from each selected fact. Omit optional dates and quantities if needed to stay short. '
                 'Describe sleep timing as sleep time, not sleep quality. Describe activity as moving more or less. '
                 'Use ordinary words such as heart rate, breathing or skin temperature where precisely supported. '
                 'Do not mention HRV, RMSSD, SpO2, variability, physiology, respiratory rate, baseline or drift. '
@@ -112,6 +114,14 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                 'PERSONAL_REFERENCE means than your usual. Never turn a recent-pattern change into a usual-reference change. '
                 'Cite all supporting fact_ids, including check-in facts when mentioning reports. '
                 'The server retains every detailed finding; you own wording only, never policy or actions.')
+        messages[0]['content'] += (
+            '\nRESPONSE PROTOCOL: To retrieve evidence, use native tool_calls with JSON object arguments; '
+            'never print a tool request or a plan as the final answer. After reading, return exactly ONE nonempty JSON object '
+            'with exactly the keys headline, fact_ids, question_ids. headline is a string; fact_ids and question_ids '
+            'are arrays of strings, never a string, null or an object. Cite only the facts used in the sentence. '
+            'Use [] for no questions. Do not include claims, findings, commentary, Markdown or text outside the JSON object. '
+            'Before sending, check sentence word counts, supporting citations, comparator and valid JSON punctuation. '
+            'This is a format check, not permission to change facts or invent an answer.')
     trace = []
     started = monotonic()
     reason = "STEP_BUDGET"
@@ -191,7 +201,16 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                     output = validate(raw, tools, role)
                 if provider.live and (output['claims'] or output['headline']):
                     def verification_fact(fact):
-                        return {key:fact.get(key) for key in ('text','signal','finding','analysis','comparison','patient','magnitude')}
+                        result = {key:fact.get(key) for key in ('fact_id','text','signal','finding','analysis','comparison','patient','magnitude','at')}
+                        # Preserve check-in state/count/window exactly; event IDs
+                        # remain outside model input as in the read-tool contract.
+                        fields = {'checkin_run':('state','start','end'),
+                                  'checkin_summary':('state','count','window_days','recorded_days','start','end',
+                                                     'run_start','run_end','run_days')}
+                        for key, names in fields.items():
+                            if fact.get(key):
+                                result[key] = {name:fact[key][name] for name in names if name in fact[key]}
+                        return result
                     # Direction/since can be recorded as structured engine metadata
                     # rather than repeated in prose. The verifier needs BOTH.
                     checks = [{"index":index,"text": claim['text'], "facts": [verification_fact(tools.delivered[fid]) for fid in claim['fact_ids']]} for index,claim in enumerate(output['claims'])]
