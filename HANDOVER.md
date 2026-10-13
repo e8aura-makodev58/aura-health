@@ -296,6 +296,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Safety example no longer leaves the visitor stuck
+- User: after "Show the safety example" the safety panel stayed with no way out. The panel staying is intended (patients can't dismiss it); `8ba5908` keeps the tour card open after the example, explains this, and offers "Reset the demo" (clears it) or "Keep exploring". Panel wording itself unchanged (safety content).
+- Verified: `tour.cjs` 5/5 PASS on a local hosted server (new TOUR5); live: card shows and Reset clears the panel. Deployed.
+- Note: local tour tests need the hosted app (`aura_app.hosted:create_hosted_app` with `AURA_DEMO_ROOT`); the plain demo app returns 403 on the flu step.
+
 ### 2026-10-13 — Claude — Auto-filled model list, reasoning level, OpenAI Responses path
 - `a2d2e75` settings: model dropdown filled from the provider's `/models` (saved model kept selected; exact-ID input + Refresh kept); reasoning select (default medium) saved per provider and shown in the status line; `vendor.py` maps reasoning per provider; agent config v5 (90 s run, 30 s provider timeout). `038d80b` OpenAI reasoning+tools via `/responses`; `f0212f8` 256 KB cap for Responses replies (they echo the tool list; caused `too_large`).
 - Verified: full Python suite 334 OK; `tests/browser/settings.cjs` PASS; live model list READY; live trials as in Current state. Deployed `f0212f8`.
