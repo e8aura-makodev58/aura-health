@@ -422,3 +422,7 @@ body.on-landing .landing-hero {padding-top:clamp(150px,30vh,300px)}
 body.on-landing .landing-hero .eyebrow,body.on-landing .landing-tagline {color:var(--ink)}
 body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 @media(max-width:700px){body.on-landing::before {height:min(62vh,560px);background-position:50% 50%,27% 50%}}
+/* Record-question suggestions as proper chips (the pill outline wraps the text). */
+.suggested-questions {display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
+.suggested-questions .text-button {min-height:40px;padding:8px 16px;border:1px solid var(--line);border-radius:var(--radius-pill);background:var(--white);box-shadow:var(--shadow-sm);text-decoration:none;color:var(--accent);font-weight:600}
+.suggested-questions .text-button:hover {background:var(--surface-soft);color:var(--accent-ink)}

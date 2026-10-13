@@ -251,6 +251,12 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Submission review fixes started; work plan for Claude / Codex / CodeBuddy
+- User: fix all review findings; three agents, done by 15 Oct (deadline 16 Oct). **Plan and assignments: `docs/submission/WORKPLAN.md`** (with kickoff prompts for Codex and CodeBuddy).
+- Key finding: the Healthcare track's **Challenge Statement 2, Scenario 1 "Mental Health Maintenance for Working Adults on Antidepressants"** is our product, and the brief requires naming the chosen case study first. New `docs/submission/CHALLENGE_MAPPING.md` (scenario, features and qualities: built / partial / roadmap / deliberately different; why no relapse prediction).
+- `FORM_CONTENT.md`: title AURA Health; opens with the challenge; challenge-fit paragraph; pilot metrics labelled as targets. `manifest.json` title. Personal email removed from `README.md`/`REQUIREMENTS.md` (still in git history). `VIDEO_SCRIPT.md` points to the new script and uses the demo question "When did sleep timing change, and was anything reported around then?".
+- New `docs/presentation/SCRIPT.md` (draft v1, ~7 min, 13 scenes) and 13 live screenshots at 2x in `docs/presentation/screenshots/` (AI text unedited). Miora reference images moved to `docs/presentation/miora-refs/`.
+- UI: record-question suggestion chips now proper pills (`styles.css`). Browser qa_display, dual-view, final-dash, agent PASS. Deployed.
 ### 2026-10-13 — Claude — Merged CodeBuddy's SVG illustration set (`59edfc2`) with two fixes
 - Review: WebP illustrations replaced by SVGs (4–10 KB each: welcome-hero, home-hero, breathing-circle, calm-state replacing appointment-note on the review page, empty-clinician, new aura-mark, unused `aura_health_app_icon.svg`). No scripts, external links or embedded data. All references resolve; no page errors; served via the existing media route.
 - Fixes: patient summary card used `background-blend-mode:overlay` over sunny orange, which turned the pale SVG neon yellow — now the art with a soft warm wash (`#fff4de`), no blending. Desktop landing sun was cut off by the top bar — background position 50% 52%. New mark is clearly visible on the landing.

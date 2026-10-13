@@ -10,6 +10,8 @@ organizer's exact closing time/timezone before relying on a last-day upload.
 | File | Purpose |
 |---|---|
 | [REQUIREMENTS.md](REQUIREMENTS.md) | Current form requirements, sizes and account instructions |
+| [WORKPLAN.md](WORKPLAN.md) | Who does what by when (13–15 Oct) |
+| [CHALLENGE_MAPPING.md](CHALLENGE_MAPPING.md) | Chosen challenge and feature-by-feature fit |
 | [FORM_CONTENT.md](FORM_CONTENT.md) | Copy-ready title, blurb, four-part description and URLs |
 | [manifest.json](manifest.json) | Machine-readable status, links, expected upload paths and approval |
 | [ASSET_REGISTER.md](ASSET_REGISTER.md) | Ownership/status of required deliverables |
@@ -74,7 +76,7 @@ At present it should report missing uploads/video/approval, not claim readiness.
 
 ## Final operator steps
 
-Use the expected account **e8.aura@gmail.com**, selected by the human operator.
+Use the team's submitting Google account, selected by the human operator.
 The form records the Google account's name/email/photo with uploads/submission.
 Confirm account and file permissions before submitting. Paste only the copy blocks
 from `FORM_CONTENT.md`; remove all drafting notes and unresolved placeholders.

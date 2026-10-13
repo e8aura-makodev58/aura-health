@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
+  <defs>
+    <linearGradient id="aura-glow" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#f5a623"/>
+      <stop offset="1" stop-color="#f47e6b"/>
+    </linearGradient>
+  </defs>
+  <path d="M20 4 C24 8 26 12 26 16 C26 22 23 28 20 36 C17 28 14 22 14 16 C14 12 16 8 20 4Z" fill="url(#aura-glow)" opacity="0.92"/>
+  <path d="M20 10 C22 13 23 15 23 17 C23 20 22 24 20 30 C18 24 17 20 17 17 C17 15 18 13 20 10Z" fill="#fbfaf7" opacity="0.5"/>
+  <circle cx="20" cy="17" r="2.5" fill="#f5a623"/>
+  <path d="M8 24 Q12 20 16 22 Q14 26 10 28Z" fill="#8cc499" opacity="0.6"/>
+  <path d="M32 24 Q28 20 24 22 Q26 26 30 28Z" fill="#8cc499" opacity="0.6"/>
+  <path d="M6 16 Q10 12 14 14" fill="none" stroke="#c4b4e0" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+  <path d="M26 14 Q30 12 34 16" fill="none" stroke="#c4b4e0" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+</svg>

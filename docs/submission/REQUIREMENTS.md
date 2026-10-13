@@ -5,7 +5,8 @@ Source: form text supplied by the user on 2026-10-13, titled
 These requirements govern this package if an older milestone brief differs.
 The form URL itself has not been supplied; do not invent one.
 
-Track: **Healthcare**. Intended submitting account: **e8.aura@gmail.com**.
+Track: **Healthcare**, Challenge Statement 2, Scenario 1 (see `CHALLENGE_MAPPING.md`).
+Submitting account: the team's Google account (kept out of public files).
 The Google account's name, email and photo are recorded with file uploads and
 submission. Account switching/submission remain human actions.
 

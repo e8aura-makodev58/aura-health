@@ -1,5 +1,11 @@
 # Seven-minute demo recording plan
 
+> **Superseded 2026-10-13 (Claude):** the scene-by-scene narration now lives in
+> [`../presentation/SCRIPT.md`](../presentation/SCRIPT.md). It opens with the chosen challenge
+> (Challenge Statement 2, Scenario 1), follows the current landing → patient → flu → clinician →
+> Q&A → appointment → safety → architecture flow, and uses the demo question below. The
+> recording rules and acceptance checks in this file still apply.
+
 Target **7:00**, permitted 5:00–8:00. All displayed data synthetic. This is a
 recording script, not a claim that a video already exists. Final URL is pending.
 
@@ -29,8 +35,10 @@ recording script, not a claim that a video already exists. Final URL is pending.
 
 ## Agentic demonstration question
 
-“Did activity drop before or after sleep timing changed, and how do the last
-two weeks compare with the two before?”
+“When did sleep timing change, and was anything reported around then?”
+
+(Changed 2026-10-13: this question completed with a checked answer in Claude's live runs on
+13 Oct; the earlier two-part question failed checks more often. Codex rehearses it, task #7.)
 
 Use this as an actual question, not a hard-coded scripted answer. Inspect the
 model's chosen signal keys, exact periods and successful tool calls. Then show
