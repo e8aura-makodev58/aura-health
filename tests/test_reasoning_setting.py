@@ -53,7 +53,7 @@ class ReasoningSettingTests(unittest.TestCase):
         sent = {}
         def handler(request):
             sent["path"] = request.url.path; sent["body"] = json.loads(request.content)
-            return httpx.Response(200, json={"status": "completed", "output": [
+            return httpx.Response(200, json={"status": "completed", "tools": [TOOL["function"]] * 200, "output": [
                 {"type": "reasoning", "summary": []},
                 {"type": "function_call", "call_id": "c2", "name": "get_x", "arguments": "{}"}]})
         history = [{"role": "system", "content": "Return json"}, {"role": "user", "content": "q"},

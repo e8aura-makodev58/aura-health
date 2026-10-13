@@ -55,8 +55,9 @@ class VendorProvider:
                                    headers={"Authorization":f"Bearer {self._key}"}) as response:
                     response.raise_for_status()
                     body=bytearray()
-                    # Model catalogs are larger than generation replies; both are bounded.
-                    limit=1048576 if path=="/models" else self.config.max_provider_response_bytes
+                    # Model catalogs and Responses replies (which echo the tool list) are larger
+                    # than generation replies; all are bounded.
+                    limit={"/models":1048576,"/responses":262144}.get(path,self.config.max_provider_response_bytes)
                     for chunk in response.iter_bytes():
                         if monotonic()>deadline: raise TimeoutError("Provider deadline exceeded")
                         body.extend(chunk)
