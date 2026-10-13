@@ -41,12 +41,12 @@
   byId('agent-query').after(el('p','Or choose a quick question','fine'));
   for(const p of byId('agent-workspace').querySelectorAll('p.fine'))if(p.textContent.includes('Selected record'))p.remove();
   byId('agent-workspace').querySelector(':scope>p:not(.eyebrow)').remove();
-  byId('dialog-privacy').textContent='Safety evaluation comes first. An unavailable evaluation holds the note.';
+  byId('dialog-privacy').textContent='Every note is checked for safety first. If that check can\'t run, the note waits until it can.';
   byId('why-dialog').querySelector(':scope>p.fine')?.remove();
-  const copy=el('p','Synthetic input only','fine');byId('input-text').before(copy);
+  const copy=el('p','This is a demo: please use made-up details, not your real information.','fine');byId('input-text').before(copy);
   // Context proposal and explicit confirmation. No automatic credibility decision.
   const contextActions=el('section',null,'card workflow-card');contextActions.append(el('h2','Add context to a change'));
-  const text=labelled(contextActions,'Your synthetic explanation',el('textarea'));text.rows=3;text.maxLength=2000;
+  const text=labelled(contextActions,'Your explanation',el('textarea'));text.rows=3;text.maxLength=2000;
   const contextConfirm=el('div');contextConfirm.hidden=true;
   const category=el('select');for(const name of ['BENIGN_CONTEXT','RISK_CONTEXT']){const option=el('option',name==='BENIGN_CONTEXT'?'Benign context':'Risk context — do not explain away');option.value=name;category.append(option);}
   labelled(contextConfirm,'Category',category);const signals=el('div');contextConfirm.append(signals);

@@ -200,7 +200,6 @@ function render() {
   setText("data-heading", !status.signals.length ? "No wearable observations yet" : unavailable ? "Wearable data unavailable" : rebuilding ? "Data is back. Your usual is being learned again." : "Personal context, at your pace.");
   setText("data-summary", !status.signals.length ? "No wearable records available." : unavailable ? "Wearable data unavailable." : rebuilding ? "Your usual is being learned again." : "Wearable records available.");
   setText("privacy-notice", view.privacy_notice);
-  if(hosted) setText("dialog-privacy",`Synthetic examples only; safety gate first. ${view.privacy_notice}`);
   renderPatterns(); renderReview(); window.renderAuraEvidence(current.evidence); goPage();
 }
 
@@ -320,9 +319,9 @@ function openInput(kind = "text") {
   $("fixture-buttons").hidden = !catalog.length || kind === "explanation";
   for (const button of document.querySelectorAll("[data-fixture]")) button.hidden = button.dataset.purpose !== kind;
   for(const button of document.querySelectorAll("[data-fixture]"))button.setAttribute("aria-pressed","false");
-  setText("dialog-heading", kind === "explanation" ? "Keep an explanation with this change." : kind === "question" ? "A question for your next review." : hosted ? "Try a conversation example" : "What would you like to share?");
-  setText("dialog-copy", kind === "explanation" ? "Keep context alongside the recorded change." : "Enter a synthetic note. Safety evaluation comes first.");
-  setText("send-input", kind === "explanation" ? "Keep explanation for review" : "Submit note");
+  setText("dialog-heading", kind === "explanation" ? "Keep an explanation with this change." : kind === "question" ? "A question for your next review." : "What would you like AURA to know?");
+  setText("dialog-copy", kind === "explanation" ? "Keep context alongside the recorded change." : "How you feel, a worry about your medicine, or something going on in your life. Your note goes to AURA, not straight to your doctor.");
+  setText("send-input", kind === "explanation" ? "Keep explanation for review" : "Send to AURA");
   if (kind === "explanation") {
     if (!explanationOptions().length) { tell("No supported linked explanation is available. Arbitrary explanations are not automatically judged credible."); return; }
     const select = $("explanation-context"); select.replaceChildren();
@@ -438,7 +437,6 @@ async function start() {
     presentationRole = "clinician"; $("role-switch").hidden = false;
     $("hosted-notice").hidden = true; $("reset-demo").hidden = !result.can_reset;
     $("connect-form").hidden = hosted;
-    if (hosted) setText("dialog-privacy","Synthetic input only. Unavailable safety evaluation holds the note.");
     $("scenario").replaceChildren();
     $("scenario").disabled = false;
     for (const scenario of catalog) { const option = element("option", scenario.label); option.value = scenario.patient_id; $("scenario").append(option); }

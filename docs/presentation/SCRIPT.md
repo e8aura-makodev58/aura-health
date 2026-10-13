@@ -68,7 +68,7 @@ Then *My medication* → *What if I miss a dose?*
 > to someone you trust, or planning a session. Optional, never about medication."
 
 ### 8 · Safety first — 4:50–5:15
-**Screen:** patient → *I want to mention something* → *Safety handoff fixture* → safety panel.
+**Screen:** patient → *I want to mention something* → *A worrying message* → safety panel.
 > "Anything a patient types is safety-checked first. If there's a concern, fixed safety
 > resources take over the screen and the AI steps back. Those messages are never AI-written.
 > The same applies to medication questions: asking to double a dose goes to safety, not to an
