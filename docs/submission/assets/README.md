@@ -3,7 +3,7 @@
 Place only final, sanitized, reviewed files here:
 
 - `aura-cover.png` —16:9, ≤1 MB.
-- `aura-architecture.pptx` — actual PowerPoint, ≤10 MB.
+- `aura-health-deck.pptx` — actual PowerPoint, ≤10 MB.
 - `development-history.pdf` — genuine chat history plus≥3 screenshots, ≤10 MB.
 
 These files are currently absent. Do not create empty files using their names

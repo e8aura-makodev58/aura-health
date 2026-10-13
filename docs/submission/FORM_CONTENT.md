@@ -144,4 +144,4 @@ Leave blank unless the user authorizes and publishes a post. Required hashtags:
 
 - Cover Image: `assets/aura-cover.png` — pending.
 - Conversation History: `assets/development-history.pdf` — pending genuine logs/screenshots.
-- Architecture Diagram PPT: `assets/aura-architecture.pptx` — pending export/review.
+- Architecture Diagram PPT: `assets/aura-health-deck.pptx` — pending export/review.

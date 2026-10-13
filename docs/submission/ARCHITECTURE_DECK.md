@@ -1,7 +1,7 @@
 # Architecture Diagram PPT — authoring source
 
 Produce **one actual PPTX under 10 MB**, proposed path
-`assets/aura-architecture.pptx`. This outline is not the required upload.
+`assets/aura-health-deck.pptx`. This outline is not the required upload.
 Use 16:9 slides, large text, dark ink on warm off-white and the AURA accent palette.
 Export and inspect every slide; verify shapes/arrows/fonts remain readable.
 

@@ -14,7 +14,7 @@
   "assets": {
     "cover": {"path": "assets/aura-cover.png", "max_bytes": 1000000, "status": "MISSING"},
     "conversation_history": {"path": "assets/development-history.pdf", "max_bytes": 10000000, "status": "MISSING", "screenshot_count": 0, "chat_history_included": false},
-    "architecture_ppt": {"path": "assets/aura-architecture.pptx", "max_bytes": 10000000, "status": "MISSING"}
+    "architecture_ppt": {"path": "assets/aura-health-deck.pptx", "max_bytes": 10000000, "status": "MISSING"}
   },
   "release": {"tested_commit": null, "signed_out_links_verified": false, "claims_reviewed": false, "user_approved": false},
   "submission": {"submitted": false, "submitted_at": null, "confirmation_reference": null}

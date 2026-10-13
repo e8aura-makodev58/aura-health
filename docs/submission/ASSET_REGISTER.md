@@ -10,7 +10,7 @@ Owners below are proposed responsibilities, not evidence that work was completed
 | Cover image | `assets/aura-cover.png` | MISSING | User/Miora designer generates; review at thumbnail size |
 | Demo video | Actual URL in `manifest.json` | MISSING | User/presenter records 7-minute script; confirm signed-out access |
 | Development history bundle | `assets/development-history.pdf` | MISSING | User supplies genuine logs plus≥3 screenshots; agent sanitizes/packs only with authority |
-| Architecture PPTX | `assets/aura-architecture.pptx` | MISSING | Deck author uses outline/diagram; exports actual PPTX; inspect all slides |
+| Architecture PPTX | `assets/aura-health-deck.pptx` | MISSING | Deck author uses outline/diagram; exports actual PPTX; inspect all slides |
 | Live demo URL | `manifest.json` | HEALTH_CHECKED | `/health` returned ok / synthetic_only=true on 2026-10-13; full signed-out walkthrough still needed at release |
 | GitHub URL | `manifest.json` | CONFIGURED | Origin matches repository; verify anonymous judge access at release |
 | Optional social post | Actual URL in `manifest.json` | NOT_STARTED | User decides platform/publication; all 4 hashtags |
