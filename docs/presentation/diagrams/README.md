@@ -6,7 +6,7 @@ work-plan task #8 / X1. Ready for deck-author review; not a PPTX upload by itsel
 
 | Diagram | Editable source | Slide image | PNG bytes |
 |---|---|---|---:|
-| System overview and trust boundaries | [system-overview.svg](system-overview.svg) | [system-overview.png](system-overview.png) | 290724 |
+| System overview and trust boundaries | [system-overview.svg](system-overview.svg) | [system-overview.png](system-overview.png) | 297460 |
 | Aura-Agent investigation loop | [agent-investigation.svg](agent-investigation.svg) | [agent-investigation.png](agent-investigation.png) | 235065 |
 | Safety precedence and pinned resources | [safety-precedence.svg](safety-precedence.svg) | [safety-precedence.png](safety-precedence.png) | 210503 |
 
@@ -18,7 +18,11 @@ fonts, external images or embedded application screenshots are in these SVGs.
 
 Source: [ARCHITECTURE_DOCUMENT.md](../../submission/ARCHITECTURE_DOCUMENT.md),
 inspected implementation `3d95a66`; current Codex branch `f5f06d1` has the same
-domain/agent behavior. The current configured model was independently checked as
+domain/agent behavior. **Overview updated against integrated `f37af0c`:** patient
+medication/dose/reasons/dates/suggestions, read-only `/companion`, curated medication
+information and safety-first `/medication/ask`. The other two images are unchanged.
+The deck author must re-render the system-overview slide; the existing PPTX still
+contains the earlier image. The current configured model was independently checked as
 DeepSeek / deepseek-flash on 2026-10-13. Do not relabel that as Tencent hosting.
 
 ## How to explain the diagrams
@@ -46,6 +50,16 @@ is depicted. Safety resource content still requires review.
 Rendered with installed Chromium through Playwright (no repository dependency
 changes). Inspected at slide size; text fitted within cards and canvas; PNG dimensions
 verified with `file`. SVGs are the durable sources for subsequent exports.
+
+Re-export the overview from its durable SVG with the existing Playwright environment:
+
+```sh
+NODE_PATH=/home/makodev58/rendertest/node_modules \
+LD_LIBRARY_PATH=/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu \
+node docs/presentation/diagrams/export_overview.cjs
+```
+
+Paths above describe the development machine, not a new repository dependency.
 
 The deck author should insert these into `docs/submission/assets/aura-health-deck.pptx`
 and inspect the exported slides. User approval and final release checks remain pending.

@@ -32,6 +32,15 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (as of 2026-10-13)
 
+- **Codex new assignment in progress:** merged requested main `f37af0c` into the
+  feature branch preserving both logs. Submission/challenge/capability/architecture
+  copy now reflects the integrated four-card companion; updated overview SVG/PNG
+  requires Claude to re-render the deck. Post-flu diagnostics:2 live fallbacks
+  (verifier stage and exact-number/date rejection), no timeout. Identical local
+  fixture reproduced50,053-character verifier payload above40,000 limit; removed
+  clinician-only duplicate patient wording fields →25,636, mock verified. No
+  thresholds, guards, budgets, deployment or patient verifier projection changed.
+  Two new regression tests PASS; X5 checks pending, not release acceptance.
 - **Companion consolidation verified (2026-10-13):** Claude merged/deployed the three branches and supplied `missed_days` in `6c4e265`; later safety refresh and one-column fixes are included in candidate `495087d`. Codex independently verified327 Python PASS/469.072s,18 selected browser checks on8036, missing/UNKNOWN separated from MISSED, stable retry counts and signed-out liveB/F companion suppression. A reused-run-ID/changed-question safety-assessment gap was separately reproduced and remains open. Main's newer37a2f32 script/tour change is outside this immutable run. Source link still404 anonymously. User supplied screenshots in `docs/submission/screenshots/`; Claude owns narration. Neither was edited here. Earlier branch-delivery snapshots below are historical.
 - **Feature freeze CANCELLED (user, 2026-10-13 evening):** "Cancel feature freeze and let's go all in!" Build the patient companion features in [`docs/PATIENT_COMPANION_SPEC.md`](docs/PATIENT_COMPANION_SPEC.md) to meet Challenge Statement 2 Scenario 1; ownership §4, schedule §5 (no fixed cut-off: integrate as soon as all agents report done; user, 2026-10-13). Earlier freeze lines below are superseded.
 - **Patient companion backend implemented on Codex branch (user authorization,2026-10-13):** medication-reason validation/adapters, additive supply/refill/reason columns, explicit synthetic prescriptions, dose/day counts, review/refill dates, reason-linked Not-shared review items and read-only `GET /companion`. See `docs/PATIENT_COMPANION_BACKEND.md`. Accepted safety/longitudinal algorithms unchanged. Claude owns curated lookup/suggestions/medication-ask route; CodeBuddy owns the four-card UI. Default lookup/selector joins their modules after integration; isolated tests plus actual cross-worktree callback smoke passed. No merge or deploy.
@@ -274,6 +283,19 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-13 — Codex — Integrated companion claims/diagram and narrow post-flu verifier fix
+- Requested main pull completed on Codex branch; both handover histories retained.
+  Updated assigned challenge/form/current-capability/architecture documents and
+  overview SVG/PNG (1920×1080). Claude: re-render the deck's overview slide; narration
+  and screenshots untouched.
+- Post-flu live diagnostics retained both attempts: verifier-stage ValueError and
+  FABRICATED_NUMBER_OR_DATE, not timeouts. Local seeded fixture showed duplicate
+  patient-facing verifier fields caused50,053 chars; clinician projection now
+  preserves facts/metadata in25,636 chars. New budget failure trace code; unchanged
+  40k limit/grounding/semantic checks. Two regressions PASS/38.472s. Full X5 next.
+- No merge into main, deploy, provider/secret/quota changes. Medication changed-text
+  retry identity gap remains a separate open finding; do not overlook it at release.
 
 ### 2026-10-13 — Codex — Consolidated companion/release verification; medication retry-ID finding
 - User: focus on Codex's area, leave Claude's narration and supplied screenshots alone. Read integration history; `missed_days` was already fixed in6c4e265, so no duplicate runtime patch. Exported immutable495087d to/tmp and independently tested merged code while leaving all worktrees/main untouched.

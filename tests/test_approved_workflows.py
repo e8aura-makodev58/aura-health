@@ -68,6 +68,46 @@ class ApprovedWorkflowTests(unittest.TestCase):
         def corrupt(raw):raw['claims'][0]['text']='The patient changed jobs in Paris.';return raw
         tools=RecordTools(EvidenceViewService(self.service).get(self.patient),AgentRole.CLINICIAN_BRIEF)
         result=run(AgentRole.CLINICIAN_BRIEF,None,tools,MockAgent(corrupt=corrupt));self.assertFalse(result['generation_used']);self.assertNotIn('Paris',json.dumps(result['draft']))
+
+    def test_aw2b_post_flu_qa_verifier_excludes_patient_display_duplicates(self):
+        """Actual post-flu fixture used to overflow40k before even calling verifier."""
+        self.flow.advance(self.patient,run_id='qa-flu',days=3,seed=7,notes=False,
+            plan={'days':3,'events':[{'type':'FLU','start_day':1,'duration_days':3,'severity':'MODERATE'}],'feedback':[]})
+        agent=AgentService(self.service,provider=MockAgent(),synthetic_only=True)
+        tools,_=agent.record_tools(self.patient,AgentRole.RECORD_QA,56)
+        class Answer(MockAgent):
+            def step(self,messages,specs):
+                if not specs:return super().step(messages,specs)
+                if not any(m['role']=='tool' for m in messages):
+                    return {'tool_calls':[{'id':str(i),'function':{'name':n,'arguments':'{}'}}
+                        for i,n in enumerate(['get_series','get_decisions','get_context','get_gaps','get_status','get_review_snapshot'])]}
+                facts=[f for m in messages if m['role']=='tool' for f in json.loads(m['content'])['facts']]
+                fact=next(f for f in facts if f.get('finding') and f['signal']=='SLEEP_MIDPOINT')
+                return {'content':json.dumps({'headline':'Recorded sleep timing change',
+                    'claims':[{'text':fact['text'],'fact_ids':[fact['fact_id']],
+                               'findings':[{'fact_id':fact['fact_id'],**fact['finding']}]}],'question_ids':[]})}
+        from aura_agent.tasks import structured_task
+        requests=[]
+        def check(provider,name,data):
+            requests.append(data)
+            self.assertLessEqual(len(json.dumps(data)),40000)
+            self.assertTrue(all('patient' not in f and 'magnitude' not in f for row in data for f in row['facts']))
+            return structured_task(provider,name,data)
+        with patch('aura_agent.runtime.structured_task',side_effect=check):
+            result=run(AgentRole.RECORD_QA,'When did sleep timing change?',tools,Answer())
+        self.assertTrue(result['generation_used'],result['trace'])
+        self.assertEqual(len(requests),1)
+        # No facts/citations were discarded to achieve this reduction.
+        self.assertEqual(len(requests[0][-1]['facts']),len(tools.delivered))
+        self.assertTrue(any(f.get('finding') for f in requests[0][-1]['facts']))
+
+    def test_aw2c_verifier_input_budget_is_explicit_and_still_fails_closed(self):
+        tools=RecordTools(EvidenceViewService(self.service).get(self.patient),AgentRole.RECORD_QA)
+        with patch('aura_agent.runtime.structured_task',side_effect=ValueError('TASK_INPUT_BUDGET')):
+            result=run(AgentRole.RECORD_QA,'What changed?',tools,MockAgent())
+        self.assertFalse(result['generation_used'])
+        self.assertTrue(any(row.get('code')=='TASK_INPUT_BUDGET' for row in result['trace']))
+        self.assertTrue(result['draft']['claims'])
     def test_aw3_parameterized_analysis_calendar_gaps_and_window_bounds(self):
         tools=RecordTools(EvidenceViewService(self.service).get(self.patient),AgentRole.RECORD_QA,window_days=30)
         end=tools.end[:10];from datetime import timedelta,date

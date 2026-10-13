@@ -202,7 +202,13 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                     output = validate(raw, tools, role)
                 if provider.live and (output['claims'] or output['headline']):
                     def verification_fact(fact):
-                        result = {key:fact.get(key) for key in ('fact_id','text','signal','finding','analysis','comparison','patient','magnitude','at')}
+                        # Clinician read tools do not deliver patient-facing
+                        # wording/magnitude copies. Reintroducing them here made
+                        # post-flu Q&A exceed the unchanged structured-task budget.
+                        fields = ('fact_id','text','signal','finding','analysis','comparison','at')
+                        if role.value == 'patient_insight':
+                            fields += ('patient','magnitude')
+                        result = {key:fact.get(key) for key in fields}
                         # Preserve check-in state/count/window exactly; event IDs
                         # remain outside model input as in the read-tool contract.
                         fields = {'checkin_run':('state','start','end'),
@@ -262,7 +268,7 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
         reason = "INVALID_OR_UNAVAILABLE_MODEL" if provider.live else "OFFLINE_EXTRACTION"
         codes = {"PROHIBITED_CLAIM", "UNDELIVERED_FACT", "FABRICATED_NUMBER_OR_DATE", "UNSUPPORTED_SIGNAL",'WINDOW_BUDGET','WINDOW_REQUIRED','TOOL_BUDGET','INVALID_MODEL_MESSAGE',
                  "UNSUPPORTED_CATEGORY", "OMITTED_RETAINED_FINDING", "PATIENT_BURDEN", "QUESTION_RANKER_CONTENT",
-                 "UNAPPROVED_QUESTION", "FINDING_MISMATCH", "VERIFIER_REJECTED", "HEADLINE_BUDGET", "UNAUTHORIZED_TOOL", "PROMPT_BUDGET", "PARALLEL_TOOL_LIMIT", 'HEADLINE_SCHEMA', 'HEADLINE_JARGON', 'PATIENT_HEADLINE_STYLE', 'PATIENT_HEADLINE_PERSPECTIVE'}
+                 "UNAPPROVED_QUESTION", "FINDING_MISMATCH", "VERIFIER_REJECTED", "HEADLINE_BUDGET", "UNAUTHORIZED_TOOL", "PROMPT_BUDGET", "PARALLEL_TOOL_LIMIT", 'HEADLINE_SCHEMA', 'HEADLINE_JARGON', 'PATIENT_HEADLINE_STYLE', 'PATIENT_HEADLINE_PERSPECTIVE', 'TASK_INPUT_BUDGET'}
         if isinstance(exc, ValueError) and str(exc) in codes:
             trace.append({"action": "VALIDATION", "result": "REJECT", "code": str(exc)})
         else:

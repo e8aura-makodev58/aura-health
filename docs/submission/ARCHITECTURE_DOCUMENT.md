@@ -1,6 +1,7 @@
 # AURA Health — Detailed Architecture and Diagram Specification
 
-Date: 2026-10-13. Implementation inspected at `3d95a66`.
+Date: 2026-10-13. Original inventory inspected at `3d95a66`; integrated companion
+and current boundaries reconciled against `f37af0c`.
 
 Chosen challenge: Healthcare Challenge Statement2 — "AI Healthier Every Day:
 Intelligent Support for Long-Term Self-Care", Scenario1 — "Mental Health Maintenance
@@ -14,15 +15,13 @@ explicitly separated. It is not a deployment change or a clinical validation cla
 The repository may receive concurrent presentation changes; this document records
 the backend and trust boundaries inspected at the commit above.
 
-Companion-build update2026-10-13: the Codex branch adds `aura_app/companion.py`,
-`GET /patients/{patient_id}/companion`, additive supply/refill/reason fields,
-categorical missed-dose reasons and linked review records. It reads committed
-evidence under the existing safety guard and uses Claude-owned curated lookup/
-suggestion interfaces. See `docs/PATIENT_COMPANION_BACKEND.md` for implementation,
-test evidence and pending branch integration. This is an application projection,
-not a new domain engine or autonomous medication agent. Final diagrams/deck should
-be reconciled to the merged release; the original detailed inventory below is
-still labelled with its inspected code version rather than claimed as live new UI.
+The integrated patient companion adds read-only `GET /patients/{patient_id}/companion`,
+curated medication information, dose/reason records, review/refill dates and optional
+curated suggestions. Typed `POST /patients/{patient_id}/medication/ask` questions
+are patient free text: safety processing precedes topic selection and curated
+answers. These are application projections/content services, not a new domain
+engine or an autonomous medication agent. See §6.1 and
+`docs/PATIENT_COMPANION_BACKEND.md`; final release checks are separately versioned.
 
 ## 1. Architecture in one paragraph
 
@@ -49,7 +48,7 @@ The current hosted application operates on synthetic data only.
 
 | Actor | Implemented interaction | Boundary to show |
 |---|---|---|
-| Patient demo user | Calm recap; Good/Okay/Rough check-ins; routine records; questions and explanations; optional detailed data and appointment preparation | Inputs go through application services; the browser owns presentation, not domain policy |
+| Patient demo user | Calm recap; medication information; today's dose and reasons; coming-up dates; optional suggestions; check-ins, questions/explanations and appointment preparation | Inputs go through application services; the browser owns presentation, not domain policy |
 | Clinician demo user | Source-linked findings, historical charts, record Q&A, comparisons and review preparation | The demo toggle exposes the synthetic record; it is not authenticated clinical access |
 | Demo operator | Provider/model configuration and synthetic scenario controls | Operator settings are separate from ordinary patient interactions |
 | Sponsor / future institution | Intended owner of clinical parameters, content and deployment decisions | Future governance and institutional authorization are not supplied by the demo |
@@ -148,6 +147,9 @@ flowchart LR
     READ[Committed evidence and review projection]
     GUARD[Agent service and current-state guard]
     WORD[Approved wording and fallback]
+    COMP[Read-only companion projection]
+    MEDASK[Medication question service]
+    CURATED[Curated medication and optional suggestions]
     subgraph POLICY[Deterministic state and policy]
       LONG[Anchor + rolling + context]
       GATE[Patient-input safety gate]
@@ -176,6 +178,16 @@ flowchart LR
   API --> APP
   API --> READ
   API --> GUARD
+  API -->|GET companion| COMP
+  READ --> COMP
+  SAFE -->|Current safety guard| COMP
+  CURATED --> COMP
+  COMP --> PAT
+  API -->|POST medication ask| MEDASK
+  MEDASK -->|Typed question: patient free text first| APP
+  SAFE -->|Permitted state only| MEDASK
+  CURATED -->|Fixed answer or abstention| MEDASK
+  MEDASK --> PAT
   APP -->|Safety-relevant input first| GATE
   GATE --> DET
   DET -->|Resolved evidence| SAFE
@@ -235,6 +247,39 @@ Implemented event families include wearable observations, check-ins, medication
 events, context events/explanations, structured assessment responses, patient free
 text, anchor commands and review commands. Public hosted routes deliberately
 expose a smaller synthetic interface than the base development API.
+
+### 6.1 Patient companion and medication-question paths
+
+`aura_app/companion.py` reads committed treatment/events/evidence within a repository
+transaction. It does not write anchors, replay policy or generate prose. Response
+fields are `safety_normal`, `medication`, `dose_today`, `adherence`, `coming_up` and
+`suggestions`. A non-normal/degraded/unassessed-input guard suppresses ordinary
+content before content callbacks run.
+
+- **Medication:** `aura_agent/medication.py` reads `medication_info.json` for three
+  medications and five topics. Stored prescription/schedule is shown; no dose is
+  inferred. Content is labelled development content requiring pharmacist review.
+- **Dose:** Taken submits ACKNOWLEDGED; Not yet submits no event; Skipped submits
+  one MISSED record with an optional categorical reason. UNKNOWN/unrecorded days
+  stay separate from missed days. Seven-day counts use the latest report per local
+  scheduled day for the once-daily synthetic regimen, not verified ingestion.
+- **Coming up:** next_review and last_refill + supply_days produce displayed
+  medication-review/refill dates. No push notifications, booking, refill orders
+  or invented appointment item exist.
+- **Suggestions:** `suggestions.py` selects optional curated choices from committed
+  descriptive changes. It neither assigns a tier nor creates treatment instructions.
+- **Medication ask:** `aura_app/medication_ask.py` commits and safety-assesses a typed
+  patient question before matching a topic. Topic chips read curated content only
+  under the current safety guard. Deterministic keywords, or optional structured
+  `medication_topic` model classification, choose only an approved topic ID. The
+  response is curated text or a fixed abstention/redirect, never an LLM-written
+  medication answer. The UI refreshes safety after typed questions.
+
+The medication question's patient-event commit and later answer lookup are separate
+operations, not one transaction across inference. A stored safety assessment is
+retained even if classification fails; the fallback is abstention. Dose reasons
+remain typed history and linked Not-shared review records. No medication-agent write
+tool, clinical scheduling service or conversational memory should be drawn.
 
 ### Ordered ingestion flow
 
@@ -464,6 +509,12 @@ Use one database cylinder in the overview. A detail diagram can group its tables
 | Safety | `safety_states`, `safety_references`, `archived_safety_episodes` | Current state plus event/episode provenance and closed history |
 | Timeline and audit | `timeline`, `audit`, `safety_audit` | Ordered user-visible history and linked application/policy records |
 | Output and execution | `communication_outputs`, `agent_runs`, `workflow_runs` | Wording, model/config versions, source/trace/outcome records and workflow results |
+
+Companion storage adds columns, not a new companion database: `treatment_context`
+holds `supply_days` and `last_refill` alongside the existing prescription/review
+fields; `medication_events.reason` retains optional categorical missed-dose reasons.
+Linked reason items use existing `review_items`; curated content remains versioned
+JSON. Schema initialization adds missing columns to development databases.
 
 Current-state projections are mutable; the event/timeline history is
 append-oriented. `agent_runs` and `workflow_runs` additionally have SQLite triggers

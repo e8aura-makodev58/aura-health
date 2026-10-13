@@ -3,6 +3,17 @@ flowchart LR
   APP <--> DB[(Repository interfaces / development SQLite)]
   APP --> LG[Deterministic longitudinal engine]
   APP --> INPUT[Patient-input safety boundary]
+  UI --> COMP[GET /companion: read-only patient projection]
+  DB --> COMP
+  CONTENT[Curated medication info / optional suggestions] --> COMP
+  SAFE -->|Current safety guard| COMP
+  COMP --> UI
+  UI --> ASK[POST /medication/ask]
+  ASK -->|Typed question: patient free text first| APP
+  SAFE -->|Permitted state only| ASK
+  CONTENT -->|Fixed answer or abstention| ASK
+  TOPIC[Optional model: approved topic ID only] --> ASK
+  ASK --> UI
   INPUT --> DET[Demo rules / model proposals]
   DET --> SAFE[Deterministic safety state machine]
   LG --> INTENT[Approved communication intent]
