@@ -270,7 +270,8 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                  "UNSUPPORTED_CATEGORY", "OMITTED_RETAINED_FINDING", "PATIENT_BURDEN", "QUESTION_RANKER_CONTENT",
                  "UNAPPROVED_QUESTION", "FINDING_MISMATCH", "VERIFIER_REJECTED", "HEADLINE_BUDGET", "UNAUTHORIZED_TOOL", "PROMPT_BUDGET", "PARALLEL_TOOL_LIMIT", 'HEADLINE_SCHEMA', 'HEADLINE_JARGON', 'PATIENT_HEADLINE_STYLE', 'PATIENT_HEADLINE_PERSPECTIVE', 'TASK_INPUT_BUDGET'}
         if isinstance(exc, ValueError) and str(exc) in codes:
-            trace.append({"action": "VALIDATION", "result": "REJECT", "code": str(exc)})
+            trace.append({"action": "VALIDATION", "result": "REJECT", "code": str(exc),
+                          **({"detail": exc.detail} if isinstance(getattr(exc, "detail", None), dict) else {})})
         else:
             from pydantic import ValidationError
             if isinstance(exc,ValidationError):

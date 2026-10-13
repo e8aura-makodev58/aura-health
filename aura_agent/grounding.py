@@ -36,13 +36,17 @@ def validate(raw, tools, role):
             raise ValueError("FINDING_MISMATCH")
         for date in re.findall(r"\b\d{4}-\d{2}-\d{2}\b", text):
             if date not in sources:
-                raise ValueError("FABRICATED_NUMBER_OR_DATE")
+                error = ValueError("FABRICATED_NUMBER_OR_DATE"); error.detail = {"unmatched": [date]}
+                raise error
         numbers = set(re.findall(r"\d+(?:\.\d+)?", sources))
         # A thousands separator is formatting, not a new number: "5,265.825" must
         # equal "5265.825" exactly. Rounded or calculated values still fail.
         written = re.sub(r"(?<=\d),(?=\d{3}\b)", "", text)
-        if not set(re.findall(r"\d+(?:\.\d+)?", written)) <= numbers:
-            raise ValueError("FABRICATED_NUMBER_OR_DATE")
+        unmatched = set(re.findall(r"\d+(?:\.\d+)?", written)) - numbers
+        if unmatched:
+            # The offending tokens (numbers only, never text) make rejections diagnosable.
+            error = ValueError("FABRICATED_NUMBER_OR_DATE"); error.detail = {"unmatched": sorted(unmatched)[:8]}
+            raise error
         for label, signal in (("sleep timing", "SLEEP_MIDPOINT"), ("sleep duration", "SLEEP_DURATION"), ("activity", "ACTIVITY"), ("heart rate", "RESTING_HEART_RATE")):
             if label in text.lower() and not any(tools.delivered[fid]["signal"] == signal for fid in claim.fact_ids):
                 raise ValueError("UNSUPPORTED_SIGNAL")
