@@ -78,9 +78,12 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   await page.evaluate(()=>window.auraTour.start());await page.locator('.tour-next').click();await ready(page);
   await page.evaluate(()=>window.auraTour.finishForTest());
   await page.getByRole('button',{name:'Show the safety example'}).click();
+  // Paced: the note box opens with a readable example and stays up long enough to read.
+  await page.waitForFunction(()=>document.getElementById('input-dialog').open&&/sensitive message masked/.test(document.getElementById('input-text').value),null,{timeout:15000});
+  await page.waitForTimeout(2000);assert.equal(await page.locator('#input-dialog').isVisible(),true,'note box still visible');
   await page.waitForFunction(()=>/Safety takes priority/.test(document.querySelector('.tour-title')?.textContent||''),null,{timeout:60000});
   assert.equal(await page.locator('#safety-panel').isVisible(),true);
-  assert.match(await page.locator('.tour-text').innerText(),/can't dismiss it/);
+  assert.match(await page.locator('.tour-text').innerText(),/can't dismiss it.*doesn't send alerts/s);
   await page.getByRole('button',{name:'Reset the demo'}).click();
   await page.waitForFunction(()=>!document.querySelector('.tour-card'),null,{timeout:60000});
   await page.waitForFunction(()=>document.getElementById('safety-panel').hidden,null,{timeout:30000});

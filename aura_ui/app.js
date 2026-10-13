@@ -395,9 +395,12 @@ for (const role of ["patient", "clinician"]) $(`${role}-role`).addEventListener(
 });
 $("close-dialog").addEventListener("click", () => $("input-dialog").close()); $("close-why").addEventListener("click", () => $("why-dialog").close());
 $("explanation-context").addEventListener("change", populateExplanation);
-for (const button of document.querySelectorAll("[data-fixture]")) button.addEventListener("click", () => { $("input-text").value = button.dataset.fixture;for(const option of document.querySelectorAll("[data-fixture]"))option.setAttribute("aria-pressed",String(option===button));$("send-input").disabled=busy; });
+for (const button of document.querySelectorAll("[data-fixture]")) button.addEventListener("click", () => { $("input-text").value = button.dataset.sample || button.dataset.fixture;for(const option of document.querySelectorAll("[data-fixture]"))option.setAttribute("aria-pressed",String(option===button));$("send-input").disabled=busy; });
 $("input-form").addEventListener("submit", async (event) => {
-  event.preventDefault(); const text = $("input-text").value.trim(); if (!text) return;
+  event.preventDefault(); let text = $("input-text").value.trim(); if (!text) return;
+  // A readable example sentence is sent as its approved demo example.
+  const example = [...document.querySelectorAll("[data-fixture]")].find(button => button.dataset.sample === text);
+  if (example) text = example.dataset.fixture;
   if (dialogKind === "explanation") {
     const context = current.view.explanation_options.find(item => item.context_event_id === $("explanation-context").value);
     const signals = [...document.querySelectorAll("#explanation-signals input:checked")].map(input => input.value);
