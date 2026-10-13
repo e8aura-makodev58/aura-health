@@ -106,12 +106,13 @@ function goPage() {
   document.querySelector(".bottom-nav").hidden = presentationRole !== "patient" || page === "home" || !current;
   $("clinician-disclosure").hidden = presentationRole !== "clinician";
   $("explain").hidden = presentationRole !== "patient";
-  $("patient-role").setAttribute("aria-pressed", String(presentationRole === "patient"));
-  $("clinician-role").setAttribute("aria-pressed", String(presentationRole === "clinician"));
+  $("patient-role").setAttribute("aria-pressed", String(Boolean(current) && presentationRole === "patient"));
+  $("clinician-role").setAttribute("aria-pressed", String(Boolean(current) && presentationRole === "clinician"));
   setText("patterns-heading", presentationRole === "clinician" ? "Between appointments" : "Your full data");
   for (const node of document.querySelectorAll(".view")) node.hidden = !current || node.id !== `${page}-view`;
   updateWelcome();
   $("empty-state").hidden = Boolean(current);
+  document.body.classList.toggle("on-landing", !current);
   for (const link of document.querySelectorAll("[data-page]")) { if (link.dataset.page === page) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current"); }
   // Navigation cannot dismiss or replace the server's safety panel.
   showSafety(communication);
@@ -364,9 +365,16 @@ async function sendPending() {
 function toggleBusy(value) { for (const node of document.querySelectorAll("[data-checkin],[data-medication],#send-input,#scenario,#connect,#talk")) node.disabled = value; if(!value && hosted && !$("input-text").value) $("send-input").disabled=true; }
 
 $("demo-toggle").addEventListener("click", () => { $("demo-panel").hidden = !$("demo-panel").hidden; $("demo-toggle").setAttribute("aria-expanded", String(!$("demo-panel").hidden)); });
-$("start-demo").addEventListener("click", () => { $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); $("scenario").focus(); });
-$("start-patient")?.addEventListener("click", () => { presentationRole = "patient"; $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); $("scenario").focus(); });
-$("start-clinician")?.addEventListener("click", () => { presentationRole = "clinician"; $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); $("scenario").focus(); });
+// The landing stays until the visitor chooses a view; each choice opens the demo record.
+async function openDemo(role) {
+  if (!catalog.length || !$("scenario").value) { tell("The demo is still loading. Try again in a moment."); return; }
+  presentationRole = role; location.hash = "home";
+  if (current) { render(); goPage(); } else await loadPatient($("scenario").value);
+  window.scrollTo(0, 0);
+}
+$("start-demo").addEventListener("click", async () => { await openDemo("clinician"); $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); });
+$("start-patient")?.addEventListener("click", () => openDemo("patient"));
+$("start-clinician")?.addEventListener("click", () => openDemo("clinician"));
 $("scenario").addEventListener("change", () => { location.hash = "home"; loadPatient($("scenario").value); });
 $("connect").addEventListener("click", () => { if ($("patient-id").value.trim()) loadPatient($("patient-id").value.trim()); });
 for (const button of document.querySelectorAll("[data-checkin]")) button.addEventListener("click", async () => { lastCheckin = button.dataset.checkin; await submitEvent("PATIENT_CHECKIN", {state:lastCheckin}); });
@@ -378,6 +386,7 @@ $("why-home").addEventListener("click", () => showWhy());
 $("why-patterns").addEventListener("click", () => showWhy());
 $("chart-range").addEventListener("change", () => { if(current) window.renderAuraEvidence(current.evidence); });
 for (const role of ["patient", "clinician"]) $(`${role}-role`).addEventListener("click", () => {
+  if (!current && catalog.length) { openDemo(role); return; }
   presentationRole = role; location.hash = "home"; if(current)render();else goPage(); window.scrollTo(0,0);
 });
 $("close-dialog").addEventListener("click", () => $("input-dialog").close()); $("close-why").addEventListener("click", () => $("why-dialog").close());
@@ -430,7 +439,9 @@ async function start() {
     for (const scenario of catalog) { const option = element("option", scenario.label); option.value = scenario.patient_id; $("scenario").append(option); }
     const initial = catalog.find(item => item.id === "B") || catalog[0];
     $("scenario").value = initial.patient_id;
-    await loadPatient(initial.patient_id);
+    // Visitors start on the landing. Automated suites keep the direct start
+    // unless they opt in to the landing.
+    if (navigator.webdriver && !window.auraLandingInAutomation) await loadPatient(initial.patient_id);
   } catch (error) {
     $("scenario").replaceChildren(element("option", "Demo temporarily unavailable")); $("scenario").disabled = true;
     tell(error.message, true);

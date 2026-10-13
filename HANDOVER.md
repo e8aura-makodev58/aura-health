@@ -251,6 +251,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Landing stays until the visitor chooses; full-bleed sunrise (user-approved)
+- User: the "Welcome to AURA" sunrise was barely visible (the demo auto-opened patient B after ~1 s). Startup now loads the scenario list only; the landing stays until "See the patient's day" (patient view → breathing welcome), "See what the clinician sees", "Play the 3-minute story" (clinician view + guide) or the top-bar Patient/Clinician buttons. Role buttons are not highlighted until a view is chosen. Automated browsers keep the direct start unless `window.auraLandingInAutomation` is set.
+- Sunrise (`welcome-hero.webp`) is a full-width band behind the landing only (`body.on-landing::before`), fading into the paper colour; separate phone positioning keeps the sun above the headline. Not used on other pages.
+- Test `tests/browser/landing.cjs` (2 checks, 390/1280 screenshots). All 14 hosted browser suites PASS.
 ### 2026-10-13 — Codex Sol — Canonical submission preparation package
 - User supplied the current Healthcare Track form and authorized preparation. Added `docs/submission/` form copy, requirements, manifest/asset tracker,7-minute script, PPT outline/diagram source, Miora cover brief, genuine-history guide, evidence ledger and read-only preflight. Corrected old M8 optional-field wording; historical submission draft redirected. Actual required files/video/approval remainmissing; nothing submitted or published.
 - Verified: full303 PASS/356.315s on `bf82b80`; HTTPS healthok/synthetic_onlytrue; preflight7-word blurb and missing-item report, strict gate exits1 as expected. No root runtime/engine/settings/dependency changes, paid calls or deployment. Concurrent `app.js`/CSS/browser-runner/landing-suite edits appeared later and were left untouched/unstaged; final release checks still needed. Compacted oldest logs after506-line threshold, preserving the full prior handover in `docs/history/HANDOVER_2026-10-13_PRE_SUBMISSION.md`; recent logs retained. User PDF untouched.
