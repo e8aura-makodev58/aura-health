@@ -141,6 +141,15 @@ class ApprovedWorkflowTests(unittest.TestCase):
         draft=lambda text:{'claims':[{'text':text,'fact_ids':[fact['fact_id']],'findings':[],'section':'changes'}],'question_ids':[],'headline':''}
         self.assertTrue(validate(draft(f"The earlier median was {exact} steps."),tools,AgentRole.RECORD_QA)['claims'])
         with self.assertRaises(ValueError):validate(draft(f"The earlier median was {int(float(median))+1:,} steps."),tools,AgentRole.RECORD_QA)
+    def test_aw4h_long_investigations_keep_the_outcome_line(self):
+        from aura_app.agent import investigation_trail
+        keys={'k1':{'label':'Activity'}}
+        trace=[{'step':i,'tool':name,'arguments':{},'fact_ids':[]} for i,name in enumerate(
+            ['get_series','get_context','get_gaps','get_status','get_review_snapshot','get_decisions','get_gaps','get_context','get_series'])]
+        trace.append({'action':'INDEPENDENT_VERIFIER','claims_checked':9,'rejected_indices':[]})
+        steps=investigation_trail(trace,keys,True)
+        self.assertLessEqual(len(steps),7);self.assertEqual(len(steps),len(set(steps)))
+        self.assertEqual(steps[-1],'A second check reviewed 9 statements; all supported')
     def test_aw5_rules_or_semantic_cannot_lower_current_mode(self):
         result=self.service.process(self.event('I want to die.'))
         self.assertEqual(result.safety['state']['interaction_mode'],'ELEVATED')
