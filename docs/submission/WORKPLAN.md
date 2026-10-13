@@ -56,7 +56,7 @@ today's dose + adherence barriers, coming up, gentle suggestions). That spec's o
 | Claude | Medication content + `/medication/ask`, suggestions, integration | C1–C5 (script waits until features land) |
 | CodeBuddy | The four patient-home cards + appointment items | B1–B4 |
 
-Merge order 14 Oct evening: Codex → Claude → CodeBuddy into `main`; freeze again 15 Oct morning.
+No fixed cut-off (user, 2026-10-13): integrate as soon as all three agents report done in `HANDOVER.md`; merge order Codex → Claude → CodeBuddy, then a short freeze for QA and recording. The "Due" columns below are targets, not cut-offs.
 
 ## Status of the review findings
 
@@ -114,7 +114,7 @@ what you verified. Nobody merges into `main` or deploys unless the user says so.
 
 **Codex:**
 > First read `docs/PATIENT_COMPANION_SPEC.md`: your build tasks are its Codex rows (§4), due 14 Oct
-> 16:00, before X1–X5. Work only in `/home/makodev58/aura-health-codex` on `improve/feature-codex`. First commit or
+> before X1–X5. No fixed deadline: report done in `HANDOVER.md` when finished. Work only in `/home/makodev58/aura-health-codex` on `improve/feature-codex`. First commit or
 > stash your current `HANDOVER.md` edit, then `git pull origin main`. Read
 > `docs/submission/WORKPLAN.md`; your tasks are X1–X5 with their "Done when" criteria. Browser
 > tests on port 8036. No runtime changes, quota changes, merges or deploys. Push your branch and
@@ -123,7 +123,7 @@ what you verified. Nobody merges into `main` or deploys unless the user says so.
 **CodeBuddy:**
 > First read `docs/PATIENT_COMPANION_SPEC.md`: your build task is the patient-home UI in §4 (four
 > cards + appointment items), built against the §3 contract with mocks until the endpoints land,
-> due 14 Oct 16:00, before B1–B4. Work only in `/home/makodev58/aura-health-codebuddy` on `improve/feature-codebuddy` (already up
+> before B1–B4. No fixed deadline: report done in `HANDOVER.md` when finished. Work only in `/home/makodev58/aura-health-codebuddy` on `improve/feature-codebuddy` (already up
 > to date with `main`). Read `docs/submission/WORKPLAN.md` and `docs/submission/COVER_BRIEF.md`;
 > your tasks are B1–B4 with their "Done when" criteria. Use the screenshots in
 > `docs/presentation/screenshots/`. Browser tests on port 8046. Keep genuine screenshots of your

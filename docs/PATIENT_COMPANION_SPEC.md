@@ -120,23 +120,19 @@ Response: `{"status": "ANSWERED"|"ABSTAINED"|"BLOCKED", "topic_id": str|null, "a
 | Story, script, deck, video, integration merges and deploys when the user directs | **Claude** | `docs/presentation/`, `docs/submission/` |
 
 Interfaces between owners:
-- Codex's `companion.py` calls `aura_agent.medication.lookup(name) -> dict | None` and
-  `aura_agent.suggestions.select(evidence, safety_normal) -> dict | None` (Claude provides both by
-  14 Oct 10:00; until then Codex may stub them).
+- Codex's `companion.py` calls `aura_agent.medication.lookup(name, schedule) -> dict | None` and
+  `aura_agent.suggestions.select(evidence, safety_normal) -> dict | None`. Both are done on
+  `origin/improve/feature-claude` (commit `0d7889a`); fetch and merge or cherry-pick that commit.
 - CodeBuddy builds against §3 with mocked responses until the endpoints land; use the field names
   exactly as written.
 
 ## 5. Schedule
 
-| When | What |
-|---|---|
-| 13 Oct evening | Spec merged to `main`; every agent pulls and starts |
-| 14 Oct 10:00 | Claude: `medication.lookup` and `suggestions.select` pushed |
-| 14 Oct 16:00 | Codex backend and Claude endpoints pushed with tests; CodeBuddy UI pushed |
-| 14 Oct evening | Integration: merge order Codex → Claude → CodeBuddy into `main`, full tests, deploy |
-| 15 Oct morning | Feature freeze; live QA; script final; screenshots |
-| 15 Oct afternoon | Deck, recording, voice-over |
-| 16 Oct | Submit (buffer) |
+No fixed deadlines (user, 2026-10-13): each agent works through its tasks and reports **done** in
+`HANDOVER.md` (branch, commit, what was verified). As soon as all three have reported done,
+integration starts: merge order Codex → Claude → CodeBuddy into `main`, full tests, deploy on the
+user's go-ahead, then a short freeze for QA, script, screenshots, deck and recording. The form
+deadline (16 Oct) is the only fixed date.
 
 Cut list if behind (in order): medication free-text ask (keep topic chips) → suggestions →
 coming-up refill line.
