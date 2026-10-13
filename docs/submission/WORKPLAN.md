@@ -21,6 +21,28 @@ add a Log entry to `HANDOVER.md`. Do not edit another agent's files; ask in `HAN
 6. **Demo Q&A question:** "When did sleep timing change, and was anything reported around then?"
 7. Personal account email is removed from public files.
 
+## Where each agent works (set up 2026-10-13 by Claude, user-directed)
+
+One repository, one folder (git worktree) per agent, so switching branches never changes
+another agent's files. Branch names are the user's (recorded by Codex in `HANDOVER.md`).
+
+| Agent | Folder | Branch | Browser-test port |
+|---|---|---|---|
+| Integration and deploys (user-directed merges only) | `/home/makodev58/aura-health` | `main` | — |
+| Claude | `/home/makodev58/aura-health-claude` | `improve/feature-claude` | 8026 |
+| Codex | `/home/makodev58/aura-health-codex` | `improve/feature-codex` | 8036 |
+| CodeBuddy | `/home/makodev58/aura-health-codebuddy` | `improve/feature-codebuddy` | 8046 |
+
+- Work only in your own folder and branch; push only your branch (`git push -u origin <branch>`).
+- Do not switch branches in `/home/makodev58/aura-health`; it stays on `main`, holds `.env`, and is
+  the only folder `docker compose` runs from. Nobody merges or deploys without the user's direction.
+- `.venv` in each worktree is a link to the main folder's environment (ignored via
+  `.git/info/exclude`). `.env` exists only in the main folder.
+- Run browser suites with your own port: `tests/browser/run.py --hosted --port <port> ...`.
+- Other agents' commits are visible at once in every folder (`git log origin/<branch>` after a
+  fetch, or the local branch name), without merging.
+- The CodeBuddy branch used before, `improve/UI_UX`, is retired (fully merged into `main`).
+
 ## Assignments
 
 | # | Finding / task | Owner | Files | Due |
@@ -37,7 +59,7 @@ add a Log entry to `HANDOVER.md`. Do not edit another agent's files; ask in `HAN
 | 10 | Artwork provenance + development-history bundle | User (genuine screenshots) → CodeBuddy (assemble PDF) | `assets/development-history.pdf` | 14 Oct |
 | 11 | Cover image 16:9 (≤1 MB; 1920×1080 master, 384×216 export) | CodeBuddy with Miora | `assets/aura-cover.png` | 14 Oct |
 | 12 | Q&A suggestion-chip styling | Claude | `aura_ui/styles.css` | 13 Oct |
-| 13 | "When things changed" strip: oversized labels | CodeBuddy | `aura_ui/` (branch `improve/UI_UX`) | 14 Oct |
+| 13 | "When things changed" strip: oversized labels | CodeBuddy | `aura_ui/` (branch `improve/feature-codebuddy`) | 14 Oct |
 | 14 | Presentation script (5–8 min) | Claude drafts → user approves | `../presentation/SCRIPT.md` | 13 Oct |
 | 15 | Deck built from approved script + screenshots + Codex diagrams | Claude | `assets/aura-health-deck.pptx` | 14 Oct |
 | 16 | Video: screen-recorded walkthrough following the script | Claude records screens; **user narrates** (no voice tools here) | `../presentation/video/` (not in Git if large) | 15 Oct |
@@ -46,8 +68,8 @@ add a Log entry to `HANDOVER.md`. Do not edit another agent's files; ask in `HAN
 
 ## Kickoff prompts
 
-**Codex:**
-> Read `docs/submission/WORKPLAN.md`. Your tasks are #7, #8 and #17. For #8, draw from
+**Codex (folder `/home/makodev58/aura-health-codex`, branch `improve/feature-codex`):**
+> Work in `/home/makodev58/aura-health-codex`. Read `docs/submission/WORKPLAN.md`. Your tasks are #7, #8 and #17. For #8, draw from
 > `docs/submission/ARCHITECTURE_DOCUMENT.md`: three 16:9 diagrams (system overview with trust
 > boundaries, the Aura-Agent investigation loop, safety precedence/pinned resources), warm
 > off-white background, AURA palette, large readable labels, SVG plus 1920×1080 PNG in
@@ -55,7 +77,7 @@ add a Log entry to `HANDOVER.md`. Do not edit another agent's files; ask in `HAN
 > most 5 live runs of the demo question and record every outcome, including fallbacks. Edit only
 > your assigned files; log in `HANDOVER.md`.
 
-**CodeBuddy (branch `improve/UI_UX`):**
+**CodeBuddy (folder `/home/makodev58/aura-health-codebuddy`, branch `improve/feature-codebuddy`):**
 > Read `docs/submission/WORKPLAN.md` and `docs/submission/COVER_BRIEF.md`. Your tasks are #11
 > (cover image, with Miora: title "AURA Health", subtitle "Context between appointments", use the
 > real screenshots in `docs/presentation/screenshots/` as reference, export 1920×1080 and 384×216

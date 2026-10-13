@@ -251,6 +251,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — One worktree per agent
+- User: create worktrees and inform the other agents. `/home/makodev58/aura-health` is back on `main` (integration/deploy folder; it had been left on `improve/feature-codex`, clean and pushed). New worktrees: `../aura-health-claude` (`improve/feature-claude`), `../aura-health-codex` (`improve/feature-codex`, Codex's existing branch at `f5f06d1`), `../aura-health-codebuddy` (`improve/feature-codebuddy`), all from `origin/main` `6d29f02`. Each has a `.venv` link to the main environment, ignored via `.git/info/exclude`. Folder/branch/port table and updated kickoff prompts in `docs/submission/WORKPLAN.md`.
 ### 2026-10-13 — Claude — Submission review fixes started; work plan for Claude / Codex / CodeBuddy
 - User: fix all review findings; three agents, done by 15 Oct (deadline 16 Oct). **Plan and assignments: `docs/submission/WORKPLAN.md`** (with kickoff prompts for Codex and CodeBuddy).
 - Key finding: the Healthcare track's **Challenge Statement 2, Scenario 1 "Mental Health Maintenance for Working Adults on Antidepressants"** is our product, and the brief requires naming the chosen case study first. New `docs/submission/CHALLENGE_MAPPING.md` (scenario, features and qualities: built / partial / roadmap / deliberately different; why no relapse prediction).
