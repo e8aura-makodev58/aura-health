@@ -475,5 +475,5 @@ body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:b
 .missed-dose-list li {padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:.85rem}
 .missed-dose-list li:last-child {border-bottom:0}
 @media(max-width:380px) { .dose-actions {grid-template-columns:1fr} }
-@media(min-width:768px) { .companion-cards {grid-template-columns:1fr 1fr;align-items:start} .dose-card,.medication-card {grid-column:1} .coming-up-card,.suggestion-card {grid-column:2} }
+/* Single column at every width: the patient home column is narrow, and two columns left staggered gaps. */
 
