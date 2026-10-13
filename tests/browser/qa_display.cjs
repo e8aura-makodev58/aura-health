@@ -15,7 +15,7 @@ const {chromium}=require('playwright');
    window.result={status:'COMPLETE',state_fingerprint:'fp',generation_used:false,reason:'INVALID_OR_UNAVAILABLE_MODEL',
     disclosure:"The demo's shared AI limit for this minute was reached, so these are related facts from the record. Try again shortly.",
     draft:{headline:'Related facts from the record',claims:[{text:'Heart rate variability recorded 2026-03-01: 48.234 ms.',fact_ids:['f1'],findings:[],section:'changes'}],question_ids:[]},
-    sources:[{fact_id:'f1',source_ref:'hrv-event',text:'Heart rate variability recorded 2026-03-01: 48.234 ms.'}],question_options:{},trace:[]};
+    sources:[{fact_id:'f1',source_ref:'hrv-event',text:'Heart rate variability recorded 2026-03-01: 48.234 ms.'}],question_options:{},trace:[],investigation:['Read the readings and changes for Activity','Compared Activity: 2026-02-26 to 2026-03-11 with 2026-02-12 to 2026-02-25']};
    window.fetch=async url=>({ok:true,json:async()=>String(url).includes('/assessment/')?{generation_allowed:true,state_fingerprint:'fp'}:window.result});
   });
   await page.addScriptTag({path:path.resolve('aura_ui/agent.js')});
@@ -24,6 +24,7 @@ const {chromium}=require('playwright');
   const text=await page.locator('#agent-record_qa').innerText();
   assert.match(text,/48\.234 ms/);assert.match(text,/1 Mar 2026/);assert.doesNotMatch(text,/early March|48\.2 ms/);
   assert.match(await page.locator('#agent-record_qa .agent-disclosure-text').innerText(),/shared AI limit for this minute/);
+  assert.match(await page.locator('#agent-record_qa .investigation-trail').innerText(),/How AURA looked: Read the readings and changes for Activity → Compared Activity: 26 Feb 2026 to 11 Mar 2026 with 12 Feb 2026 to 25 Feb 2026/);
   console.log('QA1_EXACT_CLINICIAN_FACTS_AND_VISIBLE_REASON PASS');
   // Loading presentation: patient preview shows at once, a small note while wording is pending, nothing afterwards.
   const patientPage='<section id="home-view"><div id="recap-placeholder" hidden>breathing</div><section id="month-recap" hidden><div id="agent-patient_insight"></div></section></section><section id="appointment-preview"></section>';

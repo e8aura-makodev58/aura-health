@@ -242,6 +242,12 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Sol follow-up (`450cc0c`): unknown-topic fallback, investigation trail, medication-wording false positive
+- **Unknown-topic fallback (my earlier claim was wrong):** a question with no recognised topic ("favourite colour") now returns no facts; broad record questions ("What changed recently?") still get the main findings. Regression in AW4e.
+- **Investigation trail (clinician Q&A only):** `investigation_trail()` in `aura_app/agent.py` builds a plain line from the run's own trace: reads (with signal labels), compared windows, weekday/missing-day checks, verifier count and removals, and an honest "Stopped: …; showing related facts instead" on fallback. No extra model calls, no reasoning text. UI: "How AURA looked: … → …". Tests AW4b/AW4f, browser QA1.
+- **Medication false positive:** `prohibited_claims` neutralises only the record name "medication-routine record(s)" for the MEDICATION_INSTRUCTION rule; all other medication words still count. `tests/test_medication_wording.py`: 3 observations pass, 9 instructions/mixed sentences still rejected. Shared with M5 validation (milestone5 tests pass).
+- **Quota not changed** (Sol proposes 30/min, 300/hour for judging; needs the user's cost approval).
+- Verified: full Python suite OK; hosted browser qa_display, agent, plain-language, cards, dual-view, workflows, final-dash, milestone7 PASS.
 ### 2026-10-13 — Codex Sol — Follow-up verification and judging recommendations
 - Inspected `5aa8130`; independently33 workflow PASS/45.791s and mocked QA1/QA2 PASS, no paid calls. Reproduced harmless medication-wording rejection and unknown-topic fallback still selecting HR evidence. Added follow-up in `docs/CLAUDE_QA_AND_LOADING_REVIEW.md`; preserved prior dated review.
 - Recommend trace-derived clinician investigation line, narrow medication-observation exception with instruction tests, and explicit judging allowance30/300 subject to cost approval. No runtime edits, quota change or deployment. Claude's full296/11 browser-suite results not independently rerun; user PDF preserved. No M7/design-lock acceptance implied.

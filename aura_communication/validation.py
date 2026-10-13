@@ -17,10 +17,19 @@ PROHIBITED = {
 }
 
 
+# The record name "medication-routine record(s)" names stored routine entries, not a
+# medication. It is neutralised ONLY for the instruction rule, so an observation such
+# as "activity reduced during the medication-routine records" is not read as advice.
+# Every other medication word (medication, antidepressant, tablet, pill, mg) still counts.
+RECORD_NAME = re.compile(r"\bmedication[-\s]routine\s+records?\b", re.IGNORECASE)
+
+
 def prohibited_claims(text: str) -> tuple[str, ...]:
     normalized = unicodedata.normalize("NFKC", text)
+    def scanned(code):
+        return RECORD_NAME.sub("routine records", normalized) if code == "MEDICATION_INSTRUCTION" else normalized
     return tuple(code for code, expression in PROHIBITED.items()
-                 if re.search(expression, normalized, re.IGNORECASE | re.DOTALL))
+                 if re.search(expression, scanned(code), re.IGNORECASE | re.DOTALL))
 
 
 @dataclass(frozen=True)

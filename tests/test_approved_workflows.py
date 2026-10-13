@@ -84,6 +84,8 @@ class ApprovedWorkflowTests(unittest.TestCase):
         self.assertEqual(result['status'],'COMPLETE');self.assertGreater(provider.calls,0)
         self.assertEqual(self.count(),count);self.assertEqual(self.model.requests,[])
         self.assertEqual(result['asker'],'clinician');self.assertEqual(result['clinician_question'],'When did sleep timing change?')
+        self.assertTrue(result['investigation']);self.assertTrue(all(isinstance(step,str) and step for step in result['investigation']))
+        self.assertTrue(any(step.startswith('Read') for step in result['investigation']))
         with self.repo.transaction() as repo:
             self.assertFalse(any(row['payload'].get('text')=='When did sleep timing change?' for row in repo.events(self.patient)))
     def test_aw4c_clinician_route_refuses_personal_statements_without_storing(self):
@@ -113,6 +115,21 @@ class ApprovedWorkflowTests(unittest.TestCase):
         from aura_agent.templates import _mentions
         self.assertFalse(_mentions('was the patient proactive?','active'));self.assertTrue(_mentions('any missed doses?','dose'))
         self.assertEqual(fallback(tools,AgentRole.RECORD_QA,'Any temperature changes?')['claims'],[])
+        self.assertEqual(fallback(tools,AgentRole.RECORD_QA,"What is the patient's favourite colour?")['claims'],[])
+        self.assertTrue(fallback(tools,AgentRole.RECORD_QA,'What changed recently?')['claims'])
+    def test_aw4f_investigation_trail_reports_windows_checks_and_stops(self):
+        from aura_app.agent import investigation_trail
+        keys={'k1':{'label':'Activity'},'k2':{'label':'Sleep timing'}}
+        trace=[{'step':0,'tool':'get_series','arguments':{'key_id':'k1','start':None,'end':None},'fact_ids':['f1']},
+               {'step':0,'tool':'get_series','arguments':{'key_id':'k2','start':None,'end':None},'fact_ids':['f2']},
+               {'step':1,'tool':'compare_windows','arguments':{'key_id':'k1','start':'2026-02-26','end':'2026-03-11','previous_start':'2026-02-12','previous_end':'2026-02-25'},'fact_ids':['f3']},
+               {'action':'INDEPENDENT_VERIFIER','claims_checked':7,'rejected_indices':[5]}]
+        steps=investigation_trail(trace,keys,True)
+        self.assertEqual(steps[0],'Read the readings and changes for Activity, Sleep timing')
+        self.assertEqual(steps[1],'Compared Activity: 2026-02-26 to 2026-03-11 with 2026-02-12 to 2026-02-25')
+        self.assertEqual(steps[2],'A second check reviewed 7 statements; 1 removed as unsupported')
+        stopped=investigation_trail(trace[:1]+[{'action':'FALLBACK','provider_failure':'demo_budget_minute'}],keys,False)
+        self.assertEqual(stopped[-1],'Stopped: the AI usage limit was reached; showing related facts instead')
     def test_aw5_rules_or_semantic_cannot_lower_current_mode(self):
         result=self.service.process(self.event('I want to die.'))
         self.assertEqual(result.safety['state']['interaction_mode'],'ELEVATED')

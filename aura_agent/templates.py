@@ -40,11 +40,15 @@ def related_facts(tools, question, limit=6):
         'context': _mentions(words, 'context', 'explain', 'explanation', 'reason', 'around', 'reported'),
         'held': _mentions(words, 'explain', 'explanation', 'held', 'review'),
     }
+    # Broad record questions get the main findings; a question with no
+    # recognised topic gets nothing rather than unrelated evidence.
+    broad = _mentions(words, 'record', 'change', 'changed', 'recent', 'recently', 'happened', 'happen',
+                      'overall', 'summary', 'summarise', 'summarize', 'notable', 'new', 'anything')
     ordered = []
     if topics['routine']: ordered += routine[-3:]
     if topics['held']: ordered += held[:2]
-    if signals or not any(topics.values()): ordered += findings[:4]
-    if topics['reports'] or not (signals or any(topics.values())): ordered += reports[-2:]
+    if signals or (broad and not any(topics.values())): ordered += findings[:4]
+    if topics['reports'] or (broad and not signals and not any(topics.values())): ordered += reports[-2:]
     if topics['gaps']: ordered += gaps[-2:]
     if topics['context']: ordered += context[-2:]
     ordered += findings[4:] if signals else []

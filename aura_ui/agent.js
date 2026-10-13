@@ -110,7 +110,7 @@
     if(result.status!=='STALE')staleRetries=0;
     const bounded=['clinician_brief','patient_insight'].includes(role),visibleAI=result.generation_used&&(!bounded||Boolean(result.draft.headline))&&(role!=='patient_insight'||Boolean(result.headline_fact_ids?.length));
     const label=paused?'Assessment paused':visibleAI?'AI-written · sources checked':'Summary from the record';
-    const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;if(role!=='patient_insight')area.append(chip);if(role==='record_qa'&&result.disclosure&&!result.generation_used)area.append(node('p',result.disclosure,'fine agent-disclosure-text'));
+    const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;if(role!=='patient_insight')area.append(chip);if(role==='record_qa'&&result.disclosure&&!result.generation_used)area.append(node('p',result.disclosure,'fine agent-disclosure-text'));if(role==='record_qa'&&result.investigation?.length){const trail=node('p',null,'fine investigation-trail');trail.append(node('strong','How AURA looked: '),node('span',result.investigation.join(' → ')));area.append(trail);}
     if(paused){document.getElementById('assessment-complete')?.replaceChildren();window.clearAuraStory?.();document.getElementById('agent-visit_prep')?.replaceChildren();area.append(node('p','Safety interaction or record evaluation comes first. See the separate safety panel.'));return;}
     if(result.draft.headline&&role!=='patient_insight')area.append(node('h3',result.draft.headline.split(/\s+/).slice(0,20).join(' ')));
     const summary=result.record_presentation;

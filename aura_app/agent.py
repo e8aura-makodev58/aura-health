@@ -34,6 +34,52 @@ def reads_as_patient_statement(text):
     return any(rule.search(text) for rule in _detector_rules())
 
 
+def investigation_trail(trace, keys, generation_used):
+    """Plain record of what the Q&A agent actually did, built only from its own
+    trace: tools read, windows compared, claims checked. No model reasoning."""
+    label = lambda key: keys.get(key, {}).get('label', 'a signal')
+    span = lambda a, b: f"{a} to {b}" if a and b else ""
+    steps, reads = [], {}
+    def flush():
+        for verb, labels in reads.items():
+            steps.append(verb + (" for " + ", ".join(dict.fromkeys(labels)) if labels else ""))
+        reads.clear()
+    names = {'get_series': 'Read the readings and changes', 'get_context': 'Read the recorded context',
+             'get_gaps': 'Read the wearable gaps', 'get_decisions': 'Read check-ins and routine records',
+             'get_review_snapshot': 'Read the review items', 'get_status': 'Read the record status'}
+    step = None
+    for row in trace:
+        if 'tool' not in row:
+            continue
+        if row.get('step') != step:
+            flush(); step = row.get('step')
+        args, tool = row.get('arguments') or {}, row['tool']
+        if tool == 'compare_windows' and args.get('key_id'):
+            flush(); steps.append(f"Compared {label(args['key_id'])}: {span(args.get('start'), args.get('end'))} with "
+                                  f"{span(args.get('previous_start'), args.get('previous_end'))}")
+        elif tool == 'day_of_week' and args.get('key_id'):
+            flush(); steps.append(f"Checked {label(args['key_id'])} by weekday, {span(args.get('start'), args.get('end'))}")
+        elif tool == 'summarize_gaps' and args.get('key_id'):
+            flush(); steps.append(f"Counted missing days for {label(args['key_id'])}, {span(args.get('start'), args.get('end'))}")
+        elif tool in names:
+            reads.setdefault(names[tool], [])
+            if args.get('key_id'):
+                reads[names[tool]].append(label(args['key_id']))
+    flush()
+    verifier = next((row for row in trace if row.get('action') == 'INDEPENDENT_VERIFIER'), None)
+    if verifier:
+        checked, rejected = verifier.get('claims_checked', 0), len(verifier.get('rejected_indices', []))
+        steps.append(f"A second check reviewed {checked} statement{'s' if checked != 1 else ''}"
+                     + (f"; {rejected} removed as unsupported" if rejected else "; all supported"))
+    failure = next((row for row in trace if row.get('action') == 'FALLBACK'), None)
+    if failure and not generation_used:
+        rejected_code = next((row.get('code') for row in trace if row.get('result') == 'REJECT'), None)
+        steps.append("Stopped: " + ("the AI usage limit was reached" if str(failure.get('provider_failure') or '').startswith('demo_budget')
+                                    else "the draft failed a fact check" if rejected_code else "the AI was unavailable")
+                     + "; showing related facts instead")
+    return steps[:8]
+
+
 class AgentService:
     def __init__(self, events, *, provider=None, config=None, synthetic_only=False, clock=None):
         self.events = events
@@ -183,6 +229,8 @@ class AgentService:
                     result.update(draft={"claims": [], "question_ids": []}, sources=[], generation_used=False, reason=blocked)
                     result.pop('fallback_headline_fact_ids',None)
                     result.pop('record_presentation',None)
+                if role == AgentRole.RECORD_QA and not blocked:
+                    result['investigation'] = investigation_trail(result.get('trace', []), tools.keys, result.get('generation_used'))
                 result.update(run_id=run_id, patient_id=patient_id, role=role.value,
                     query_id=query_id, window_days=window_days, asker=asker,
                     clinician_question=question if asker == "clinician" else None, status="BLOCKED" if blocked else "COMPLETE",
