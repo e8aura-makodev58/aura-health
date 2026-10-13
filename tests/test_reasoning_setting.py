@@ -21,6 +21,9 @@ def capture(provider, reasoning):
     return sent
 
 
+TOOL = {"type": "function", "function": {"name": "get_x", "description": "x", "parameters": {"type": "object", "properties": {}}}}
+
+
 class ReasoningSettingTests(unittest.TestCase):
     def test_rs1_payload_per_provider(self):
         self.assertEqual(capture("openai", "medium")["reasoning_effort"], "medium")
@@ -45,6 +48,32 @@ class ReasoningSettingTests(unittest.TestCase):
             self.assertEqual(SystemSettings(settings.root)._options()[5], "high")
             with self.assertRaises(AppError):
                 settings.update({"provider": "openai", "model": "fixture-text", "variant": "default", "enabled": True, "reasoning": "max"})
+
+    def test_rs3_openai_tools_with_reasoning_use_responses_api(self):
+        sent = {}
+        def handler(request):
+            sent["path"] = request.url.path; sent["body"] = json.loads(request.content)
+            return httpx.Response(200, json={"status": "completed", "output": [
+                {"type": "reasoning", "summary": []},
+                {"type": "function_call", "call_id": "c2", "name": "get_x", "arguments": "{}"}]})
+        history = [{"role": "system", "content": "Return json"}, {"role": "user", "content": "q"},
+                   {"role": "assistant", "content": None, "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "get_x", "arguments": "{}"}}]},
+                   {"role": "tool", "name": "get_x", "tool_call_id": "c1", "content": "{\"v\": 1}"}]
+        reply = VendorProvider("openai", "fixture-model", "fixture-key", reasoning="medium",
+                               transport=httpx.MockTransport(handler)).agent_step(history, [TOOL])
+        self.assertTrue(sent["path"].endswith("/responses"))
+        body = sent["body"]
+        self.assertEqual(body["reasoning"], {"effort": "medium"})
+        self.assertEqual(body["tools"][0]["name"], "get_x")
+        self.assertEqual([item.get("type", item.get("role")) for item in body["input"]],
+                         ["system", "user", "function_call", "function_call_output"])
+        self.assertEqual(reply["tool_calls"][0]["id"], "c2")
+        self.assertEqual(reply["tool_calls"][0]["function"]["name"], "get_x")
+        # Without reasoning the chat completions path is kept.
+        VendorProvider("openai", "fixture-model", "fixture-key", reasoning="none",
+                       transport=httpx.MockTransport(lambda r: (sent.update(path=r.url.path),
+                       httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": "{}"}}]}))[1])).agent_step(history, [TOOL])
+        self.assertTrue(sent["path"].endswith("/chat/completions"))
 
 
 if __name__ == "__main__":

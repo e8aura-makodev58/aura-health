@@ -121,6 +121,9 @@ class VendorProvider:
             if tools:payload['tools']=[{'type':spec['type'],'function':{key:value for key,value in spec['function'].items() if key!='strict'}} for spec in tools]
         # Reasoning tokens share the output budget, so allow more when reasoning is on.
         budget = 4096 if self.reasoning == "none" else 16384
+        if self.provider == "openai" and self.reasoning != "none" and tools:
+            # OpenAI accepts function tools with reasoning only on the Responses API.
+            return self._responses_step(payload["messages"], tools, budget, "response_format" in payload)
         if self.provider == "openai":
             payload.update(max_completion_tokens=budget, store=False, reasoning_effort=self.reasoning)
         else:
@@ -137,3 +140,40 @@ class VendorProvider:
                     "tool_calls": message.get("tool_calls", [])}
         except (KeyError, IndexError, TypeError, ValueError) as exc:
             raise ProviderUnavailable("Invalid agent provider output", kind=_output_kind(result)) from exc
+
+    def _responses_step(self, messages, tools, budget, json_mode):
+        """OpenAI Responses API turn, returned in the same chat-completions shape as agent_step."""
+        items = []
+        for message in messages:
+            if message["role"] == "tool":
+                items.append({"type": "function_call_output", "call_id": message["tool_call_id"], "output": message["content"]})
+            elif message["role"] == "assistant" and message.get("tool_calls"):
+                items.extend({"type": "function_call", "call_id": call["id"], "name": call["function"]["name"],
+                              "arguments": call["function"]["arguments"]} for call in message["tool_calls"])
+            else:
+                items.append({"role": message["role"], "content": str(message.get("content") or "")})
+        payload = {"model": self.model, "input": items, "store": False, "max_output_tokens": budget,
+                   "reasoning": {"effort": self.reasoning}, "tool_choice": "auto", "parallel_tool_calls": True,
+                   "tools": [{"type": "function", **spec["function"]} for spec in tools]}
+        if json_mode:
+            payload["text"] = {"format": {"type": "json_object"}}
+        result = self._request("POST", "/responses", payload)
+        try:
+            if result["status"] != "completed":
+                raise ProviderUnavailable("Invalid agent provider output", kind="finish_" + str(result["status"])[:30])
+            calls, text = [], []
+            for item in result["output"]:
+                if item["type"] == "function_call":
+                    calls.append({"id": item["call_id"], "type": "function",
+                                  "function": {"name": item["name"], "arguments": item["arguments"]}})
+                elif item["type"] == "message":
+                    for part in item["content"]:
+                        if part["type"] == "refusal":
+                            raise ProviderUnavailable("Invalid agent provider output", kind="refusal")
+                        if part["type"] == "output_text":
+                            text.append(part["text"])
+            if not calls and not text:
+                raise ProviderUnavailable("Invalid agent provider output", kind="empty_content")
+            return {"role": "assistant", "content": "".join(text) or None, "tool_calls": calls}
+        except (KeyError, TypeError) as exc:
+            raise ProviderUnavailable("Invalid agent provider output", kind="bad_shape") from exc
