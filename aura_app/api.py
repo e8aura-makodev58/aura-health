@@ -86,6 +86,12 @@ class AgentIn(BaseModel):
     client_offline: bool = False
     asker: Literal["patient", "clinician"] = "patient"
 
+class MedicationAskIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    run_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    topic_id: str | None = None
+    question: str | None = Field(default=None, min_length=1, max_length=500)
+
 class WorkflowIn(BaseModel):
     model_config = {'extra':'forbid'}
     run_id: str = Field(pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
@@ -185,6 +191,13 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     @app.post("/patients/{patient_id}/agent/{role}")
     def agent_run(patient_id: str, role: AgentRole, body: AgentIn):
         return agent_service.execute(patient_id, role, **body.model_dump())
+
+    from .medication_ask import MedicationAskService
+    medication_service = MedicationAskService(service, agent_service.provider)
+
+    @app.post("/patients/{patient_id}/medication/ask")
+    def medication_ask(patient_id: str, body: MedicationAskIn):
+        return medication_service.ask(patient_id, **body.model_dump())
 
     @app.get("/patients/{patient_id}/agent-runs/{run_id}")
     def agent_trace(patient_id: str, run_id: str):

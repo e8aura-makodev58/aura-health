@@ -265,6 +265,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Patient companion: medication answers, medication questions, suggestions (spec §4 Claude rows)
+- `aura_agent/medication_info.json` (Sertraline, Escitalopram, Fluoxetine; topics purpose, how to take, missed dose, side effects, alcohol; worded as what leaflets say; "Development content — needs pharmacist review"; exact abstention and advice-request lines). `aura_agent/medication.py`: `lookup(name, schedule)` for Codex's companion endpoint, `answer`, deterministic `match_topic` (advice requests such as "increase my dose" → fixed "talk to your doctor or pharmacist" line; other medicines → abstention), model `classify` that may only return a topic id (`medication_topic` task in `tasks.py`).
+- `aura_agent/suggestions.{json,py}`: `select(evidence, safety_normal)` returns a plain "because" sentence and three curated options (signal-specific first), `None` without a recent change or when safety is not normal.
+- `aura_app/medication_ask.py` + `POST /patients/{id}/medication/ask` (spec §3.3): typed questions are processed as patient free text through the safety gate first; non-normal safety → BLOCKED; answers are always curated text.
+- Tests `tests/test_medication_companion.py` (7). Full suite 310 OK on this branch. Not merged; Codex wires `lookup`/`select` into `GET /companion`.
 ### 2026-10-13 — Claude — Freeze cancelled; patient companion spec and build split
 - Gap analysis against Challenge 2 (patient-facing; medication management, health monitoring, preventive care): missing medication understanding, preventive health, adherence barriers. User chose to build them. Spec `docs/PATIENT_COMPANION_SPEC.md`: safety rules (no medication advice, exact abstention lines, curated content only, safety-first, curated optional suggestions, no scores), synthetic Sertraline prescription, API contract (`GET /companion`, extended `MEDICATION_EVENT` with `reason`, `POST /medication/ask`), ownership Codex/Claude/CodeBuddy, schedule and cut list. `WORKPLAN.md` updated.
 ### 2026-10-13 — Claude — Merged agent branches; tasks assigned per agent
