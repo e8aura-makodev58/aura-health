@@ -43,6 +43,21 @@ another agent's files. Branch names are the user's (recorded by Codex in `HANDOV
   fetch, or the local branch name), without merging.
 - The CodeBuddy branch used before, `improve/UI_UX`, is retired (fully merged into `main`).
 
+## 13 Oct evening: feature freeze cancelled — patient companion build
+
+User (2026-10-13): "Cancel feature freeze and let's go all in!" Build the four patient features in
+**[`docs/PATIENT_COMPANION_SPEC.md`](../PATIENT_COMPANION_SPEC.md)** (medication understanding,
+today's dose + adherence barriers, coming up, gentle suggestions). That spec's ownership table
+(§4) and schedule (§5) take priority over the task lists below where they overlap:
+
+| Agent | Build tasks (spec §4) | Then |
+|---|---|---|
+| Codex | Fixture prescription, schema, medication reason + gates, review items, `GET /companion` | X2, X1, X3–X5 |
+| Claude | Medication content + `/medication/ask`, suggestions, integration | C1–C5 (script waits until features land) |
+| CodeBuddy | The four patient-home cards + appointment items | B1–B4 |
+
+Merge order 14 Oct evening: Codex → Claude → CodeBuddy into `main`; freeze again 15 Oct morning.
+
 ## Status of the review findings
 
 Done by Claude on 13 Oct (on `main`): challenge named in the form (finding 1),
@@ -98,14 +113,17 @@ what you verified. Nobody merges into `main` or deploys unless the user says so.
 ## Kickoff messages (paste into each tool)
 
 **Codex:**
-> Work only in `/home/makodev58/aura-health-codex` on `improve/feature-codex`. First commit or
+> First read `docs/PATIENT_COMPANION_SPEC.md`: your build tasks are its Codex rows (§4), due 14 Oct
+> 16:00, before X1–X5. Work only in `/home/makodev58/aura-health-codex` on `improve/feature-codex`. First commit or
 > stash your current `HANDOVER.md` edit, then `git pull origin main`. Read
 > `docs/submission/WORKPLAN.md`; your tasks are X1–X5 with their "Done when" criteria. Browser
 > tests on port 8036. No runtime changes, quota changes, merges or deploys. Push your branch and
 > report branch, commit and what you verified.
 
 **CodeBuddy:**
-> Work only in `/home/makodev58/aura-health-codebuddy` on `improve/feature-codebuddy` (already up
+> First read `docs/PATIENT_COMPANION_SPEC.md`: your build task is the patient-home UI in §4 (four
+> cards + appointment items), built against the §3 contract with mocks until the endpoints land,
+> due 14 Oct 16:00, before B1–B4. Work only in `/home/makodev58/aura-health-codebuddy` on `improve/feature-codebuddy` (already up
 > to date with `main`). Read `docs/submission/WORKPLAN.md` and `docs/submission/COVER_BRIEF.md`;
 > your tasks are B1–B4 with their "Done when" criteria. Use the screenshots in
 > `docs/presentation/screenshots/`. Browser tests on port 8046. Keep genuine screenshots of your
