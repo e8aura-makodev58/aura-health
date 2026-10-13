@@ -1,6 +1,6 @@
 # AURA Health — presentation and video script (v2, patient-first)
 
-Status: DRAFT v2 for the user's approval, 2026-10-13, Claude. Replaces v1 (clinician-first,
+Status: v3 (2026-10-13, Claude): same scenes as v2, reordered to match the in-app guided story (flu after the clinician scene). Replaces v1 (clinician-first,
 written before the patient companion existed). Target **7:00** (allowed 5–8 min), about 950
 spoken words. This script drives the demo video, the deck (also the required architecture
 PPT), the live pitch, and the in-app "Play the 3-minute story" tour (same scene order).
@@ -24,7 +24,7 @@ produces, never edited; if the AI falls back, say so; no clinical-effectiveness 
 > all pieced together from memory."
 
 ### 3 · A calm start — 0:55–1:35
-**Screen:** landing → *See the patient's day* → "Take a breath" → *Continue* → summary.
+**Screen:** landing → *Play the 3-minute story* → *Start* (the in-app guided story; each step highlights one thing and AURA does the tapping) → "Take a breath" → summary.
 > "AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts
 > the system has checked: sleep time later than usual since late February, and how the person
 > has been checking in. It quietly reads everyday wearable data and compares it with *this
@@ -42,20 +42,13 @@ Then *My medication* → *What if I miss a dose?*
 > "And when AURA can't answer, it says so: *I'm not able to identify that medication, please
 > check with your pharmacist.* Exactly what the challenge asks for."
 
-### 5 · Something changes — 2:35–3:15
-**Screen:** Demo guide → *Simulate: flu 3 days* → back to the patient home.
-> "Now a flu, simulated over three days. AURA notices resting heart rate is higher than in the
-> person's *recent* records, and says exactly that: a recent change, not a change from their
-> usual. And when a change shows up, it offers a small idea for today: a short walk, a message
-> to someone you trust, or planning a session. Optional, never about medication."
-
-### 6 · Ready for the appointment — 3:15–3:45
+### 5 · Ready for the appointment — 2:35–3:05
 **Screen:** *Prepare for my appointment* → missed doses → *Not sent*.
 > "Before the visit, everything is in one place: what changed, when, and the missed dose with
 > its reason, ready to discuss with the doctor or pharmacist. Nothing is sent automatically.
 > It stays *Not sent* until the patient decides."
 
-### 7 · What the clinician sees — the agent at work — 3:45–4:50
+### 6 · What the clinician sees — the agent at work — 3:05–4:10
 **Screen:** *Clinician* → assessment cards → *Ask about this record*:
 "When did sleep timing change, and was anything reported around then?"
 > "If the patient shares, their clinician sees what changed and when, with exact values and
@@ -66,6 +59,13 @@ Then *My medication* → *What if I miss a dose?*
 > the record or the treatment."
 **If it falls back:**
 > "This time the draft didn't pass the checks, so AURA shows the related facts and says why."
+
+### 7 · Something changes — 4:10–4:50
+**Screen:** guided story step 9 → simulated flu → the patient home with the new summary and a small idea for today.
+> "Now a flu, simulated over three days. AURA notices resting heart rate is higher than in the
+> person's *recent* records, and says exactly that: a recent change, not a change from their
+> usual. And when a change shows up, it offers a small idea for today: a short walk, a message
+> to someone you trust, or planning a session. Optional, never about medication."
 
 ### 8 · Safety first — 4:50–5:15
 **Screen:** patient → *I want to mention something* → *Safety handoff fixture* → safety panel.
@@ -106,9 +106,10 @@ Then *My medication* → *What if I miss a dose?*
 
 ## Production notes
 
-- **Order:** landing → patient (summary, dose, medication) → flu → appointment → clinician + Q&A
-  → safety → slides. Reset the session first (Demo guide → *Reset this synthetic session*).
+- **Order (matches the in-app guided story):** landing → patient (summary, dose, medication) →
+  appointment → clinician + Q&A → flu → safety → slides. Reset the session first (Demo guide → *Reset this synthetic session*).
   Do the safety scene last: it changes the session's safety state.
 - **AI allowance:** 30 calls/minute, 300/hour, shared. One take ≈ 25–45 calls.
 - **Video:** Claude records the screen walkthrough per scene; the user records the voice-over.
-- **Tour:** the in-app "Play the 3-minute story" follows scenes 3–8 with the same wording.
+- **Tour:** the in-app "Play the 3-minute story" follows scenes 3–8 in the same order; the video
+  records that guided story itself.

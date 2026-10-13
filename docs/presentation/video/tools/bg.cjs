@@ -2,11 +2,11 @@ const {chromium}=require('playwright');const path=require('path');
 const font='file://'+path.resolve('/home/makodev58/aura-health/aura_ui/media/nunito.woff2');
 const mark='file://'+path.resolve('/home/makodev58/aura-health/aura_ui/media/aura-mark.svg');
 const scenes=[
- ['s3','3 · A calm start','A breath first, then one short summary written from checked facts and compared with this person\'s own usual.'],
- ['s4','4 · My medication, my day','One tap a day. If a dose is skipped, AURA asks what got in the way. Medication answers come from approved information, and AURA says when it can\'t answer.'],
- ['s5','5 · Something changes','Three days of flu, simulated. AURA describes a recent change and offers a small, optional idea for today.'],
- ['s6','6 · Ready for the appointment','What changed, when, and the missed dose with its reason. Not sent until the patient decides.'],
- ['s8','8 · Safety first','Anything a patient types is safety-checked first. Fixed safety resources take over; the AI steps back.']];
+ ['t3','3 · A calm start','The guided story starts with a breath, then one short summary written from checked facts and compared with this person\'s own usual.'],
+ ['t4','4 · My medication, my day','One tap a day. If a dose is skipped, AURA asks what got in the way. Answers come from approved information, and AURA says when it can\'t answer.'],
+ ['t5','5 · Ready for the appointment','The skipped dose and its reason are ready to discuss. Not sent until the patient decides.'],
+ ['t7','7 · Something changes','Three days of flu, simulated. AURA describes what changed and offers a small, optional idea for today.'],
+ ['t8','8 · Safety first','Anything a patient types is safety-checked first. Fixed safety resources take over; the AI steps back.']];
 const fs=require('fs');(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1920,height:1080}});
 for(const [id,title,caption] of scenes){
  const html=`<html><head><style>@font-face{font-family:Nunito;src:url('${font}')}body{margin:0;width:1920px;height:1080px;background:#fbfaf7;font-family:Nunito,sans-serif;color:#2a2320;position:relative;overflow:hidden}
