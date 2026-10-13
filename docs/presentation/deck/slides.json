@@ -93,7 +93,7 @@
     "slide": 16,
     "file": "16-how-we-built-it.html",
     "scene": 11,
-    "notes": "Scene 11 · How we built it — 6:25–6:45\n\n[Slide: genuine CodeBuddy and Miora session screenshots.]\n\n\"We built the safety and longitudinal core first, then the agent, then the experience. CodeBuddy built the companion screens from a written contract; Miora made the artwork. Our tip: write down what must never change before asking an AI to build anything.\""
+    "notes": "Scene 11 · How we built it — 6:25–6:45\n\n[Slide: how we built it (core first, AI development tools, reviews and tests).]\n\n\"We built the safety and personal-baseline core first, then the agent, then the experience, using AI development tools including Tencent's CodeBuddy and Miora, working from written specs, with every change reviewed and tested. Our tip: write down what must never change before asking an AI to build anything.\""
   },
   {
     "slide": 17,

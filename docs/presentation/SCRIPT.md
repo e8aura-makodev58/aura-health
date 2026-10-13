@@ -90,10 +90,11 @@ Then *My medication* → *What if I miss a dose?*
 > doesn't predict relapse or give medication advice."
 
 ### 11 · How we built it — 6:25–6:45
-**Slide:** genuine CodeBuddy and Miora session screenshots.
-> "We built the safety and longitudinal core first, then the agent, then the experience.
-> CodeBuddy built the companion screens from a written contract; Miora made the artwork. Our tip:
-> write down what must never change before asking an AI to build anything."
+**Slide:** how we built it (core first, AI development tools, reviews and tests).
+> "We built the safety and personal-baseline core first, then the agent, then the experience,
+> using AI development tools including Tencent's CodeBuddy and Miora, working from written specs,
+> with every change reviewed and tested. Our tip: write down what must never change before asking
+> an AI to build anything."
 
 ### 12 · Impact and close — 6:45–7:05
 **Slide:** pilot metrics (labelled as targets) · closing line.

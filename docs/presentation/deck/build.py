@@ -280,18 +280,18 @@ def slides():
       </div>""")))
     # 16 how built
     s.append(("how-we-built-it", 11, page(f"""
-      <div class='content'><div class='row' style='gap:60px'>
-        <div class='col' style='width:720px'>
+      <div class='content'><div class='row' style='gap:80px;align-items:center'>
+        <div class='col' style='width:900px'>
           <div class='kicker'>How we built it</div>
           <h2>Core first, then the agent, then the experience</h2>
           <div class='points'>
-            {point('blue', 'Safety and longitudinal core first')}
-            {point('lilac', 'Then the agent')}
-            {point('sunny', 'CodeBuddy built the companion screens from a written contract; Miora made the artwork')}
+            {point('blue', 'Safety and personal-baseline engines first, then the read-only agent, then the patient experience')}
+            {point('lilac', 'AI development tools, including Tencent CodeBuddy and Miora, working from written specs')}
+            {point('leaf', 'Every change reviewed and tested before release')}
           </div>
           <p class='cap' style='margin-top:20px'><b>Our tip:</b> write down what must never change before asking an AI to build anything.</p>
         </div>
-        <div class='slot' style='width:900px;height:760px'>Genuine CodeBuddy and Miora session screenshots go here<br>(supplied by the user)</div>
+        <img src='{MEDIA}calm-state.svg' style='width:640px;border-radius:40px;box-shadow:0 20px 56px rgba(42,35,32,.12)' alt=''>
       </div></div>""")))
     # 17 impact
     s.append(("impact", 12, page(f"""
