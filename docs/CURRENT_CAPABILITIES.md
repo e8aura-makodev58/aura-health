@@ -3,6 +3,12 @@
 Status: 2026-10-13. Code inspected at `be3e795`. This is a capability audit,
 not a new feature specification or clinical-validation claim.
 
+Follow-up: Claude's `c9922cd` fixes explicit clinician-question misattribution and
+improves fallback selection/budget labels. See
+[the subsequent review](CLAUDE_QA_AND_LOADING_REVIEW.md) for verified changes,
+remaining gaps and patient-animation diagnosis. The audit below retains its
+original `be3e795` inspection scope.
+
 User direction: stop feature development; limit subsequent implementation to
 bug fixes and minor updates. Distinguish the demo now from intended final-product
 capabilities. Missing capabilities are not necessarily rejected product ideas.
