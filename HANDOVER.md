@@ -32,6 +32,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (as of 2026-10-13)
 
+- **Live model (2026-10-13):** OpenAI `gpt-6-luna`, reasoning **medium**, set via settings. Settings now list the provider's models automatically (plus a free-text ID) and have a reasoning level (None/Low/Medium/High, default Medium) stored per provider. OpenAI agent calls with reasoning on use the Responses API (chat completions rejects tools + reasoning); its replies may be up to 256 KB. Guided-tour agent step, 5 live tries each, medium: gpt-6-sol 3/5, gpt-5.6-terra 5/5, gpt-6.1-sol 5/5 (71–112 s), gpt-6-luna 5/5 (47–60 s). "gpt-6-terra" does not exist for this key. User rejected recording PROHIBITED_CLAIM rule details in `grounding.py`; don't reapply.
 - **Guided-story handoff (user,2026-10-13):** user is very satisfied with the application but cannot intuitively use the three-minute story. Claude proposed nine guided steps; Codex's review/recommendations are in the newest Log entry. Claude takes over the tour work; this handoff changes documentation only and does not claim the proposed tour is built.
 - **Codex companion docs/Q&A/X5 delivery:** merged requested main `f37af0c` into the
   feature branch preserving both logs. Submission/challenge/capability/architecture
@@ -294,6 +295,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-13 — Claude — Auto-filled model list, reasoning level, OpenAI Responses path
+- `a2d2e75` settings: model dropdown filled from the provider's `/models` (saved model kept selected; exact-ID input + Refresh kept); reasoning select (default medium) saved per provider and shown in the status line; `vendor.py` maps reasoning per provider; agent config v5 (90 s run, 30 s provider timeout). `038d80b` OpenAI reasoning+tools via `/responses`; `f0212f8` 256 KB cap for Responses replies (they echo the tool list; caused `too_large`).
+- Verified: full Python suite 334 OK; `tests/browser/settings.cjs` PASS; live model list READY; live trials as in Current state. Deployed `f0212f8`.
+- Watch out: reasoning raises answer time (≈50–110 s per agent answer). Responses calls are stateless (`store:false`, reasoning items not carried between turns).
 
 ### 2026-10-13 — Claude — Intuitive guided story (`aura_ui/tour.js`), following Codex's review
 - User: the 3-minute story wasn't intuitive. New guided story: intro card ("See how AURA helps, through one person's day", Start; says it starts a fresh demo), then 9 steps in 3 chapters (Your day: breath, summary, dose [tour taps Skipped + Side effects and shows the saved result], medication topic, typed question with honest abstention; Getting ready for a visit: visit note with the missed dose, clinician view, agent Q&A with the real result or the fallback wording; When things change: simulated flu). Finish card: Show the safety example / Explore on my own / Start again.
