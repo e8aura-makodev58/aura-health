@@ -3,6 +3,50 @@
 2026-10-13 — Codex Sol. Reviewed `c9922cd` against `74731e6`.
 Review only: no runtime edits, paid model calls, quota changes or deployment.
 
+## Follow-up on `5aa8130` (2026-10-13)
+
+Claude implemented findings1–4: exact clinician Q&A rendering, routine/held
+fallback selection with whole-word matching, six-second motion and pending-note
+cleanup, and distinct minute/hour quota disclosures. Independent checks:
+**33 workflow tests PASS / 45.791s**, new mocked browser QA1/QA2 **PASS**.
+Claude's full296 and11-suite browser results are reported evidence, not rerun here.
+
+One remaining selection edge: an unrelated question with no recognised topic
+("What is the patient favourite colour?") still selects a resting-HR finding in
+the synthetic fixture. The general fallback branch treats unknown intent like a
+broad record query. Distinguish explicitly broad record questions from unmatched
+questions; add an unknown-topic regression before claiming all no-match questions
+return nothing. No runtime fix was made here.
+
+Recommendations for the three choices raised by the user:
+
+1. **Add the investigation trail as minor clinician-only display polish.** Build
+   it deterministically from successful read traces, actual key labels/windows
+   and verifier results. Distinguish checked, supported, rejected and displayed
+   claims; the verifier also checks the headline, so do not label every check an
+   answer claim. Show interrupted/fallback outcomes honestly. No extra model calls,
+   hidden reasoning or changes to the patient home.
+2. **Narrow the medication false positive, not the treatment boundary.** The
+   current shared regex independently rejects "Activity reduced during the period
+   covered by the medication-routine records." It matches change verbs anywhere
+   before medication vocabulary across clauses/sentences. Permit supported
+   observational subjects such as activity/sleep while retaining instruction,
+   recommendation, individualized dose/taper and unsupported-causation rejection.
+   Add both harmless observation and dangerous-instruction regression cases,
+   including mixed sentences, indirect recommendations and pronouns. Preserve
+   citation/number/category checks and the independent verifier; no blanket
+   exemption for a clinician role or medication-record mention.
+3. **Recommend a bounded judging allowance, not unlimited calls.** Proposed
+   demonstration configuration:30 calls/minute and300/hour shared site-wide,
+   subject to the user's cost approval. A worst-case Q&A can consume8 model steps
+   plus1 verifier call, so10/minute leaves almost no room for other demo activity
+   and60/hour only about6 such investigations. Keep per-run limits, validation,
+   caching and synthetic-only restrictions. Make any override explicit and
+   reversible; quotas remain10/60 until authorized. These are project usage
+   allowances, not statements about the provider's own limits.
+
+The original dated review follows; its reproduced bugs describe pre-fix code.
+
 ## Assessment
 
 Claude's changes are directionally correct and appropriately scoped to the
