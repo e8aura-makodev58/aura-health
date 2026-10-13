@@ -1,6 +1,7 @@
 # AURA Health — Current capabilities and agent contribution
 
-Status: 2026-10-13. Updated against integrated `f37af0c` (original audit `be3e795`). This is a capability audit,
+Status: 2026-10-13. Updated against integrated `f37af0c` and the narrow verifier
+fix `68372f3` (original audit `be3e795`). This is a capability audit,
 not a new feature specification or clinical-validation claim.
 
 The user reopened scope for the patient companion, now integrated and deployed.
@@ -113,9 +114,9 @@ lookup are not additional autonomous agent skills.
   answer, one number-check fallback and one malformed-call failure. These are
   reviewer-reported observations, not independently reproduced measurements here.
   The exact rejected number/rounding cause is not established by the report.
-- Companion candidate `495087d` passed327 Python tests and18 selected browser
-  checks. That is historical candidate evidence, not certification of newer code.
-  Latest release checks and bounded live diagnostics are in
+- Current Codex candidate `68372f3` passed330 Python tests,15 hosted browser suites
+  and the local registry suite; the redesign mobile first-fold assertion fails.
+  Prior327-test companion evidence is historical. Release checks and diagnostics are in
   [EVIDENCE_LEDGER.md](submission/EVIDENCE_LEDGER.md). No deployment is performed
   by this documentation/QA task.
 

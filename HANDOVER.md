@@ -32,7 +32,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (as of 2026-10-13)
 
-- **Codex new assignment in progress:** merged requested main `f37af0c` into the
+- **Codex companion docs/Q&A/X5 delivery:** merged requested main `f37af0c` into the
   feature branch preserving both logs. Submission/challenge/capability/architecture
   copy now reflects the integrated four-card companion; updated overview SVG/PNG
   requires Claude to re-render the deck. Post-flu diagnostics:2 live fallbacks
@@ -40,7 +40,11 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
   fixture reproduced50,053-character verifier payload above40,000 limit; removed
   clinician-only duplicate patient wording fields →25,636, mock verified. No
   thresholds, guards, budgets, deployment or patient verifier projection changed.
-  Two new regression tests PASS; X5 checks pending, not release acceptance.
+  Two regressions PASS; candidate68372f3 full330 Python PASS/474.013s and15 hosted
+  browser suites PASS, local registry3 checks PASS, redesign UX1 FAIL (quiet-card
+  below first390×844 viewport).
+  Signed-out liveA–F status/timeline/review andB/F companion reads PASS; GitHub404,
+  strict preflight1. X5 is checked but NOT a green release gate. No merge/deploy.
 - **Companion consolidation verified (2026-10-13):** Claude merged/deployed the three branches and supplied `missed_days` in `6c4e265`; later safety refresh and one-column fixes are included in candidate `495087d`. Codex independently verified327 Python PASS/469.072s,18 selected browser checks on8036, missing/UNKNOWN separated from MISSED, stable retry counts and signed-out liveB/F companion suppression. A reused-run-ID/changed-question safety-assessment gap was separately reproduced and remains open. Main's newer37a2f32 script/tour change is outside this immutable run. Source link still404 anonymously. User supplied screenshots in `docs/submission/screenshots/`; Claude owns narration. Neither was edited here. Earlier branch-delivery snapshots below are historical.
 - **Feature freeze CANCELLED (user, 2026-10-13 evening):** "Cancel feature freeze and let's go all in!" Build the patient companion features in [`docs/PATIENT_COMPANION_SPEC.md`](docs/PATIENT_COMPANION_SPEC.md) to meet Challenge Statement 2 Scenario 1; ownership §4, schedule §5 (no fixed cut-off: integrate as soon as all agents report done; user, 2026-10-13). Earlier freeze lines below are superseded.
 - **Patient companion backend implemented on Codex branch (user authorization,2026-10-13):** medication-reason validation/adapters, additive supply/refill/reason columns, explicit synthetic prescriptions, dose/day counts, review/refill dates, reason-linked Not-shared review items and read-only `GET /companion`. See `docs/PATIENT_COMPANION_BACKEND.md`. Accepted safety/longitudinal algorithms unchanged. Claude owns curated lookup/suggestions/medication-ask route; CodeBuddy owns the four-card UI. Default lookup/selector joins their modules after integration; isolated tests plus actual cross-worktree callback smoke passed. No merge or deploy.
@@ -198,6 +202,11 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+0d. **Claude/release reviewer:** review68372f3's narrow clinician-verifier fix and
+  re-render the deck's system-overview from the new companion PNG. Address the
+  medication changed-question/reused-ID gap and the mobile quiet-card first-fold
+  failure; provide judge-accessible source and missing cover/history/video assets.
+  Current full330 PASS and15 hosted-suite PASS do not clear those blockers.
 0c. **Release checks:**495087d candidate evidence is complete (327 Python/18 browser checks); address the medication request-identity gap and verify the selected final revision after newer script/tour changes. Do not reapply the completed `missed_days` fix. Keep live/source/model/version evidence distinct and package DRAFT until artifacts, judge source access and approval are complete. Claude owns narration; evidence bundling remains with its assigned owner.
 0. **All agents:** follow the agent-specific branch workflow below, publish work for review, and stop before merge/deployment. The user will choose who reviews and merges the branches; do not infer this authority from older log entries.
 0b. **Companion integration:** Codex backend is ready for review; combine with Claude's curated modules/medication route and CodeBuddy's cards only under user-directed merges. Preserve both changes to `aura_app/api.py`; then run full merged Python/browser tests and phone/laptop checks. Update submission claims/screenshots/diagrams to the actual accepted build, not branch-only capabilities.
@@ -293,7 +302,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
   FABRICATED_NUMBER_OR_DATE, not timeouts. Local seeded fixture showed duplicate
   patient-facing verifier fields caused50,053 chars; clinician projection now
   preserves facts/metadata in25,636 chars. New budget failure trace code; unchanged
-  40k limit/grounding/semantic checks. Two regressions PASS/38.472s. Full X5 next.
+  40k limit/grounding/semantic checks. Two regressions PASS/38.472s; candidate68372f3
+  full330 PASS/474.013s,15 hosted suites PASS/redesign first-fold FAIL. LiveA–F
+  reads/B/F companion guard and local registry3 checks PASS; GitHub404 and strict
+  preflight1. Updated ledger,
+  register/manifest; no green final-release claim. See ledger for exact commands.
 - No merge into main, deploy, provider/secret/quota changes. Medication changed-text
   retry identity gap remains a separate open finding; do not overlook it at release.
 

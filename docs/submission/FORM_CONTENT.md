@@ -116,8 +116,8 @@ readiness — share of visits with a patient-prepared note; (4) answer quality �
 of AI answers passing source checks, and clinician-rated usefulness; (5) safety —
 every safety-relevant input reaches the deterministic safety path first.
 
-The integrated companion candidate passed **327 Python tests** on 13 October 2026
-(`495087d`; historical candidate result, not final release certification).
+The current Codex candidate passed **330 Python tests** on 13 October 2026
+(`68372f3`; branch regression evidence, not final release certification).
 Engineering evaluation covers six synthetic scenarios: physical illness, slow
 drift, illness plus independent change, an explained persistent shift, a wearable
 gap/return, and safety handoff. Automated regression tests cover deterministic

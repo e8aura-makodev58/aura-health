@@ -1,6 +1,9 @@
 # Submission evidence ledger
 
-Latest consolidated candidate verification: `495087d` (2026-10-13), detailed below.
+Latest candidate: `68372f3` (2026-10-13), merged main `f37af0c` plus the narrow
+clinician-verifier fix and companion documentation. X5 results are recorded below;
+this branch is not the user-approved final merged/deployed release.
+Earlier consolidated candidate verification: `495087d` (2026-10-13), detailed below.
 Earlier branch verification: `f5f06d1` on `improve/feature-codex`.
 Historical measurements retain their original code/prompt versions below.
 Update dates/versions explicitly on the final merged release before submission.
@@ -18,10 +21,115 @@ No clinical-efficacy, patient-outcome or financial-return measurement exists.
 | Generated headline HTTP p95 4462 ms patient/4242 ms clinician | Same report summary | Historical run, not all model paths or current UI performance |
 | Earlier branch automated suite: 303 PASS | Full run on `f5f06d1`, 2026-10-13; 357.647 seconds | Historical branch regression, not the new companion candidate |
 | Consolidated candidate automated suite: 327 PASS | Full run on `495087d`,2026-10-13;469.072 seconds | Independently rerun from immutable snapshot; newer37a2f32 script/tour changes not covered; retry-ID QA finding remains open |
+| Current Codex candidate automated suite:330 PASS | Full run on `68372f3`,2026-10-13;474.013 seconds | Includes integrated companion and verifier regressions; not deployed/final-approved; browser-layout and request-identity findings remain |
 | Live URL health | GET `/health`2026-10-13 returnedok andsynthetic_onlytrue | Not a full judge walkthrough, link uptime guarantee or auth review |
 | CodeBuddy UI/Miora artwork implemented | Recent Git history and root handover | Original session logs/screenshots still need collecting; commits are not upload proof |
 
-## Current run
+## Post-flu Q&A investigation and narrow fix — 2026-10-13
+
+Fresh private signed-out live synthetic Case B session; explicit seeded FLU plan,
+three days, MODERATE, seed7, no patient notes. No life-director/model plan was needed.
+Question: “When did sleep timing change, and was anything reported around then?”
+Clinician attribution,56-day window, two consecutive unique-run requests; all
+outcomes retained, no successful-answer selection. Live DeepSeek /deepseek-flash,
+prompt `aura-agent-v11`; branch fix was **not deployed** for these attempts.
+
+| Attempt | Generated? | Elapsed | Stage / result |
+|---|---|---:|---|
+| 1 | No;2 related facts | 5026 ms | INDEPENDENT_VERIFIER /ValueError; original trace did not expose its budget code |
+| 2 | No;2 related facts | 4818 ms | DRAFT_VALIDATION /FABRICATED_NUMBER_OR_DATE |
+
+Neither reported timeout. The exact unsupported number/date in attempt2 was not
+logged, so rounding is not asserted as its cause. Setup's first request used an
+invalid event schema and returned400 before Q&A; corrected to the production FLU
+schema, not counted as a model attempt. Working diagnostics in
+`/tmp/aura-postflu-qa.cjs` and `/tmp/aura-postflu-qa-results.json` contain no keys/cookies.
+
+**Confirmed local cause:** identical three-day seeded post-flu Case B, actual
+production tool preparation, deterministic mock draft citing a sleep finding,
+headline plus claim. Verifier request was50,053 characters with111 headline facts,
+above `structured_task`'s unchanged40,000-character limit. It fell back before
+calling the verifier. The clinician verifier had reintroduced patient-facing
+wording/magnitude copies that clinician retrieval deliberately excludes.
+
+`68372f3` removes only those presentation copies for non-patient verification;
+the same request becomes25,636 characters and validates with the mock verifier.
+All111 facts, citations, text, signal, finding direction/since, analysis and
+comparison remain; patient verification still receives its patient wording fields.
+No limit increase, retry, semantic-check bypass, numeric rounding or engine change.
+Budget rejection now records `TASK_INPUT_BUDGET` explicitly. Regressions
+`test_aw2b_post_flu_qa_verifier_excludes_patient_display_duplicates` and
+`test_aw2c_verifier_input_budget_is_explicit_and_still_fails_closed` in
+`tests/test_approved_workflows.py`:2 PASS/38.472s. Local size reproduction uses
+`/tmp/aura-verifier-size.py`. This demonstrates the fix for a reproducible local
+failure, **not live post-fix reliability**; live provider/grounding failures remain
+possible and must retain honest fallback.
+
+## X5 candidate checks — `68372f3`
+
+**Full Python:330 PASS/474.013 seconds**, exact committed candidate:
+`.venv/bin/python -m unittest discover -s tests -q`. Existing Starlette/httpx
+deprecation warning remains. No safety/longitudinal policy changes.
+**Hosted browser:15 suites PASS,1 suite FAIL**. Signed-out live health and CaseB/F companion
+reads PASS (known medication/suggestions only for normalB; both hidden forF).
+Separate signed-out status/timeline/review-snapshot reads for allA–F returned200;
+timeline counts A570,B958,C669,D1139,E804,F1096, every snapshot NOT_SHARED with
+automatically_shared=false. No generation/patient input requested by those checks.
+These read checks request no generation and do not identify a deployed commit.
+Anonymous GitHub remains404; no source-visibility change made.
+
+The17-suite hosted browser command stopped at `redesign.cjs`, after M7 and settings
+passed: UX1's `#quiet-card` bounding box is outside the390×844 first viewport.
+The element exists/is visible; the new companion cards precede it. This is a failed
+historical compact-first-screen assertion, not a missing element, and was already
+an open redesign-suite issue in the handover. No assertion/UI was changed to hide
+it. `registry.cjs` was also initially selected in hosted mode by mistake: its
+arbitrary-intake request correctly returned409, and the suite explicitly requires
+local mode. That runner-selection failure is not an application defect. Local
+registry rerun PASS: typed scalar ingestion, research/display-only presentation,
+phone/laptop and no page errors (3 checks). The local-signup-only
+`milestone6.cjs` is not applicable to hosted intake (expected host rejects signup).
+
+Passed hosted suites: milestone7, settings, dual_view, agent, workflows, impression,
+story_charts, cards, final_dash, final_dash_polish, plain_language, qa_display,
+welcome, landing, companion (all `.cjs`). Failed: redesign. These are fixture-model
+browser checks, not live-model reliability. Runs used existing external Playwright:
+
+```sh
+NODE_PATH=/home/makodev58/rendertest/node_modules \
+LD_LIBRARY_PATH=/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu \
+.venv/bin/python tests/browser/run.py --hosted --port 8036 \
+  --suite milestone7.cjs settings.cjs redesign.cjs dual_view.cjs agent.cjs \
+  registry.cjs workflows.cjs impression.cjs story_charts.cjs cards.cjs \
+  final_dash.cjs final_dash_polish.cjs plain_language.cjs qa_display.cjs \
+  welcome.cjs landing.cjs companion.cjs --artifacts /tmp/aura-codex-x5-browser
+```
+
+Because the runner stops on first failure, reran remaining suites first from
+dual_view (stopped on incorrectly hosted registry), then from workflows through
+companion without registry. Both successful groups above are completed outcomes,
+not assumed from the command. Registry is separately run without `--hosted`:
+
+```sh
+NODE_PATH=/home/makodev58/rendertest/node_modules \
+LD_LIBRARY_PATH=/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu \
+.venv/bin/python tests/browser/run.py --port 8036 --suite registry.cjs \
+  --artifacts /tmp/aura-codex-x5-registry
+```
+
+**Strict preflight exits1:** DRAFT, missing final video URL/duration, cover and
+combined history PDF; PPTX approval, final selected-release metadata and approval
+are incomplete. This read-only script does not check GitHub or browser failures;
+those independent blockers remain even when upload metadata is filled.
+
+PPTX now exists (2,757,539 bytes,18 slides) but its system-overview must be re-rendered
+from the updated companion image and human-approved. Eight genuine supplied
+screenshots exist; the one-file chat/history PDF is still missing. Cover and final
+video URL/voice-over remain pending. The medication changed-text/reused-ID finding
+below remains unresolved. Therefore X5 cannot be called a green final-release
+gate or a packet awaiting only approval.
+
+## Earlier branch run — `f5f06d1`
 
 Command: `.venv/bin/python -m unittest discover -s tests -q`
 

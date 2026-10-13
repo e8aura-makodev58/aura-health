@@ -37,6 +37,7 @@ flowchart LR
   MODEL[Configured live model: synthetic data only] <--> AGENT
   MODEL --> VERIFY
   MODEL --> WORD
+  MODEL --> TOPIC
   subgraph EVAL[Development / evaluation plane]
     DIRECTOR[Life director / structured synthetic plan] --> GEN[Seeded numeric generator]
     GEN --> OBS[Observable-event allowlist]

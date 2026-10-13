@@ -281,6 +281,12 @@ retained even if classification fails; the fallback is abstention. Dose reasons
 remain typed history and linked Not-shared review records. No medication-agent write
 tool, clinical scheduling service or conversational memory should be drawn.
 
+Open integration finding at this inspected version: changed text submitted under
+the same medication-question run ID can reuse the prior safety-event result. The
+ordinary UI creates fresh IDs, but the API needs question-bound identity or a
+conflict rejection. See `EVIDENCE_LEDGER.md`; the diagram describes the intended
+implemented route, not certification that every retry edge is safe.
+
 ### Ordered ingestion flow
 
 1. API validates transport input and calls `PatientEventService`.
@@ -607,7 +613,12 @@ standing intended-use boundary or grants the model ownership of safety/treatment
 > Put simulation/evaluation in a visibly separate region with only observable
 > events crossing into ingestion. Show safety evidence proposals entering the
 > deterministic safety engine, safety precedence over ordinary communication, and
-> a separate pinned-resource return path. Expand the agent loop in a companion
+> a separate pinned-resource return path. Include the integrated patient companion:
+> medication information, dose/reasons, displayed review/refill dates and optional
+> curated suggestions via read-only GET /companion. Show typed /medication/ask
+> questions reaching patient safety before topic selection and fixed curated answers.
+> No push service, appointment booking or generated medication advice is implemented.
+> Expand the agent loop in a separate
 > detail view: chosen read/analysis tools and date windows, returned facts, cited
 > draft, deterministic validation, separate verifier call, fresh-state check,
 > supported answer or labelled fallback. Label model access synthetic-only. Make
@@ -635,6 +646,8 @@ Primary code inspected for this document:
 - `aura_app/agent.py`: attribution, guards, caching, trace, recheck and audit.
 - `aura_app/assessment.py`: source preview and arrival cache identity.
 - `aura_app/api.py`: transport endpoints and asset routes.
+- `aura_app/companion.py`, `medication_ask.py`: read projection and safety-first topic route.
+- `aura_agent/medication.py`, `medication_info.json`, `suggestions.py`, `suggestions.json`: curated content and selection.
 - `aura_app/persistence.py`: actual tables and append-only run triggers.
 - `aura_agent/tools.py`: scoped tool schemas, windows and source aliases.
 - `aura_agent/runtime.py`, `engineering_config.json`: loop/verification and limits.
