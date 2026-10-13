@@ -260,8 +260,8 @@ main {padding-inline:24px}
 #home-view .quiet-card h2 {font-size:1.12rem}
 #home-view .quiet-card p {font-size:.84rem;max-width:310px;margin:8px auto 0}
 /* D4: Recap hero and breathing placeholder */
-.recap-hero {border-radius:var(--radius-xl);background-image:url('/assets/media/home-hero.svg');background-size:cover;background-position:center;background-blend-mode:overlay;padding:28px 24px;margin:16px 0 20px;box-shadow:var(--shadow-md);opacity:1;transition:opacity var(--dur-med) var(--ease-out)}
-#home-view.has-recap .recap-hero {background-image:url('/assets/media/home-hero.svg');background-size:cover;background-position:center;background-color:var(--accent-sunny)}
+.recap-hero {border-radius:var(--radius-xl);background-image:linear-gradient(rgba(255,244,222,.62),rgba(255,244,222,.62)),url('/assets/media/home-hero.svg');background-size:cover;background-position:center;padding:28px 24px;margin:16px 0 20px;box-shadow:var(--shadow-md);opacity:1;transition:opacity var(--dur-med) var(--ease-out)}
+#home-view.has-recap .recap-hero {background-color:#fff4de}
 #home-view.has-recap .recap-hero .patient-recap {color:var(--ink)}
 #home-view.has-recap .recap-hero .patient-summary-details>summary,
 #home-view.has-recap .recap-hero .patient-summary-sources>summary {color:var(--ink)}
@@ -415,7 +415,7 @@ caption {text-align:left;padding:8px 0;font-size:.72rem;color:var(--muted)}
 /* Landing: the sunrise fills the top of the page and fades into the paper colour. */
 body.on-landing {position:relative}
 body.on-landing::before {content:"";position:absolute;left:0;right:0;top:0;height:min(78vh,700px);z-index:-1;pointer-events:none;
-  background:linear-gradient(180deg,rgba(251,250,247,0) 55%,var(--paper) 100%),url('/assets/media/welcome-hero.svg') 50% 92%/cover no-repeat}
+  background:linear-gradient(180deg,rgba(251,250,247,0) 55%,var(--paper) 100%),url('/assets/media/welcome-hero.svg') 50% 52%/cover no-repeat}
 body.on-landing .demo-bar {background:rgba(251,250,247,.55)}
 body.on-landing .landing-hero-img {display:none}
 body.on-landing .landing-hero {padding-top:clamp(150px,30vh,300px)}

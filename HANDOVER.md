@@ -251,6 +251,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Merged CodeBuddy's SVG illustration set (`59edfc2`) with two fixes
+- Review: WebP illustrations replaced by SVGs (4–10 KB each: welcome-hero, home-hero, breathing-circle, calm-state replacing appointment-note on the review page, empty-clinician, new aura-mark, unused `aura_health_app_icon.svg`). No scripts, external links or embedded data. All references resolve; no page errors; served via the existing media route.
+- Fixes: patient summary card used `background-blend-mode:overlay` over sunny orange, which turned the pale SVG neon yellow — now the art with a soft warm wash (`#fff4de`), no blending. Desktop landing sun was cut off by the top bar — background position 50% 52%. New mark is clearly visible on the landing.
+- Verified: local hosted screenshots of landing, welcome, home, review, clinician at 390/1280; browser landing, welcome, qa_display, cards, plain-language, final-dash-polish, impression, dual-view, milestone7 PASS; media + M7 tests OK.
+- Note: the media README calls these "Miora-generated" SVGs; Claude could not verify their origin.
 ### 2026-10-13 — Claude — Landing stays until the visitor chooses; full-bleed sunrise (user-approved)
 - User: the "Welcome to AURA" sunrise was barely visible (the demo auto-opened patient B after ~1 s). Startup now loads the scenario list only; the landing stays until "See the patient's day" (patient view → breathing welcome), "See what the clinician sees", "Play the 3-minute story" (clinician view + guide) or the top-bar Patient/Clinician buttons. Role buttons are not highlighted until a view is chosen. Automated browsers keep the direct start unless `window.auraLandingInAutomation` is set.
 - Sunrise (`welcome-hero.webp`) is a full-width band behind the landing only (`body.on-landing::before`), fading into the paper colour; separate phone positioning keeps the sun above the headline. Not used on other pages.
