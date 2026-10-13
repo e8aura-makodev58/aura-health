@@ -34,3 +34,13 @@ and rendered images inspected. No external artwork; user/deck review pending.
 Preliminary release verification:303 Python tests and7 assertions in two local
 browser suites passed on `f5f06d1`. Live rehearsal1 partial generated /2 fallbacks;
 see `EVIDENCE_LEDGER.md`. These do not approve a final merged release.
+
+Consolidated candidate `495087d`,2026-10-13: independent18 browser checks PASS
+(companion/Q&A-display/hosted-M7) on8036; actual merged count-contract smoke PASS;
+live signed-out normal/safety companion reads PASS without requested generation.
+GitHub anonymous access remains404. Screenshot evidence receipt at
+`docs/submission/screenshots/` is user-reported; bundling/provenance review belongs
+to its assigned owner. No narration, screenshots or runtime files changed here.
+Full candidate suite327 PASS/469.072s; a changed-question/reused-run-ID safety-
+assessment gap was separately reproduced and remains open. Readiness blockers
+and newer-main version limits are in `EVIDENCE_LEDGER.md`.

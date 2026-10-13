@@ -38,6 +38,23 @@
     "github_anonymous_http_status": 404,
     "evidence": "EVIDENCE_LEDGER.md"
   },
+  "consolidated_candidate_checks": {
+    "date": "2026-10-13",
+    "tested_commit": "495087d6bf58f495a91de75baa340f155b061a89",
+    "python_tests_passed": 327,
+    "python_seconds": 469.072,
+    "browser_suites": ["companion.cjs", "qa_display.cjs", "milestone7.cjs"],
+    "browser_assertions_passed": 18,
+    "browser_port": 8036,
+    "missed_days_contract": "PASS",
+    "live_signed_out_companion_reads": "PASS",
+    "llm_generation_requested_for_live_checks": false,
+    "github_anonymous_http_status": 404,
+    "open_findings": ["Changed medication question under reused run_id skips fresh safety assessment"],
+    "newer_main_not_covered": "37a2f32",
+    "final_release_approved": false,
+    "evidence": "EVIDENCE_LEDGER.md"
+  },
   "release": {"tested_commit": null, "signed_out_links_verified": false, "claims_reviewed": false, "user_approved": false},
   "submission": {"submitted": false, "submitted_at": null, "confirmation_reference": null}
 }
