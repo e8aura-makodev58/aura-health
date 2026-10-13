@@ -377,7 +377,7 @@ async function openDemo(role) {
   if (current) { render(); goPage(); } else await loadPatient($("scenario").value);
   window.scrollTo(0, 0);
 }
-$("start-demo").addEventListener("click", async () => { await openDemo("patient"); $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); });
+$("start-demo").addEventListener("click", async () => { await openDemo("patient"); window.auraTour?.start(); });
 $("start-patient")?.addEventListener("click", () => openDemo("patient"));
 $("start-clinician")?.addEventListener("click", () => openDemo("clinician"));
 $("scenario").addEventListener("change", () => { location.hash = "home"; loadPatient($("scenario").value); });

@@ -41,17 +41,10 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   assert.equal(await page.locator('#demo-panel').evaluate(n=>getComputedStyle(n).position),'fixed');
   assert.ok(await page.locator('#demo-panel').evaluate(n=>n.getBoundingClientRect().height<=innerHeight*.43));
   console.log('FD_POLISH2_PATIENT_PHONE_DESKTOP_APPOINTMENT_HELP PASS');
-  await story(1).click();await page.waitForFunction(()=>document.getElementById('story-narration').textContent.includes('starts with a breath'));assert.equal(await page.evaluate(()=>document.body.dataset.page),'home');assert.equal(await page.evaluate(()=>document.body.dataset.role),'patient');
-  await story(2).click();await page.waitForFunction(()=>document.getElementById('story-narration').textContent.includes('Skipped'));assert.equal(await page.evaluate(()=>document.body.dataset.role),'patient');
-  await page.locator('#sim-feedback').uncheck();const previous=await page.evaluate(()=>window.auraAgentContext().revision);
-  await story(3).click();await page.waitForFunction(()=>document.getElementById('story-narration').textContent.includes('changed record'),null,{timeout:90000});assert.notEqual(await page.evaluate(()=>window.auraAgentContext().revision),previous);
-  await story(4).click();await page.waitForFunction(()=>document.body.dataset.role==='patient'&&document.body.dataset.page==='review');assert.match(await page.locator('#appointment-preview').innerText(),/Not sent/);
-  await story(5).click();await page.waitForFunction(()=>document.body.dataset.role==='clinician'&&document.body.dataset.page==='patterns');await page.waitForSelector('#agent-clinician_brief .clinician-finding');
-  assert.equal(await page.locator('#agent-question-text').inputValue(),'When did sleep timing change, and was anything reported around then?');
-  await story(6).click();await page.waitForFunction(()=>document.getElementById('input-dialog').open);assert.equal(await page.evaluate(()=>document.body.dataset.role),'patient');
-  await page.keyboard.press('Escape');
+  // The guided story moved to tour.js (tests/browser/tour.cjs); the demo guide now has one Start button.
+  assert.equal(await page.locator('#guided-story button').count(),1);
   await page.locator('#demo-toggle').click();
-  console.log('FD_POLISH3_SIX_ACTUAL_STORY_ACTIONS PASS');
+  console.log('FD_POLISH3_GUIDE_HAS_ONE_START_BUTTON PASS');
   assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
