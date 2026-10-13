@@ -296,6 +296,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Script v4, deck and video refreshed to the latest build (user asleep; requested)
+- `7d3616f`: SCRIPT v4 (scene 8: paced masked example, clinician sees the safety state on opening the record, no alerts; live model note). Deck rebuilt in story order (6 medication, 7 appointment, 8 clinician + agent, 9 flu, 10 safety) — this also does the user's planned "move slide 7 after 9", and fixes speaker notes that had been one scene off for slides 7–9. Fresh live screenshots (`screenshots/v2/`, new `s08a-note-masked-phone`); safety slide shows the masked note box + panel; agent callout now quotes the captured run ("A second check reviewed 3 statements; all supported", first attempt). PPTX 18 slides, 1.38 MB.
+- Video re-recorded from the live tour (phone + desk), assembled 5:58; `VOICEOVER.md`/`timeline.txt` updated. Desk take: first agent draft failed a fact check (shown honestly), Ask again gave a checked answer. MP4 is not in git: `docs/presentation/video/aura-health-walkthrough-novoice.mp4` in the main folder.
+- Watch out: if the user had hand-edited the PPTX outside the repo, those edits are not in this rebuild.
+
 ### 2026-10-13 — Claude — Paced, masked safety example; honest clinician wording
 - `9923ba4`: "Show the safety example" now opens the note box, shows the example (~5 s visible) and highlights Send before sending. Example buttons show readable `data-sample` text (safety one masked per user: "I w*** t* k*** m****** (sensitive message masked)"); submit maps a sample back to its approved fixture, so hosted rules are unchanged. Tour card no longer says a clinician resolves it: "the clinician sees it when they open the record. This prototype doesn't send alerts." (No clinician notification exists — DECISIONS.md scope; safety de-escalation targets await clinical approval.)
 - Verified: tour 5/5, milestone7, dual_view, workflows, welcome PASS (hosted runner); live check of the paced/masked example. milestone6 (non-hosted) has 9 failures, identical on pre-session `47dee17`.
