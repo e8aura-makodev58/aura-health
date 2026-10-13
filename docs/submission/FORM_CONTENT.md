@@ -24,7 +24,8 @@ on Antidepressants.**
 AURA Health is a calm, wearable-first companion that keeps the context between
 clinician appointments. Our scenario is adults aged 25–60 on stable,
 clinician-managed antidepressant maintenance treatment. Patients receive a simple, calm view of their recent
-records; clinicians can inspect personal patterns, context and source-linked
+records, medication information, today's dose and upcoming review/refill dates;
+clinicians can inspect personal patterns, context and source-linked
 answers without starting from an undifferentiated dashboard.
 
 The differentiator is a bounded record-investigation agent, not an unrestricted
@@ -49,12 +50,14 @@ are design hypotheses, not claims from a completed patient study.
 Against the challenge, AURA's strongest fit is health tracking over time, healthcare
 preparation and being strictly bounded: it describes what changed and when against
 the person's own baseline, helps the patient prepare for an appointment, and its
-checks reject medication advice before any AI text is shown. Medication routines are
-recorded; medication explanations, reminders and preventive nudges are roadmap items.
+checks reject generated medication advice. The patient companion now provides curated
+medication explanations, dose records with optional missed-dose reasons, stored
+review/refill dates and optional everyday suggestions. Displayed dates are not push
+reminders, and the prototype does not book appointments or order refills.
 The scenario mentions flagging early signs of relapse. AURA deliberately stops at
 describing changes the patient can choose to bring to their clinician, because
-relapse prediction and lifestyle prescriptions would be clinical claims that need
-validation and the sponsor's governance. AURA combines
+relapse prediction and treatment prescriptions require validation and sponsor
+governance. Curated lifestyle choices remain optional, not prescribed care. AURA combines
 wearable-style information with what the patient reports, treats missing data
 as missing, and keeps a governed personal reference alongside a recent rolling
 reference. An explanation can reduce repeated interruption without erasing
@@ -65,6 +68,17 @@ the observation or rewriting the reference.
 The patient experience is deliberately lightweight. The clinician experience
 offers deeper analytics and question-directed investigation. Review information
 can be prepared and inspected; it is not automatically transmitted.
+
+Four patient-home cards connect daily self-care to that record: My medication,
+Today's dose, Coming up, and A small idea for today. A read-only companion service
+projects the prescribed schedule, latest dose report and seven-day routine counts,
+estimated refill and configured medication-review dates, and optional curated
+suggestions. Missing or unknown dose reports never become missed doses. Skipped-dose
+reasons remain visible in appointment preparation. Medication answers come from a
+small curated catalogue explicitly awaiting pharmacist review; unknown medicines
+or topics abstain. Typed medication questions enter the safety boundary first;
+an optional model may classify the question to a topic ID, but never generate
+medication instructions. Safety blocks suppress ordinary companion content.
 
 Python/FastAPI application services orchestrate two independent deterministic
 engines: longitudinal baselines/context/communication and safety policy. They
@@ -102,7 +116,8 @@ readiness — share of visits with a patient-prepared note; (4) answer quality �
 of AI answers passing source checks, and clinician-rated usefulness; (5) safety —
 every safety-relevant input reaches the deterministic safety path first.
 
-The automated Python regression suite passed **303 tests** on 13 October 2026.
+The current Codex candidate passed **330 Python tests** on 13 October 2026
+(`68372f3`; branch regression evidence, not final release certification).
 Engineering evaluation covers six synthetic scenarios: physical illness, slow
 drift, illness plus independent change, an explained persistent shift, a wearable
 gap/return, and safety handoff. Automated regression tests cover deterministic
@@ -144,4 +159,4 @@ Leave blank unless the user authorizes and publishes a post. Required hashtags:
 
 - Cover Image: `assets/aura-cover.png` — pending.
 - Conversation History: `assets/development-history.pdf` — pending genuine logs/screenshots.
-- Architecture Diagram PPT: `assets/aura-health-deck.pptx` — pending export/review.
+- Architecture Diagram PPT: `assets/aura-health-deck.pptx` — exported; companion architecture update and final review pending.

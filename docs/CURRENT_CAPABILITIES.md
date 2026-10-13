@@ -1,17 +1,13 @@
 # AURA Health — Current capabilities and agent contribution
 
-Status: 2026-10-13. Code inspected at `be3e795`. This is a capability audit,
+Status: 2026-10-13. Updated against integrated `f37af0c` and the narrow verifier
+fix `68372f3` (original audit `be3e795`). This is a capability audit,
 not a new feature specification or clinical-validation claim.
 
-Follow-up: Claude's `c9922cd` fixes explicit clinician-question misattribution and
-improves fallback selection/budget labels. See
-[the subsequent review](CLAUDE_QA_AND_LOADING_REVIEW.md) for verified changes,
-remaining gaps and patient-animation diagnosis. The audit below retains its
-original `be3e795` inspection scope.
-
-User direction: stop feature development; limit subsequent implementation to
-bug fixes and minor updates. Distinguish the demo now from intended final-product
-capabilities. Missing capabilities are not necessarily rejected product ideas.
+The user reopened scope for the patient companion, now integrated and deployed.
+Distinguish this synthetic demo from intended final-product capabilities. Missing
+capabilities are not necessarily rejected product ideas. The earlier bugs-only
+freeze is not a statement that the companion remains future work.
 
 ## What the application is today
 
@@ -37,6 +33,8 @@ records and phrases supported observations. These are separate responsibilities.
 | Simulation life director | Converts a request into a constrained synthetic scenario plan | Demo/evaluation planning; not a product care agent or numeric-data generator |
 | Semantic safety detector | Proposes a concern category from text; deterministic policy resolves state | Classifier, not agentic care or suicide-risk determination |
 | Import/context proposal | Suggests a structured mapping or context association for human confirmation | Extraction/proposal, not autonomous ingestion or contextual judgment |
+| Medication question classification | Deterministic topic matching or optional model selection of an approved topic ID after patient safety processing; answer always curated | Classification, not an agent-generated medication answer |
+| Patient companion | Projects dose reports, reasons and dates; selects curated optional suggestions from committed changes | Deterministic application/content work, not autonomous agent actions |
 
 The Q&A tool set is `get_status`, `get_series`, `get_context`, `get_decisions`,
 `get_review_snapshot`, `get_gaps`, `compare_windows`, `day_of_week` and
@@ -60,6 +58,10 @@ Evidence: [roles](../aura_agent/roles.py), [runtime](../aura_agent/runtime.py),
 |---|---|---|
 | Personal patterns | Anchored plus rolling references; descriptive drift, coverage and signal-linked context | Sponsor-reviewed parameters and validation using appropriate real-world data |
 | Patient interaction | Check-ins, routine records, explanations, optional full data, short recap and patient questions | Longitudinal conversational continuity and governed clarification/follow-up workflows |
+| Medication understanding | Curated information for Sertraline, Escitalopram and Fluoxetine (purpose, how to take, missed dose, side effects, alcohol); stored prescription displayed; unknown medication/topic abstains | Pharmacist-reviewed content, broader catalogue and institutional content governance |
+| Medication routine/barriers | Taken / Not yet / Skipped; optional categorical skipped-dose reason; latest-report seven-day counts and Not-shared review items | Push reminders, multiple medications/doses and governed barrier follow-up |
+| Coming-up dates | Stored medication review and estimated refill dates | Notifications, booking and refill ordering; no booked appointment is inferred |
+| Everyday suggestions | Optional curated choices selected from existing descriptive changes; hidden when safety blocks | Sponsor content review and evaluated usefulness; not treatment prescription or clinical prevention claims |
 | Clinician assistance | Charts, sourced Q&A, structured review snapshot and printable/temporary review preparation | Authorized clinician workspace; approved, durable follow-up drafts and review workflow |
 | Wearable information | Synthetic daily/nightly and sparse channels; manual/confirmed synthetic import paths | Consented real-device integrations and institution-governed ingestion |
 | Safety | Deterministic state machine, pinned fixture resources, synthetic layered rule/model proposals, fail-closed guards | Reviewed resources/content and validated detector/governance arrangements; no emergency-monitoring claim |
@@ -79,56 +81,44 @@ prescribe/change treatment, give tapering instructions, provide psychotherapy,
 replace clinicians or operate as an emergency monitoring service. Those are
 standing intended-use boundaries, not items waiting to be switched on.
 
-## Confirmed bugs and narrow follow-ups
+## Fixed findings and remaining narrow issues
 
-1. **Clinician question misattribution — highest priority.** `AgentService._execute`
-   stores every free-form record question as `PATIENT_FREE_TEXT`, source
-   `synthetic_patient_ui`, before running Q&A. It therefore enters the patient's
-   timeline/safety processing and can later be retrieved as an assessed patient
-   note. The UI sends no author distinction. Clinician investigation text must not
-   be treated as patient testimony. A fix needs an explicit trusted actor/purpose
-   boundary; merely renaming the source or skipping every free-text safety gate
-   would be insufficient. Genuine patient text must retain safety-first routing.
-2. **Q&A fallback presentation.** Non-patient fallback uses fact text verbatim,
-   unlike the special patient recap. Status facts still include single-word
-   `OBSERVED`/`TRUSTED`; some findings/timestamps remain technical. Existing
-   clinician transformations do not cover every shape. Fix display wording while
-   retaining exact values, units, dates, comparator and citations.
-3. **Malformed tool calls.** Runtime directly indexes tool-function arguments.
-   Missing fields can terminate a run and trigger fallback. Inspect the offending
-   trace before selecting a narrowly bounded protocol fix; analysis arguments
-   must never be invented and numeric/semantic validation must not be relaxed.
-4. **Visible investigation trail.** Tool names/fact counts already appear under
-   Technical details. The trace also contains selected windows and verifier counts.
-   A short human-readable trail could expose genuine agent work without revealing
-   hidden chain-of-thought or pretending fallback is a completed investigation.
-5. **Demo story.** The older `DEMO_SCRIPT.md` lacks an explicit Q&A investigation
-   moment. The newer `SUBMISSION_DRAFT.md` already includes one in its video outline.
-   Align the final walkthrough around a real Q&A question, tool windows, checked
-   answer and sources. Do not preselect successful evidence and call it reliability.
+- Clinician questions now have explicit attribution and do not enter patient
+  testimony/safety processing. Patient-authored questions remain safety-first.
+  Demo caller attribution is not production authorization.
+- Q&A fallback selects related facts by whole-word topic, including routine and
+  held items; unrelated questions produce no unrelated evidence. Visible trail
+  includes actual reads/windows and the verification or fallback outcome.
+- Clinician numbers/dates remain exact. Internal unit names are simplified, but
+  raw stored precision can still be unwieldy; no rounding is accepted as a new fact.
+- Missing zero-argument tool arguments can be normalized narrowly; malformed
+  analysis arguments can still fail. No windows or statistics may be invented.
+- Post-flu Q&A completion is not established by the historical headline trial.
+  New diagnostics and any narrow fix are recorded in the submission evidence ledger.
+- Reused medication-question run IDs with changed text have a separately reproduced
+  safety-assessment identity gap; it remains an open review item, not a safe API
+  behavior to rely on. Normal UI requests use fresh IDs.
 
-The model has no write tools, but the application wrapper currently has the
-question-ingestion side effect above. Thus "the entire Q&A path is read-only"
-would be inaccurate until that bug is resolved.
+The Q&A agent's tools are read-only. Patient question ingestion and run/audit
+persistence are application side effects. The medication companion and curated
+lookup are not additional autonomous agent skills.
 
 ## Evidence and uncertainty
 
 - Committed v9 headline trial: Case B clinician19/20 and patient19/20 validated;
   flu groups not measured following the user's scope reduction. This does not
-  establish Q&A reliability or v10 reliability.
-- Current code uses prompt `aura-agent-v10`. Do not present historical v9 numbers
-  as a new v10 test.
+  establish Q&A reliability or current prompt reliability.
+- Current prompt is `aura-agent-v11`. Do not present historical v9 numbers as a
+  current Q&A gate.
 - Opus's three live Q&A attempts were supplied by the user: one completed partial
   answer, one number-check fallback and one malformed-call failure. These are
   reviewer-reported observations, not independently reproduced measurements here.
   The exact rejected number/rounding cause is not established by the report.
-- Existing AW4 tests intentionally prove safety-first behavior for a patient-like
-  question, but do not prove separation of clinician questions from patient reports.
-  A green suite can therefore coexist with this integration bug.
-- No additional paid calls, runtime changes or deployment were made for this audit.
-- Existing automated suite rerun: **292 tests PASS / 351.175 seconds** using
-  `.venv/bin/python -m unittest discover -s tests -q`. This is offline engineering
-  regression evidence, not proof of live Q&A completion or clinical suitability.
+- Current Codex candidate `68372f3` passed330 Python tests,15 hosted browser suites
+  and the local registry suite; the redesign mobile first-fold assertion fails.
+  Prior327-test companion evidence is historical. Release checks and diagnostics are in
+  [EVIDENCE_LEDGER.md](submission/EVIDENCE_LEDGER.md). No deployment is performed
+  by this documentation/QA task.
 
 Suggested submission characterization: **A bounded record-investigation agent
 chooses tools and comparison windows, uses deterministic analysis and produces

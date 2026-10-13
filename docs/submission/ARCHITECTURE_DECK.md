@@ -16,7 +16,8 @@ Export and inspect every slide; verify shapes/arrows/fonts remain readable.
 
 Subtitle: “Bounded record investigation; deterministic product policy.”
 
-- Patient: quiet recap, structured input, optional data inspection.
+- Patient: quiet recap, medication information, dose/reasons, coming-up dates,
+  optional suggestions, structured input and optional data inspection.
 - Clinician demo: longitudinal charts, source-linked questions and review preparation.
 - Intended use: stable clinician-managed antidepressant maintenance; demo synthetic-only.
 - Not a diagnosis/relapse-prediction or treatment-changing system.
@@ -32,6 +33,9 @@ Render `architecture.mmd` and simplify layout, not policy. Preserve these bounda
 5. Repository interfaces/development SQLite — event history, outputs and audits.
 6. Separate simulation/evaluation plane — only observable inputs cross; hidden truth does not.
 7. Separate pinned resource/fallback path — outside generated text.
+8. Read-only `GET /companion` projection and curated medication/suggestion content;
+   typed `POST /medication/ask` questions go through patient safety first. The model
+   selects a topic ID only; answers are curated, not generated treatment advice.
 
 Show the actual live model provider as a configurable synthetic-data dependency,
 not Tencent-hosted institutional infrastructure. Current site is Docker on the
@@ -76,9 +80,9 @@ The visible trail reports actions/outcomes, not hidden chain-of-thought.
 Presenter notes should name sources/versions and limitations. Do not add unmeasured
 time savings, accuracy/suicide-risk claims, real patient data or provider credentials.
 
-The approved companion feature branches add routine/review projection, curated
-medication lookup/topic selection and optional curated suggestions. Reflect them
-as implemented in the final deck only after integration and inspection of the
-actual release. Counts/curated lookup are not autonomous agent actions. Medication
-content needs pharmacist review; reminder dates do not imply push notifications
-or a booked appointment. Keep the agentic Q&A loop distinct from these features.
+The companion is integrated in `f37af0c`: routine/review projection, curated
+medication lookup/topic selection and optional curated suggestions. Re-render the
+deck's system-overview slide using the updated `system-overview.png`. Counts and
+curated lookup are not autonomous agent actions. Content needs pharmacist review;
+displayed dates do not imply push notifications or a booked appointment. Keep the
+agentic Q&A loop distinct from these features.

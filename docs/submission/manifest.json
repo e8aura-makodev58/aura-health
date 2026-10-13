@@ -13,8 +13,8 @@
   "social_media_post_link": null,
   "assets": {
     "cover": {"path": "assets/aura-cover.png", "max_bytes": 1000000, "status": "MISSING"},
-    "conversation_history": {"path": "assets/development-history.pdf", "max_bytes": 10000000, "status": "MISSING", "screenshot_count": 0, "chat_history_included": false},
-    "architecture_ppt": {"path": "assets/aura-health-deck.pptx", "max_bytes": 10000000, "status": "MISSING"}
+    "conversation_history": {"path": "assets/development-history.pdf", "max_bytes": 10000000, "status": "MISSING", "screenshot_count": 8, "chat_history_included": false},
+    "architecture_ppt": {"path": "assets/aura-health-deck.pptx", "max_bytes": 10000000, "status": "REVIEW_PENDING", "bytes": 2757539, "slide_count": 18, "companion_overview_rerender_required": true}
   },
   "supporting_diagrams": {
     "directory": "../presentation/diagrams/",
@@ -36,6 +36,46 @@
     "live_qa_partial_generated": 1,
     "live_qa_fallbacks": 2,
     "github_anonymous_http_status": 404,
+    "evidence": "EVIDENCE_LEDGER.md"
+  },
+  "consolidated_candidate_checks": {
+    "date": "2026-10-13",
+    "tested_commit": "495087d6bf58f495a91de75baa340f155b061a89",
+    "python_tests_passed": 327,
+    "python_seconds": 469.072,
+    "browser_suites": ["companion.cjs", "qa_display.cjs", "milestone7.cjs"],
+    "browser_assertions_passed": 18,
+    "browser_port": 8036,
+    "missed_days_contract": "PASS",
+    "live_signed_out_companion_reads": "PASS",
+    "llm_generation_requested_for_live_checks": false,
+    "github_anonymous_http_status": 404,
+    "open_findings": ["Changed medication question under reused run_id skips fresh safety assessment"],
+    "newer_main_not_covered": "37a2f32",
+    "final_release_approved": false,
+    "evidence": "EVIDENCE_LEDGER.md"
+  },
+  "x5_candidate_checks": {
+    "date": "2026-10-13",
+    "tested_commit": "68372f3bb082fac43512e4c30e227a3ca7787a57",
+    "python_tests_passed": 330,
+    "python_seconds": 474.013,
+    "hosted_browser_suites_passed": 15,
+    "hosted_browser_suites_failed": 1,
+    "local_registry_suite": "PASS (3 checks)",
+    "browser_port": 8036,
+    "browser_failed_suite": "redesign.cjs: quiet-card outside first mobile viewport",
+    "github_anonymous_http_status": 404,
+    "live_signed_out_companion_reads": "PASS",
+    "live_signed_out_a_f_record_reads": "PASS",
+    "strict_preflight_exit": 1,
+    "postflu_live_qa_attempts": 2,
+    "postflu_live_qa_fallbacks": 2,
+    "postflu_live_qa_timeouts": 0,
+    "local_postflu_verifier_chars_before": 50053,
+    "local_postflu_verifier_chars_after": 25636,
+    "postfix_live_reliability_measured": false,
+    "final_release_approved": false,
     "evidence": "EVIDENCE_LEDGER.md"
   },
   "release": {"tested_commit": null, "signed_out_links_verified": false, "claims_reviewed": false, "user_approved": false},
