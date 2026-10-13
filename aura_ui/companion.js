@@ -60,8 +60,10 @@ function renderCompanion(data) {
         chips.append(chip);
       }
     }
-    // Hide any previous answer on re-render
-    document.getElementById("medication-answer").hidden = true;
+    // Keep an answer across refreshes of the same patient (a typed question reloads the
+    // record); clear it only when a different patient is shown.
+    const shownFor = window.auraAgentContext?.()?.patientId;
+    if (window.auraMedicationAnswerFor !== shownFor) document.getElementById("medication-answer").hidden = true;
   }
 
   // Coming up
@@ -156,6 +158,7 @@ async function medicationTopic(topicId) {
       return;
     }
     answerArea.hidden = false;
+    window.auraMedicationAnswerFor = window.auraAgentContext?.()?.patientId;
     document.getElementById("answer-text").textContent = result.answer || "";
     document.getElementById("answer-source").textContent = result.source_label || "";
   } catch {
@@ -182,6 +185,7 @@ async function medicationAsk(question) {
     if (result.status === "BLOCKED") { answerArea.hidden = true; return; }
     document.getElementById("medication-question").value = "";
     answerArea.hidden = false;
+    window.auraMedicationAnswerFor = window.auraAgentContext?.()?.patientId;
     document.getElementById("answer-text").textContent = result.answer || "";
     document.getElementById("answer-source").textContent = result.source_label || "";
   } catch {

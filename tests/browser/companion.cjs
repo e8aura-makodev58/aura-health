@@ -75,6 +75,15 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
       await topicChips[0].click();
       // Answer may show or be hidden (BLOCKED) — either is valid
       console.log('COMPANION4_MEDICATION_TOPIC_CALLS_ENDPOINT PASS');
+    // A typed question reloads the record; its answer must stay on screen afterwards.
+    await page.locator('.medication-ask > summary').click();
+    await page.fill('#medication-question','fixture ordinary message');  // the local hosted test server accepts only labelled test text
+    await page.locator('#medication-ask-btn').click();
+    await page.waitForFunction(()=>/not able to answer that here/.test(document.getElementById('answer-text')?.textContent||'')&&!document.getElementById('medication-answer').hidden,null,{timeout:30000});
+    await page.waitForTimeout(2500);
+    assert.equal(await page.locator('#medication-answer').isVisible(),true,'answer survives the reload');
+    assert.match(await page.locator('#answer-text').innerText(),/I'm not able to answer that here, please check with your pharmacist or doctor\./);
+    console.log('COMPANION4B_TYPED_ANSWER_SURVIVES_RELOAD PASS');
     } else {
       console.log('COMPANION4_MEDICATION_NO_TOPICS_UNKNOWN_MEDICATION PASS');
     }
