@@ -130,6 +130,17 @@ class ApprovedWorkflowTests(unittest.TestCase):
         self.assertEqual(steps[2],'A second check reviewed 7 statements; 1 removed as unsupported')
         stopped=investigation_trail(trace[:1]+[{'action':'FALLBACK','provider_failure':'demo_budget_minute'}],keys,False)
         self.assertEqual(stopped[-1],'Stopped: the AI usage limit was reached; showing related facts instead')
+    def test_aw4g_thousands_separator_is_formatting_not_a_new_number(self):
+        from aura_agent.grounding import validate
+        tools=RecordTools(EvidenceViewService(self.service).get(self.patient),AgentRole.RECORD_QA)
+        end=tools.end[:10];from datetime import timedelta,date
+        mid=(date.fromisoformat(end)-timedelta(days=13)).isoformat();prev_end=(date.fromisoformat(mid)-timedelta(days=1)).isoformat();prev=(date.fromisoformat(mid)-timedelta(days=14)).isoformat()
+        fact=tools.call('compare_windows',{'key_id':'k3','start':mid,'end':end,'previous_start':prev,'previous_end':prev_end})['facts'][0]
+        median=fact['analysis']['previous']['median'];whole,_,decimals=f"{median}".partition('.')
+        exact=f"{int(whole):,}"+('.'+decimals if decimals else '')
+        draft=lambda text:{'claims':[{'text':text,'fact_ids':[fact['fact_id']],'findings':[],'section':'changes'}],'question_ids':[],'headline':''}
+        self.assertTrue(validate(draft(f"The earlier median was {exact} steps."),tools,AgentRole.RECORD_QA)['claims'])
+        with self.assertRaises(ValueError):validate(draft(f"The earlier median was {int(float(median))+1:,} steps."),tools,AgentRole.RECORD_QA)
     def test_aw5_rules_or_semantic_cannot_lower_current_mode(self):
         result=self.service.process(self.event('I want to die.'))
         self.assertEqual(result.safety['state']['interaction_mode'],'ELEVATED')

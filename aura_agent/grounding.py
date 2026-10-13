@@ -38,7 +38,10 @@ def validate(raw, tools, role):
             if date not in sources:
                 raise ValueError("FABRICATED_NUMBER_OR_DATE")
         numbers = set(re.findall(r"\d+(?:\.\d+)?", sources))
-        if not set(re.findall(r"\d+(?:\.\d+)?", text)) <= numbers:
+        # A thousands separator is formatting, not a new number: "5,265.825" must
+        # equal "5265.825" exactly. Rounded or calculated values still fail.
+        written = re.sub(r"(?<=\d),(?=\d{3}\b)", "", text)
+        if not set(re.findall(r"\d+(?:\.\d+)?", written)) <= numbers:
             raise ValueError("FABRICATED_NUMBER_OR_DATE")
         for label, signal in (("sleep timing", "SLEEP_MIDPOINT"), ("sleep duration", "SLEEP_DURATION"), ("activity", "ACTIVITY"), ("heart rate", "RESTING_HEART_RATE")):
             if label in text.lower() and not any(tools.delivered[fid]["signal"] == signal for fid in claim.fact_ids):
