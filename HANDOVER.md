@@ -272,6 +272,13 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — CodeBuddy — B2 timeline strip fix; B1/B4 status update
+- **B2 (When things changed strip):** the clinician view's finding-timeline SVG had `width:100%` with no `max-width`, so the viewBox (640px) scaled up to the container width — making the "1", "2" and date labels oversized at 1440 px. Fix in `aura_ui/evidence.css`: `.finding-timeline svg` now has `max-width:720px;margin:0 auto` (caps the SVG so labels stay proportional on wide viewports; still full-width on mobile). Added `.finding-timeline-label{font-size:11px;fill:var(--ink-soft)}` for consistent label sizing inside the viewBox. Claude's review caught that the initial `font-size:.8rem` approach would still scale with the SVG.
+- **B1 (cover image):** user will generate with Miora themselves; scripted cover and build tool removed from branch. `ASSET_REGISTER.md` updated to `AWAITING_USER`. Reference screenshots in `docs/presentation/screenshots/v2/`.
+- **B4 (evidence PDF):** still blocked awaiting user's genuine session screenshots.
+- Verified: browser suites on port 8046 — `story_charts.cjs` 3/3 PASS; `plain_language.cjs` PLAIN1 PASS (A–F phone+laptop facts+sources); `final_dash.cjs` FD_BROWSER1 PASS (channel uniqueness A–F, no scroll overflow at 1280/390). Pre-existing flu-simulation timeout in `final_dash.cjs` line 33 and fixture-advance failure in `plain_language.cjs` line 54 are environmental (life simulator slow in this worktree), not caused by this CSS change. Full Python suite not rerun (CSS-only change).
+- Branch: `improve/feature-codebuddy`, rebased on `origin/main` `f37af0c`.
+
 ### 2026-10-13 — Claude — Deck, walkthrough video (no voice) and fixes found while recording
 - Deck: `docs/submission/assets/aura-health-deck.pptx` (18 slides, 2.76 MB, image slides rendered from `docs/presentation/deck/slides/*.html`, speaker notes = script v2 narration; built by a Claude sub-agent on branch `deck-build`, reviewed and merged). Slide 16 keeps a marked slot for genuine CodeBuddy/Miora screenshots (user to supply).
 - Screenshots per scene: `docs/presentation/screenshots/v2/` (live, unedited AI text).
