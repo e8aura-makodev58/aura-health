@@ -293,6 +293,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Reviewed/merged Codex `9a13e34`; medication retry-identity fix; hybrid deck
+- Codex branch merged into `main` (post-flu verifier payload trim with tests AW2b/AW2c, companion docs, updated overview diagram). Deck rebuilt so slide 11 shows the updated diagram.
+- Fixed Codex's finding in `aura_app/medication_ask.py`: the patient question event ID now includes a hash of the question text, so reusing a run ID with different words is a new message with its own safety assessment (test MED4b).
+- Deck is now hybrid (`make_hybrid_pptx.py`): themed background picture + every text block as an editable text box in Nunito; slide 16 uses the general "How we built it" wording (user).
+- Release blocker for the user: the GitHub repository returns 404 anonymously (private); judges need source access.
 ### 2026-10-13 — Codex — Integrated companion claims/diagram and narrow post-flu verifier fix
 - Requested main pull completed on Codex branch; both handover histories retained.
   Updated assigned challenge/form/current-capability/architecture documents and

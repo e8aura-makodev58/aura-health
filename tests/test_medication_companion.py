@@ -93,6 +93,15 @@ class MedicationCompanionTests(unittest.TestCase):
         # Once safety is not normal, even a chosen topic is withheld.
         self.assertEqual(self.ask(topic_id="purpose")["status"], "BLOCKED")
 
+    def test_med4b_reused_run_id_with_new_text_is_assessed_again(self):
+        service = MedicationAskService(self.service, TaskModel())
+        first = service.ask(self.patient, run_id="same-run", question="What if I miss a dose?")
+        self.assertEqual(first["status"], "ANSWERED")
+        before = len(self.detector.requests)
+        self.detector.concern = "possible"
+        second = service.ask(self.patient, run_id="same-run", question="I feel very uncertain today")
+        self.assertGreater(len(self.detector.requests), before)
+        self.assertEqual((second["status"], second["answer"]), ("BLOCKED", ""))
     def test_med5_model_only_chooses_a_topic_never_the_answer(self):
         result = self.ask(TopicModel({"topic": "alcohol"}), question="Is a glass with dinner ok?")
         self.assertEqual(result["topic_id"], "alcohol")

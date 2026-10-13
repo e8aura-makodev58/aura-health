@@ -5,6 +5,7 @@ curated text from aura_agent/medication_info.json or a fixed abstention line.
 """
 
 from datetime import datetime, timezone
+from hashlib import sha256
 from uuid import NAMESPACE_URL, uuid5
 
 from aura_agent import medication
@@ -41,7 +42,10 @@ class MedicationAskService:
         trace = []
         if question is not None:
             # A typed question is the patient's own words: safety-assess it first, like any patient text.
-            event_id = str(uuid5(NAMESPACE_URL, f"aura-medication-question:{patient_id}:{run_id}"))
+            # Bind the event to the exact text: reusing a run ID with different words is a new
+            # patient message and must get its own safety assessment, never a replay.
+            text_hash = sha256(question.encode()).hexdigest()
+            event_id = str(uuid5(NAMESPACE_URL, f"aura-medication-question:{patient_id}:{run_id}:{text_hash}"))
             self.events.process(ApplicationEvent(event_id, patient_id, EventType.PATIENT_FREE_TEXT, at, self.clock(),
                                                  "synthetic_patient_ui", {"text": question}, event_id, event_id))
             trace.append({"step": "safety_check", "result": "assessed"})
