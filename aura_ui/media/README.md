@@ -10,7 +10,7 @@ Flat folder for static UI art and fonts, served at `/assets/media/<name>`.
 - The page's security policy blocks external fonts, images and scripts, and inline
   `<style>`/`style=""`; reference media from `styles.css` or `<img src="/assets/media/...">`.
 - Illustrations (`welcome-hero`, `home-hero`, `breathing-circle`, `empty-clinician`,
-  `appointment-note`) are Miora-generated artwork in WebP. Size budget: up to 500 KB per illustration
-  (user-approved 2026-10-12; current files are 100–245 KB).
+  `calm-state`, `aura-mark`) are Miora-generated true vector SVGs (4–10 KB each).
+  `aura_health_app_icon.svg` is also available for PWA/favicons.
 - Original or properly licensed art only. No third-party brand assets (logos, characters,
   mascots) from any other app.

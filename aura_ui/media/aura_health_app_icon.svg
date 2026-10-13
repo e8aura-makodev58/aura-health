@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 256 256" role="img" aria-label="Aura-Health app icon">
+<title>Aura-Health app icon</title>
+<defs>
+
+<linearGradient id="paper" x1="0" y1="0" x2="0.9" y2="1"><stop stop-color="#FFFDF9"/><stop offset="1" stop-color="#FBF5EB"/></linearGradient>
+<linearGradient id="sun" x1="0" y1="0" x2="0.96" y2="1"><stop stop-color="#FFE6AA"/><stop offset="0.47" stop-color="#FFC26D"/><stop offset="1" stop-color="#F5A623"/></linearGradient>
+<linearGradient id="sunSoft" x1="0.1" y1="0" x2="0.8" y2="1"><stop stop-color="#FFF3CC"/><stop offset="1" stop-color="#FFD9A6"/></linearGradient>
+<linearGradient id="coral" x1="0.1" y1="0.1" x2="1" y2="0.9"><stop stop-color="#FFB991"/><stop offset="0.56" stop-color="#EE8B70"/><stop offset="1" stop-color="#D76E58"/></linearGradient>
+<linearGradient id="orange" x1="0" y1="0.1" x2="1" y2="1"><stop stop-color="#FFCE85"/><stop offset="0.52" stop-color="#F59F34"/><stop offset="1" stop-color="#D87332"/></linearGradient>
+<linearGradient id="sage" x1="0.1" y1="0" x2="0.9" y2="1"><stop stop-color="#ADC49C"/><stop offset="1" stop-color="#789B73"/></linearGradient>
+<linearGradient id="sage2" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#93B48A"/><stop offset="1" stop-color="#6F976E"/></linearGradient>
+<linearGradient id="lav" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E9DCF8"/><stop offset="0.6" stop-color="#CBBBEA"/><stop offset="1" stop-color="#BDA2E2"/></linearGradient>
+<radialGradient id="sunGlow"><stop stop-color="#FFCF73" stop-opacity="0.85"/><stop offset="0.5" stop-color="#FFDCA4" stop-opacity="0.33"/><stop offset="1" stop-color="#FFD9A6" stop-opacity="0"/></radialGradient>
+<radialGradient id="blueGlow"><stop stop-color="#B1D9F5" stop-opacity="0.92"/><stop offset="0.63" stop-color="#C7E4F8" stop-opacity="0.43"/><stop offset="1" stop-color="#C7E4F8" stop-opacity="0"/></radialGradient>
+<radialGradient id="orangeGlow"><stop stop-color="#F8A358" stop-opacity="0.7"/><stop offset="0.50" stop-color="#FFD8B4" stop-opacity="0.33"/><stop offset="1" stop-color="#FFF3DC" stop-opacity="0"/></radialGradient>
+<filter id="shadow" x="-35%" y="-35%" width="170%" height="190%"><feGaussianBlur stdDeviation="13"/></filter>
+<filter id="blurSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="28"/></filter>
+<filter id="blurShort" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+
+
+<linearGradient id="leafLeft" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9FB895"/><stop offset="1" stop-color="#789D75"/></linearGradient>
+<linearGradient id="leafRight" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#96B28B"/><stop offset="1" stop-color="#689267"/></linearGradient>
+<linearGradient id="flameBody" x1="0" y1="0.1" x2="1" y2="1"><stop stop-color="#FEAA71"/><stop offset="0.55" stop-color="#F47C61"/><stop offset="1" stop-color="#E5745B"/></linearGradient>
+<linearGradient id="flameLight" x1="0" y1="0" x2="0.9" y2="1"><stop stop-color="#FFD09B"/><stop offset="0.48" stop-color="#FFC38D"/><stop offset="1" stop-color="#FFA964"/></linearGradient>
+
+<linearGradient id="appTile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFDF9"/><stop offset="1" stop-color="#FBF4E9"/></linearGradient>
+
+</defs>
+<rect x="0" y="0" width="256" height="256" rx="53" fill="url(#appTile)" /><g transform="translate(25 22) scale(0.805)">
+<!-- Lavender curved protective embrace -->
+<path d="M60 54 C25 68 13 98 18 137 C22 173 39 193 66 208 C43 182 33 154 35 126 C36 96 43 74 60 54 Z" fill="#C2A7F0"/>
+<path d="M196 54 C231 68 243 98 238 137 C234 173 217 193 190 208 C213 182 223 154 221 126 C220 96 213 74 196 54 Z" fill="#BCA0EC"/>
+<!-- left green leaf -->
+<path d="M116 239 C74 240 39 211 30 165 C27 148 30 126 34 113 C46 136 62 147 82 161 C108 181 119 208 116 239 Z" fill="url(#leafLeft)"/>
+<path d="M116 237 C94 207 69 186 44 163" fill="none" stroke="#D9E2C9" stroke-width="2.8" opacity="0.57" stroke-linecap="round"/>
+<!-- right green leaf -->
+<path d="M140 239 C182 240 217 211 226 165 C229 148 226 126 222 113 C210 136 194 147 174 161 C148 181 137 208 140 239 Z" fill="url(#leafRight)"/>
+<path d="M140 237 C162 207 187 186 212 163" fill="none" stroke="#D9E2C9" stroke-width="2.8" opacity="0.54" stroke-linecap="round"/>
+<!-- flame central body, tapered top, rounded shoulders and tapered bottom -->
+<path d="M127 18 C121 47 98 64 83 91 C66 120 65 145 77 165 C87 183 112 193 128 219 C143 191 168 178 180 154 C195 123 183 94 164 70 C145 47 133 36 127 18 Z" fill="url(#flameBody)"/>
+<!-- bright warmer right flame like source artwork -->
+<path d="M127 18 C129 51 120 78 132 106 C141 127 160 140 158 170 C156 187 141 199 128 219 C148 190 170 177 181 152 C194 120 180 92 161 69 C145 48 132 35 127 18 Z" fill="url(#flameLight)"/>
+</g>
+</svg>
