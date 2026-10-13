@@ -1,0 +1,34 @@
+flowchart LR
+  UI[Patient / clinician demo UI] --> APP[FastAPI + application orchestration]
+  APP <--> DB[(Repository interfaces / development SQLite)]
+  APP --> LG[Deterministic longitudinal engine]
+  APP --> INPUT[Patient-input safety boundary]
+  INPUT --> DET[Demo rules / model proposals]
+  DET --> SAFE[Deterministic safety state machine]
+  LG --> INTENT[Approved communication intent]
+  SAFE --> INTENT
+  SAFE --> RES[Pinned resources + built-in fallback]
+  RES --> UI
+  INTENT --> WORD[Bounded wording / validation / fallback]
+  WORD --> UI
+  APP --> GUARD[Current-state / synthetic / online guard]
+  SAFE --> GUARD
+  GUARD --> AGENT[AURA-Agent: choose tools and windows]
+  AGENT --> TOOLS[Patient-scoped read and descriptive-analysis tools]
+  DB --> TOOLS
+  TOOLS --> AGENT
+  AGENT --> CHECK[Citations / numbers / findings checks]
+  CHECK --> VERIFY[Independent model verifier]
+  VERIFY --> FINAL[Fresh-state check / supported answer or related facts]
+  FINAL --> UI
+  FINAL --> AUDIT[Append-only run trace / linked audit]
+  AUDIT --> DB
+  MODEL[Configured live model: synthetic data only] <--> AGENT
+  MODEL --> VERIFY
+  MODEL --> WORD
+  subgraph EVAL[Development / evaluation plane]
+    DIRECTOR[Life director / structured synthetic plan] --> GEN[Seeded numeric generator]
+    GEN --> OBS[Observable-event allowlist]
+    GEN --> TRUTH[Hidden scenario truth: evaluation only]
+  end
+  OBS --> APP

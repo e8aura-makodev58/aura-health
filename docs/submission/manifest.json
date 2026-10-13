@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "status": "DRAFT",
+  "track": "Healthcare",
+  "requirements_source": "User-supplied submission form, 2026-10-13",
+  "project_title": "aura-health",
+  "short_blurb": "Personal health patterns, clearer conversations between appointments.",
+  "form_copy": "FORM_CONTENT.md",
+  "project_web_link": "https://aura-health.makodev58.com",
+  "demo_video_link": null,
+  "demo_video_duration_seconds": null,
+  "source_code_link": "https://github.com/e8aura-makodev58/aura-health",
+  "social_media_post_link": null,
+  "assets": {
+    "cover": {"path": "assets/aura-cover.png", "max_bytes": 1000000, "status": "MISSING"},
+    "conversation_history": {"path": "assets/development-history.pdf", "max_bytes": 10000000, "status": "MISSING", "screenshot_count": 0, "chat_history_included": false},
+    "architecture_ppt": {"path": "assets/aura-architecture.pptx", "max_bytes": 10000000, "status": "MISSING"}
+  },
+  "release": {"tested_commit": null, "signed_out_links_verified": false, "claims_reviewed": false, "user_approved": false},
+  "submission": {"submitted": false, "submitted_at": null, "confirmation_reference": null}
+}

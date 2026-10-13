@@ -1,25 +1,32 @@
 # M8 — Submission and Final Freeze
 
-Status: PLANNED. Target: 2026-10-13 through 2026-10-15. Deadline: 2026-10-16.
+Status: PREPARATION ACTIVE (user-authorized 2026-10-13), not complete.
+Target: 2026-10-13 through 2026-10-15. Deadline: 2026-10-16.
+Canonical package: [`docs/submission/README.md`](../submission/README.md).
+Packaging authorization does not retrospectively accept all M7 review gates.
 
 ## Goal
 
 Submit a coherent, reproducible project without last-minute architectural risk. No major new feature starts in M8.
 
-## Required submission items (from the hackathon brief, §8)
+## Required submission items (current form supplied 2026-10-13)
 
-The brief says projects without CodeBuddy/WorkBuddy proof **do not proceed to scoring**. Submit via the link in the brief (§10, Step 4).
+Use the user's current form requirements captured in
+[`REQUIREMENTS.md`](../submission/REQUIREMENTS.md). They supersede the older
+brief's optional video/live-link wording. The actual form URL has not been supplied.
 
 | Item | Status in brief | Requirement |
 |---|---|---|
 | Project title | Required | `aura-health` (user decision, 2026-09-23). |
 | Short blurb | Required | Hard limit: **under 10 words**. |
 | Project description | Required | Four parts: (1) overview: target scenarios, users, value proposition; (2) real-world insight: source of pain points, audience, core problems; (3) solution design: business and technical architecture, **and how prompts drive the AI generation**; (4) business value: **quantifiable metrics** or clearly defined impact. |
-| CodeBuddy/WorkBuddy conversation history | Required | **At least 3 screenshots or a screen recording of chat logs** from CodeBuddy/WorkBuddy during development. |
-| Cover image | Required | **16:9**, recommended 380×216 px, for the online showcase. |
-| Demo video | Optional | 5–8 min: project overview, core agent features and usage, and a short reflection on the build approach with CodeBuddy/WorkBuddy tips. |
-| Project link | Optional, **earns bonus points** | **We will submit one** (user decision, 2026-09-24): the live hosted demo URL from M7. Verify it works and resets on the day of submission. |
-| Challenge-statement items | Per healthcare track | Demo walkthrough (live), architecture + trust-boundary diagram with key design trade-offs, full source on GitHub. |
+| Development conversation history | Required | Chat history **and at least 3 screenshots** from CodeBuddy, WorkBuddy **or Miora** development; **one supported file ≤10MB**. |
+| Cover image | Required | **16:9**, recommended 380×216 px; **one supported file ≤1MB**. |
+| Demo video link | Required | **5–8 min**: overview, core agent features/use and reflection on build approach/tool tips. |
+| Project web link | Required | Browser-accessible project experience; verify signed-out access/reset before submission. |
+| Architecture Diagram PPT | Required | **One supported file ≤10MB**; actual PPT/PPTX, not only Markdown. |
+| Source code | Required | GitHub repository URL. |
+| Social Media Post Link | Optional bonus | Genuine published link with #WorkBuddy #CodeBuddy #Miora #TencentCloudHackathon. |
 
 Before freezing, check the submission against the ten judging dimensions (brief §11, 10 points each): Impact & Relevance, Human-Centered Design, AI Interaction, Technical Execution, Feasibility, Demo & Storytelling, Innovation & Creativity, UX & Accessibility, Responsible AI & Ethics, Overall Quality.
 

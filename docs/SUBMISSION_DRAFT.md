@@ -1,5 +1,10 @@
 # Submission draft (Claude, 2026-10-12)
 
+**Superseded for submission preparation on 2026-10-13.** Canonical current form
+copy, required uploads and agent instructions are in
+[`docs/submission/README.md`](submission/README.md). This file is historical
+background; do not copy its outdated optional-field or performance wording.
+
 Draft text for the hackathon form. Reliability numbers come from `docs/evidence/deepseek-v9-reliability.json`. Nothing here claims clinical validity, diagnosis, prediction or treatment.
 Requirements are in `docs/milestones/M8_SUBMISSION.md`.
 
