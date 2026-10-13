@@ -31,7 +31,7 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   await page.locator('#start-clinician').click();await page.waitForSelector('#patterns-view:not([hidden])');
   assert.equal(await page.evaluate(()=>document.body.dataset.role),'clinician');await context.close();
   ({context,page}=await open(1280,900));
-  await page.locator('#start-demo').click();await page.waitForSelector('#patterns-view:not([hidden])');
+  await page.locator('#start-demo').click();await page.waitForSelector('#home-view:not([hidden])');assert.equal(await page.evaluate(()=>document.body.dataset.role),'patient');
   assert.equal(await page.locator('#demo-panel').isVisible(),true,'story guide opens');await context.close();
   ({context,page}=await open(1280,900));
   await page.getByRole('button',{name:'Patient',exact:true}).click();await page.waitForSelector('#home-view:not([hidden])');await context.close();

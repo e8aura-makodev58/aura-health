@@ -27,8 +27,8 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
   for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`${out}/impression-clinician-${width}.png`,fullPage:true});}
   await context.setOffline(true);await page.waitForSelector('#safety-panel:not([hidden])');assert.equal(await page.locator('#assessment-complete').textContent(),'');assert.equal(await page.locator('#agent-visit_prep').textContent(),'');assert.equal(await page.locator('.story-finding-band').count(),0);console.log('I1_OFFLINE_CLEARS_PERMITTED_CONTENT PASS');
   await context.setOffline(false);await page.waitForFunction(()=>document.getElementById('safety-panel').hidden);
-  await page.locator('#demo-toggle').click();assert.equal(await page.locator('#guided-story button').count(),5);
-  await page.getByRole('button',{name:'5 · Visit note',exact:true}).click();await page.waitForSelector('#review-view:not([hidden])');assert.match(await page.locator('.sharing-note').innerText(),/Not sent/);console.log('I7_GUIDED_VISIT_NOT_SENT PASS');
+  await page.locator('#demo-toggle').click();assert.equal(await page.locator('#guided-story button').count(),6);
+  await page.getByRole('button',{name:'4 · Ready for the appointment',exact:true}).click();await page.waitForSelector('#review-view:not([hidden])');assert.match(await page.locator('.sharing-note').innerText(),/Not sent/);console.log('I7_GUIDED_VISIT_NOT_SENT PASS');
   assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

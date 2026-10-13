@@ -1,126 +1,113 @@
-# AURA Health — presentation and video script (draft v1)
+# AURA Health — presentation and video script (v2, patient-first)
 
-Status: DRAFT for the user's approval, 2026-10-13, Claude. Target **7:00** (allowed 5–8 min),
-about 900 spoken words at a calm pace. Once approved, this script drives (1) the slide deck,
-(2) the screen recording and (3) the narrated video. Screenshots referenced are in
-`screenshots/`; architecture diagrams come from Codex (`diagrams/`, pending).
+Status: DRAFT v2 for the user's approval, 2026-10-13, Claude. Replaces v1 (clinician-first,
+written before the patient companion existed). Target **7:00** (allowed 5–8 min), about 950
+spoken words. This script drives the demo video, the deck (also the required architecture
+PPT), the live pitch, and the in-app "Play the 3-minute story" tour (same scene order).
 
-Honesty rules for every take: synthetic data only; AI text is whatever the live run produces
-(no staging, no editing); if an answer falls back, say so; no clinical-effectiveness claims.
+Demo record: synthetic patient B (slow sleep drift, lower activity, Rough check-ins), patient
+view unless stated. Rules for every take: synthetic data only; AI text is whatever the live run
+produces, never edited; if the AI falls back, say so; no clinical-effectiveness claims.
 
 ---
 
-### 1 · Title and chosen challenge — 0:00–0:25
-**Slide:** cover image · "AURA Health — Context between appointments" · track badge.
-**Say:**
+### 1 · The challenge — 0:00–0:25
+**Slide:** cover · "AURA Health — a calm companion between doctor visits" · Healthcare track badge.
 > "We chose the Healthcare track's Challenge Statement 2, *AI Healthier Every Day*, Scenario 1:
 > mental health maintenance for working adults on antidepressants. This is AURA Health."
 
-### 2 · The problem — 0:25–1:00
-**Slide:** three short lines with a simple illustration.
-**Say:**
-> "Between appointments, a lot happens that nobody can see. Sleep drifts later, activity drops,
-> a flu comes and goes. Most apps ask the patient to log their mood every day, which is hard when
-> you're tired or low. And when the appointment comes, both sides are piecing the weeks together
-> from memory."
+### 2 · The problem — 0:25–0:55
+**Slide:** three short lines.
+> "Staying well on an antidepressant happens mostly between appointments. A dose gets missed,
+> sleep drifts later, a flu knocks you out for a few days. Most apps ask you to log your mood
+> every evening, which is hard when you're tired or low. And when the appointment comes, it's
+> all pieced together from memory."
 
-### 3 · What AURA does — 1:00–1:20
-**Screen:** landing (`01-landing-desktop`).
-**Say:**
-> "AURA quietly reads everyday wearable data, compares it with the person's *own* usual, and turns
-> it into two views: a calm one for the patient, and a clear 'what changed and when' for their
-> clinician."
+### 3 · A calm start — 0:55–1:35
+**Screen:** landing → *See the patient's day* → "Take a breath" → *Continue* → summary.
+> "AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts
+> the system has checked: sleep time later than usual since late February, and how the person
+> has been checking in. It quietly reads everyday wearable data and compares it with *this
+> person's* usual, not a population average."
 
-### 4 · The patient's day — 1:20–2:10
-**Screen:** tap *See the patient's day* → breathing welcome (`03`) → home (`04`) → *See what changed* (`05`).
-**Say:**
-> "The patient starts with a breath, not a dashboard. Then one short summary in everyday words.
-> This sentence is written by AURA's AI, but only from facts the system has checked, and it's
-> tested before it's shown. No charts, no scores. If they want detail, it's one tap away. The one
-> thing that's always on screen is this button: *I want to mention something*."
+### 4 · My medication, my day — 1:35–2:35
+**Screen:** *Today's dose* → tap *Skipped* → "What got in the way?" → *Side effects*.
+Then *My medication* → *What if I miss a dose?*
+> "Every morning there's one tap: taken, not yet, or skipped. If it's skipped, AURA asks what
+> got in the way, because that's what's worth bringing to a doctor. *My medication* explains the
+> person's own prescription in plain words: what it's for, how it's usually taken, what patient
+> leaflets say about a missed dose. These answers come from approved information, not made up by AI, and
+> they always point back to the pharmacist."
+**Then type in *Ask a question*:** "Can I take ibuprofen with it?"
+> "And when AURA can't answer, it says so: *I'm not able to identify that medication, please
+> check with your pharmacist.* Exactly what the challenge asks for."
 
-### 5 · A life event — 2:10–2:45
-**Screen:** demo guide → *Simulate: flu 3 days* → patient home after (`08`).
-**Say:**
-> "Let's simulate three days of flu. AURA notices that resting heart rate is higher than in the
-> person's *recent* records, and says exactly that: a recent change, not a change from their usual.
-> That difference matters. A flu is short. A slow drift in sleep over weeks is something else, and
-> AURA keeps both references so they don't get mixed up."
+### 5 · Something changes — 2:35–3:15
+**Screen:** Demo guide → *Simulate: flu 3 days* → back to the patient home.
+> "Now a flu, simulated over three days. AURA notices resting heart rate is higher than in the
+> person's *recent* records, and says exactly that: a recent change, not a change from their
+> usual. And when a change shows up, it offers a small idea for today: a short walk, a message
+> to someone you trust, or planning a session. Optional, never about medication."
 
-### 6 · The clinician view — 2:45–3:30
-**Screen:** *Clinician* → assessment cards (`09`) → charts (`10`).
-**Say:**
-> "Now the clinician. The first screen answers one question: what changed, and when. Sleep about
-> three and a half hours later since late February; activity about two thousand steps a day lower
-> since early March. Every number is exact and every card links to its source. The charts show
-> the person's usual as a dashed line, and the recent average moving away from it."
+### 6 · Ready for the appointment — 3:15–3:45
+**Screen:** *Prepare for my appointment* → missed doses → *Not sent*.
+> "Before the visit, everything is in one place: what changed, when, and the missed dose with
+> its reason, ready to discuss with the doctor or pharmacist. Nothing is sent automatically.
+> It stays *Not sent* until the patient decides."
 
-### 7 · The agent at work — 3:30–4:30
-**Screen:** type the question live → answer with *How AURA looked* (`11`).
-**Ask:** "When did sleep timing change, and was anything reported around then?"
-**Say:**
-> "Here's where AURA is an agent, not a chatbot. I ask a question. AURA decides what to look
-> at: which signals, which tools, which dates. It reads the record, drafts an answer, and every
-> statement cites its source. Then a second, independent check reviews each statement. Here it
-> reviewed nine and removed one it couldn't support. You can see exactly what it did, right here:
-> *How AURA looked*. And it can only read; it can never change the record or the treatment."
-**If it falls back, say instead:**
-> "This time the draft didn't pass the checks, so AURA shows the related recorded facts and tells
-> you why. You can still see what it investigated."
+### 7 · What the clinician sees — the agent at work — 3:45–4:50
+**Screen:** *Clinician* → assessment cards → *Ask about this record*:
+"When did sleep timing change, and was anything reported around then?"
+> "If the patient shares, their clinician sees what changed and when, with exact values and
+> sources. And the clinician can ask. Here AURA works as an agent: it decides which signals,
+> tools and dates to look at, reads the record, and drafts an answer where every statement cites
+> its source. A second, independent check then reviews each statement and removes anything
+> unsupported. *How AURA looked* shows exactly what it did. It can only read; it never changes
+> the record or the treatment."
+**If it falls back:**
+> "This time the draft didn't pass the checks, so AURA shows the related facts and says why."
 
-### 8 · Ready for the appointment — 4:30–4:55
-**Screen:** patient → *Prepare for my appointment* (`06`).
-**Say:**
-> "Before the visit, the patient chooses what to bring. Nothing is sent automatically. It says
-> *Not sent* until the patient decides."
+### 8 · Safety first — 4:50–5:15
+**Screen:** patient → *I want to mention something* → *Safety handoff fixture* → safety panel.
+> "Anything a patient types is safety-checked first. If there's a concern, fixed safety
+> resources take over the screen and the AI steps back. Those messages are never AI-written.
+> The same applies to medication questions: asking to double a dose goes to safety, not to an
+> answer."
 
-### 9 · Safety comes first — 4:55–5:20
-**Screen:** *I want to mention something* (`07`) → safety example → safety panel (`12`).
-**Say:**
-> "Anything a patient writes goes through a safety check first. If there's a concern, a fixed
-> safety message and resources take over the screen. These are never written by AI, and the AI
-> assistant pauses."
+### 9 · How it's built — 5:15–6:00
+**Slides:** architecture overview · agent loop · safety precedence (`diagrams/`).
+> "Our rule: signals propose, rules decide, AI words it. Deterministic engines own the personal
+> baselines and the safety state. Medication information is curated; AI only matches a question
+> to an approved topic. The clinician agent investigates with read-only tools, and every answer
+> passes number, date and citation checks plus an independent verifier. In this demo the model
+> runs on synthetic data only; a hospital would run it on its own private infrastructure."
 
-### 10 · How it's built — 5:20–6:05
-**Slides:** architecture overview, agent loop, trust boundaries (Codex diagrams).
-**Say:**
-> "Our rule is: signals propose, rules decide, the AI words it. Deterministic engines own the
-> personal baselines and the safety state. The AI agent investigates with read-only tools, and
-> every answer passes number, date and citation checks plus an independent verifier. The model
-> is configurable and runs only on synthetic data in this demo; a hospital would run it on its own
-> private infrastructure."
+### 10 · Fit with the challenge — 6:00–6:25
+**Slide:** six features: built / partial / next (from `../submission/CHALLENGE_MAPPING.md`).
+> "Against the challenge: medication understanding, adherence with barriers, health tracking,
+> follow-up dates for refills and medication reviews, and appointment preparation are in the
+> demo. Push reminders, screenings and pharmacist-reviewed content come next. One choice is deliberate: AURA describes changes; it
+> doesn't predict relapse or give medication advice."
 
-### 11 · Fit with the challenge — 6:05–6:30
-**Slide:** built / roadmap / deliberately different (from `../submission/CHALLENGE_MAPPING.md`).
-**Say:**
-> "Against the challenge: health tracking, appointment preparation and strict boundaries are
-> built. Medication explanations, reminders and preventive nudges are next. And one choice is
-> deliberate: AURA describes changes; it doesn't predict relapse or give advice. That needs
-> clinical validation, and it's the sponsor's call."
+### 11 · How we built it — 6:25–6:45
+**Slide:** genuine CodeBuddy and Miora session screenshots.
+> "We built the safety and longitudinal core first, then the agent, then the experience.
+> CodeBuddy built the companion screens from a written contract; Miora made the artwork. Our tip:
+> write down what must never change before asking an AI to build anything."
 
-### 12 · How we built it — 6:30–6:50
-**Slide:** CodeBuddy and Miora screenshots (genuine sessions only).
-**Say:**
-> "We built the deterministic core first, then the agent, then the experience. CodeBuddy
-> redesigned the interface from a written brief with clear boundaries; Miora created the artwork.
-> Our tip: write down what must never change before you ask an AI to redesign anything."
-
-### 13 · Impact and close — 6:50–7:10
-**Slide:** pilot metrics (labelled as targets) + roadmap + closing line.
-**Say:**
-> "In a pilot we'd measure patient effort, clinician preparation time, and how many appointments
-> start with a prepared note. AURA Health: context between appointments, so both sides start the
-> conversation on the same page."
+### 12 · Impact and close — 6:45–7:05
+**Slide:** pilot metrics (labelled as targets) · closing line.
+> "In a pilot we'd measure missed doses with a recorded reason, preparation time before visits,
+> and how many appointments start with a prepared note. AURA Health: a calm companion between
+> doctor visits, so both sides start the conversation on the same page."
 
 ---
 
 ## Production notes
 
-- **Order on screen:** landing → patient → flu → clinician → Q&A → appointment → safety → slides.
-  Reset the demo session before the take ("Reset this synthetic session" in the demo guide).
-- **AI allowance:** 30 calls/minute, 300/hour shared. One full take uses roughly 20–40 calls.
-- **Video:** Claude can record the screen walkthrough following this script and assemble it with the
-  slides; the voice-over needs a human (no voice tools here). Narration can be recorded separately
-  and laid over the recording.
-- **Open items:** cover image (CodeBuddy/Miora), diagrams (Codex), CodeBuddy/Miora session
-  screenshots (user), final timing after a read-through.
+- **Order:** landing → patient (summary, dose, medication) → flu → appointment → clinician + Q&A
+  → safety → slides. Reset the session first (Demo guide → *Reset this synthetic session*).
+  Do the safety scene last: it changes the session's safety state.
+- **AI allowance:** 30 calls/minute, 300/hour, shared. One take ≈ 25–45 calls.
+- **Video:** Claude records the screen walkthrough per scene; the user records the voice-over.
+- **Tour:** the in-app "Play the 3-minute story" follows scenes 3–8 with the same wording.

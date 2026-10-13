@@ -477,3 +477,6 @@ body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:b
 @media(max-width:380px) { .dose-actions {grid-template-columns:1fr} }
 /* Single column at every width: the patient home column is narrow, and two columns left staggered gaps. */
 
+.things-to-try {margin:12px 0 4px;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white)}
+.things-to-try ul {margin:8px 0 0;padding-left:18px}
+.things-to-try li {margin:4px 0;font-size:.85rem}

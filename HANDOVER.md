@@ -272,6 +272,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Script v2 (patient-first) and the in-app tour rebuilt to match
+- `docs/presentation/SCRIPT.md` v2: 12 scenes, ~7 min, patient-first for Challenge 2 Scenario 1 (calm start → dose + medication incl. abstention → flu + suggestion → appointment with missed dose → clinician + agent Q&A → safety → architecture → challenge fit → how built → impact). Awaiting user approval.
+- "Play the 3-minute story" now opens the patient view; tour = script scenes 3–8 (A calm start, My medication my day, Something changes [flu], Ready for the appointment, The clinician and the agent [question pre-filled], Safety first [opens the dialog]); new "Things to try" list in the demo guide. Tests updated on purpose: `final_dash_polish.cjs` (six story actions), `impression.cjs` (6 buttons, step 4), `landing.cjs` (story opens patient). Browser final-dash-polish, impression, landing, companion, welcome PASS.
 ### 2026-10-13 — Claude — Companion deployed; safety refresh fix after typed medication questions
 - Deployed `6c4e265` (user: "proceed to deploy"). Live: `/companion` for demo-B-7 returns Sertraline, refill + review, suggestion; patient cards render at 390/1280 with no page errors; "Is it ok to have a glass of wine with dinner?" → curated alcohol answer; Taken saves ("Recorded: Taken").
 - Found live: "Should I double my dose this week?" is (correctly) flagged by the live safety detector and the safety state moves on, but the page did not reload, so the safety panel did not appear and the cards stayed. Fix: `companion.js` reloads the record after every typed medication question. Live recheck: safety panel "Safety policy takes priority" visible, companion cards hidden. Note for demos: dose-change questions engage the safety pathway by design; use topic chips or ordinary questions.
