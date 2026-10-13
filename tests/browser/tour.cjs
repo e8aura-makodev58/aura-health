@@ -71,6 +71,21 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   await page.keyboard.press('Escape');assert.equal(await page.locator('.tour-card').count(),0);
   console.log('TOUR4_DESKTOP_AND_ESCAPE PASS');
   await context.close();
+  // The safety example explains why the panel stays and offers a reset that clears it.
+  ({context,page,doses}=await open(390,844));
+  await page.locator('#start-demo').click();await page.waitForSelector('.tour-card');
+  await page.evaluate(()=>{window.auraTour.stop();});
+  await page.evaluate(()=>window.auraTour.start());await page.locator('.tour-next').click();await ready(page);
+  await page.evaluate(()=>window.auraTour.finishForTest());
+  await page.getByRole('button',{name:'Show the safety example'}).click();
+  await page.waitForFunction(()=>/Safety takes priority/.test(document.querySelector('.tour-title')?.textContent||''),null,{timeout:60000});
+  assert.equal(await page.locator('#safety-panel').isVisible(),true);
+  assert.match(await page.locator('.tour-text').innerText(),/can't dismiss it/);
+  await page.getByRole('button',{name:'Reset the demo'}).click();
+  await page.waitForFunction(()=>!document.querySelector('.tour-card'),null,{timeout:60000});
+  await page.waitForFunction(()=>document.getElementById('safety-panel').hidden,null,{timeout:30000});
+  console.log('TOUR5_SAFETY_EXAMPLE_EXPLAINS_AND_RESETS PASS');
+  await context.close();
   assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

@@ -146,8 +146,16 @@
     actions.append(safety, explore, again); again.focus();
   }
 
+  // The safety example keeps the card open: it explains why the panel stays and offers a way out.
   async function showSafety() {
-    stop();
+    if (!tour) return;
+    const run = tour.run;
+    tour.index = STEPS.length + 1; spotlight(null); render("finish");
+    const {ui} = tour, actions = ui.card.querySelector(".tour-actions");
+    ui.chapter.textContent = "Safety example";
+    ui.title.textContent = "Sending a worrying message…";
+    ui.text.textContent = "AURA types a test message that sounds unsafe, so you can see what happens.";
+    ui.status.textContent = ""; actions.replaceChildren();
     patientHome();
     await pause(500);
     $("talk").click();
@@ -155,6 +163,14 @@
     document.querySelector('[data-fixture="fixture safety concern"]')?.click();
     await pause(200);
     $("send-input")?.click();
+    for (let waited = 0; waited < 30000 && $("safety-panel").hidden; waited += 250) await pause(250);
+    if (!tour || tour.run !== run) return;
+    ui.title.textContent = "Safety takes priority";
+    ui.text.textContent = "When a message may mean someone is unsafe, AURA sets everything else aside and shows safety contacts. It stays on screen until a clinician reviews it, so the patient can't dismiss it. In this demo, you can reset to start fresh.";
+    const reset = el("button", "tour-next primary", "Reset the demo");
+    reset.addEventListener("click", async () => { reset.disabled = true; ui.status.textContent = "Resetting…"; await freshDemo(); stop(); window.scrollTo(0, 0); });
+    const explore = el("button", "tour-back", "Keep exploring"); explore.addEventListener("click", stop);
+    actions.append(explore, reset); reset.focus();
   }
 
   async function freshDemo() {
@@ -272,5 +288,5 @@
   }
 
   document.addEventListener("keydown", event => { if (tour && event.key === "Escape") stop(); });
-  window.auraTour = {start, stop, active: () => Boolean(tour), step: () => tour?.index ?? null};
+  window.auraTour = {start, stop, active: () => Boolean(tour), step: () => tour?.index ?? null, finishForTest: () => tour && showFinish()};
 })();
