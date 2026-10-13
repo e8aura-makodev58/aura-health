@@ -140,7 +140,7 @@ class SystemSettings:
             now=monotonic()
             while self.calls and now-self.calls[0]>3600: self.calls.popleft()
             if len(self.calls)>=self.hour or sum(now-at<60 for at in self.calls)>=self.minute:
-                raise ProviderUnavailable("Synthetic demo call budget reached")
+                raise ProviderUnavailable("Synthetic demo call budget reached", kind="demo_budget")
             self.calls.append(now)
 
     def discover(self,body):
@@ -185,9 +185,9 @@ class SyntheticSettingsProvider:
 
     def generate(self,contract):
         with self.settings.lock:
-            if not self.settings.state["enabled"]: raise ProviderUnavailable("Live demo wording disabled")
+            if not self.settings.state["enabled"]: raise ProviderUnavailable("Live demo wording disabled", kind="disabled")
             options=self.settings._options()
-        if not options[1] or not options[2]: raise ProviderUnavailable("Provider unconfigured")
+        if not options[1] or not options[2]: raise ProviderUnavailable("Provider unconfigured", kind="unconfigured")
         self.settings.reserve()
         return VendorProvider(*options[:3],variant=options[3],config=self.settings.config,transport=self.settings.transport).generate(contract)
 
@@ -204,10 +204,10 @@ class SyntheticAgentProvider(SyntheticSettingsProvider):
     def step(self, messages, tools):
         with self.settings.lock:
             if not self.settings.state["enabled"]:
-                raise ProviderUnavailable("Live synthetic assistant disabled")
+                raise ProviderUnavailable("Live synthetic assistant disabled", kind="disabled")
             options = self.settings._options()
         if not options[1] or not options[2]:
-            raise ProviderUnavailable("Provider unconfigured")
+            raise ProviderUnavailable("Provider unconfigured", kind="unconfigured")
         self.settings.reserve()
         from dataclasses import replace
         config = replace(self.settings.config, provider_timeout_seconds=self.agent_config.provider_timeout_seconds)

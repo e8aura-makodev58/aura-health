@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import os
 import re
 from pathlib import Path
+from typing import Literal
 from uuid import uuid4
 
 from fastapi import FastAPI
@@ -83,6 +84,7 @@ class AgentIn(BaseModel):
     question: str | None = Field(default=None, min_length=1, max_length=2000)
     window_days: int = Field(default=56, ge=1, le=180)
     client_offline: bool = False
+    asker: Literal["patient", "clinician"] = "patient"
 
 class WorkflowIn(BaseModel):
     model_config = {'extra':'forbid'}

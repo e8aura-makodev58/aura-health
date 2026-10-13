@@ -3,6 +3,38 @@
 from .roles import AgentRole
 
 
+SIGNAL_WORDS = {
+    'SLEEP_MIDPOINT': ('sleep', 'bedtime', 'timing'), 'SLEEP_DURATION': ('sleep', 'duration', 'how long'),
+    'ACTIVITY': ('activity', 'active', 'steps', 'exercise', 'moving', 'walk'),
+    'RESTING_HEART_RATE': ('heart', 'pulse'), 'HRV': ('hrv', 'variability'),
+    'RESPIRATORY_RATE': ('breathing', 'respiratory'), 'SKIN_TEMPERATURE_DEVIATION': ('temperature', 'fever'),
+}
+
+
+def related_facts(tools, question, limit=6):
+    """Facts for a free-form question when no checked answer exists: keyword
+    selection only, never an answer. Status lines are not answers, so they
+    are left out; retained findings come first."""
+    words = question.lower()
+    signals = {signal for signal, terms in SIGNAL_WORDS.items() if any(term in words for term in terms)}
+    def relevant(fid):
+        return not signals or tools.facts[fid].get('signal') in signals
+    findings = [fid for fid in tools.groups['get_series'] if fid in tools.required and relevant(fid)]
+    reports = [fid for fid in tools.groups['get_decisions'] if tools.facts[fid].get('checkin_summary') or tools.facts[fid].get('checkin_run')]
+    gaps = [fid for fid in tools.groups['get_gaps'] if relevant(fid)]
+    context = [fid for fid in tools.groups['get_context'] if relevant(fid)]
+    wants = lambda *terms: any(term in words for term in terms)
+    ordered = findings[:4]
+    if not signals or wants('check-in', 'checkin', 'report', 'feel', 'mood', 'rough'):
+        ordered += reports[-2:]
+    if wants('gap', 'missing', 'wear', 'data'):
+        ordered += gaps[-2:]
+    if wants('context', 'explain', 'reason', 'around', 'reported'):
+        ordered += context[-2:]
+    ordered += findings[4:]
+    return list(dict.fromkeys(fid for fid in ordered if fid in tools.delivered))[:limit]
+
+
 def fallback(tools, role, query=None):
     if role == AgentRole.QUESTION_RANKER:
         return {"claims": [], "question_ids": []}
@@ -13,8 +45,11 @@ def fallback(tools, role, query=None):
             "Which context was recorded alongside the observed changes? Do not infer causation.": ("get_context",),
             "Which wearable gaps and returns were recorded?": ("get_gaps",),
             "What medication-routine events and check-ins were recorded?": ("get_decisions",),
-        }.get(query, tuple(tools.groups))
-        ids = [fid for name in selected_tools for fid in tools.groups[name] if fid in tools.delivered][:6]
+        }.get(query)
+        if selected_tools:
+            ids = [fid for name in selected_tools for fid in tools.groups[name] if fid in tools.delivered][:6]
+        else:
+            ids = related_facts(tools, query or '')
     if role == AgentRole.PATIENT_INSIGHT:
         # Display selection only: one latest retained finding per exact channel,
         # in the existing signal/source order, never a severity ranking.
@@ -81,7 +116,7 @@ def fallback(tools, role, query=None):
         ids = selected
     claims = [{"text": wording(fid), "fact_ids": [fid], "section": "review" if fid in tools.groups['get_review_snapshot'] else "gaps" if fid in tools.groups['get_gaps'] else "routine" if fid in tools.groups['get_decisions'] else "changes",
                "findings": [{"fact_id": fid, **tools.facts[fid]['finding']}] if tools.facts[fid].get('finding') else []} for fid in ids]
-    headline = "Recorded changes" if claims else ""
+    headline = ("Related facts from the record" if role == AgentRole.RECORD_QA else "Recorded changes") if claims else ""
     if role == AgentRole.PATIENT_INSIGHT and claims:
         phrases = [claim['text'].rstrip('.') for claim in claims]
         if phrases:

@@ -21,6 +21,19 @@ def digest(value):
     return sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def _detector_rules():
+    import os, re
+    from pathlib import Path
+    path = os.environ.get("AURA_DETECTOR_POLICY") or Path(__file__).resolve().parent.parent / "aura_detectors" / "engineering_policy.json"
+    return [re.compile(row["pattern"], re.I) for row in json.loads(Path(path).read_text())["rules"]]
+
+
+def reads_as_patient_statement(text):
+    """Clinician questions are not patient testimony. Text the curated safety
+    rules would raise on is refused instead of being silently investigated."""
+    return any(rule.search(text) for rule in _detector_rules())
+
+
 class AgentService:
     def __init__(self, events, *, provider=None, config=None, synthetic_only=False, clock=None):
         self.events = events
@@ -57,10 +70,11 @@ class AgentService:
                             "references": references, "model": self.provider.model_id, "blocked": reason})
         return signature, reason, (rows[-1] if rows else None), state
 
-    def execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False):
+    def execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False,
+                asker="patient"):
         try:
             return self._execute(patient_id, role, run_id=run_id, query_id=query_id, question=question,
-                                 window_days=window_days, client_offline=client_offline)
+                                 window_days=window_days, client_offline=client_offline, asker=asker)
         except AppError:
             raise
         except Exception:
@@ -79,7 +93,8 @@ class AgentService:
         return RecordTools(evidence, role, window_days=window_days, recent_readings_days=self.config.recent_readings_days,
                            checkin_days=self.config.checkin_days), evidence
 
-    def _execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False):
+    def _execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False,
+                 asker="patient"):
         try:
             role = AgentRole(role)
         except ValueError:
@@ -91,9 +106,20 @@ class AgentService:
             raise AppError('INVALID_AGENT_REQUEST', 'Provide one bounded record question')
         if (role == AgentRole.RECORD_QA and question is None and query_id not in QUERIES) or (role != AgentRole.RECORD_QA and query_id is not None):
             raise AppError("INVALID_AGENT_REQUEST", "Select an approved record question; free text is not accepted")
-        options = digest({"role": role.value, "query": query_id, 'question_hash': digest(question), "window": window_days, "offline": client_offline})
+        if asker not in {"patient", "clinician"}:
+            raise AppError("INVALID_AGENT_REQUEST", "Unknown question author")
+        options = digest({"role": role.value, "query": query_id, 'question_hash': digest(question), "window": window_days,
+                          "offline": client_offline, **({"asker": asker} if asker != "patient" else {})})
+        if question is not None and asker == "clinician" and reads_as_patient_statement(question):
+            # Never investigate, store or re-attribute it: the patient's own channel
+            # keeps safety-first routing for personal statements.
+            raise AppError("QUESTION_NOT_INVESTIGATED", "This reads like a personal statement, not a record question. "
+                           "Patient reports go through the patient's own channel.", 422)
         with self.lock:
-            if question is not None and not client_offline:
+            # A patient's free-text question is patient testimony: it is committed and
+            # safety-assessed first. A clinician's question is not, so it never
+            # enters the patient's record or safety processing.
+            if question is not None and asker == "patient" and not client_offline:
                 from uuid import uuid5, NAMESPACE_URL
                 question_id = str(uuid5(NAMESPACE_URL, f'aura-qa:{patient_id}:{run_id}:{digest(question)}'))
                 with self.events.repositories.transaction() as repo:
@@ -158,13 +184,16 @@ class AgentService:
                     result.pop('fallback_headline_fact_ids',None)
                     result.pop('record_presentation',None)
                 result.update(run_id=run_id, patient_id=patient_id, role=role.value,
-                    query_id=query_id, window_days=window_days, status="BLOCKED" if blocked else "COMPLETE",
+                    query_id=query_id, window_days=window_days, asker=asker,
+                    clinician_question=question if asker == "clinician" else None, status="BLOCKED" if blocked else "COMPLETE",
                     created_at=self.clock().isoformat(), request_fingerprint=options, state_fingerprint=signature,
                     model_id=self.provider.model_id, safety_reference={"sequence": (state or {}).get("sequence"), "episode_id": (state or {}).get("episode_id")},
                     question_options=QUESTIONS, share_status="NOT_SENT", automatically_sent=False,
                     disclosure=("Assistant paused: safety interaction or record evaluation comes first." if blocked else
                                 "Checked AI claims; unsupported claims removed. Required history uses labelled source extraction where needed." if result.get('reason')=='VALIDATED_PARTIAL_MODEL_DRAFT' else
                                 "" if result["generation_used"] else
+                                "The demo's AI usage limit was reached, so these are related facts from the record. Try again in a minute."
+                                if any(row.get('provider_failure') == 'demo_budget' for row in result.get('trace', [])) else
                                 "Summary from the record; generated wording is unavailable or was not validated."))
                 repo.append_agent_run(result)
                 repo.append_audit({"patient_id": patient_id, "event_id": latest["event_id"] if latest else "agent-no-event",

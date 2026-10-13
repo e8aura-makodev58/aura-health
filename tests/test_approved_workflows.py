@@ -78,6 +78,30 @@ class ApprovedWorkflowTests(unittest.TestCase):
         self.model.concern='possible';provider=MockAgent();agent=AgentService(self.service,provider=provider,synthetic_only=True)
         result=agent.execute(self.patient,'record_qa',run_id='qa',question='I feel very uncertain today.')
         self.assertEqual(result['status'],'BLOCKED');self.assertEqual(provider.calls,0);self.assertEqual(len(self.model.requests),1)
+    def test_aw4b_clinician_question_is_not_patient_testimony(self):
+        provider=MockAgent();agent=AgentService(self.service,provider=provider,synthetic_only=True);count=self.count()
+        result=agent.execute(self.patient,'record_qa',run_id='qa-clinician',question='When did sleep timing change?',asker='clinician')
+        self.assertEqual(result['status'],'COMPLETE');self.assertGreater(provider.calls,0)
+        self.assertEqual(self.count(),count);self.assertEqual(self.model.requests,[])
+        self.assertEqual(result['asker'],'clinician');self.assertEqual(result['clinician_question'],'When did sleep timing change?')
+        with self.repo.transaction() as repo:
+            self.assertFalse(any(row['payload'].get('text')=='When did sleep timing change?' for row in repo.events(self.patient)))
+    def test_aw4c_clinician_route_refuses_personal_statements_without_storing(self):
+        provider=MockAgent();agent=AgentService(self.service,provider=provider,synthetic_only=True);count=self.count()
+        with self.assertRaises(AppError) as raised:
+            agent.execute(self.patient,'record_qa',run_id='qa-statement',question='I want to die.',asker='clinician')
+        self.assertEqual(raised.exception.code,'QUESTION_NOT_INVESTIGATED');self.assertEqual(provider.calls,0)
+        self.assertEqual(self.count(),count);self.assertEqual(self.model.requests,[])
+        with self.assertRaises(AppError):agent.execute(self.patient,'record_qa',run_id='qa-bad',question='x',asker='nurse')
+    def test_aw4d_free_question_fallback_lists_related_facts_not_status(self):
+        from aura_agent.templates import fallback
+        tools=RecordTools(EvidenceViewService(self.service).get(self.patient),AgentRole.RECORD_QA)
+        for name in tools.groups:tools.call(name,{})
+        draft=fallback(tools,AgentRole.RECORD_QA,'Did activity drop before sleep timing changed?')
+        texts=[claim['text'] for claim in draft['claims']]
+        self.assertEqual(draft['headline'],'Related facts from the record')
+        self.assertTrue(any(text.startswith('Activity') for text in texts))
+        self.assertFalse(any('sensing' in text or 'Recorded period ends' in text for text in texts))
     def test_aw5_rules_or_semantic_cannot_lower_current_mode(self):
         result=self.service.process(self.event('I want to die.'))
         self.assertEqual(result.safety['state']['interaction_mode'],'ELEVATED')

@@ -268,9 +268,9 @@
     const ticket=requestEpoch;trigger.disabled=true;area.replaceChildren(node('p','Reading the recorded evidence…'));
     try{
       const question=role==='record_qa'?document.getElementById('agent-question-text')?.value.trim()||null:null;
-      const response=await fetch(`/patients/${encodeURIComponent(ctx.patientId)}/agent/${role}`,{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({run_id:window.auraUniqueId(),window_days:56,query_id:role==='record_qa'&&!question?document.getElementById('agent-query').value:null,question,client_offline:false})});
+      const response=await fetch(`/patients/${encodeURIComponent(ctx.patientId)}/agent/${role}`,{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({run_id:window.auraUniqueId(),window_days:56,query_id:role==='record_qa'&&!question?document.getElementById('agent-query').value:null,question,client_offline:false,asker:ctx.role==='clinician'?'clinician':'patient'})});
       const result=await response.json();if(!valid(ticket,ctx))return;if(!response.ok)throw new Error(result.error?.message||'Assistant unavailable');
-      if(question)await refresh();
+      if(question&&ctx.role!=='clinician')await refresh();
       const latest=window.auraAgentContext(),displayEpoch=requestEpoch;if(latest.patientId!==ctx.patientId||latest.role!==ctx.role||latest.offline)return;
       // The gated question may have committed stronger safety state. Recheck the
       // server approval before displaying any otherwise ordinary answer.
