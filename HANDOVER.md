@@ -296,6 +296,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Paced, masked safety example; honest clinician wording
+- `9923ba4`: "Show the safety example" now opens the note box, shows the example (~5 s visible) and highlights Send before sending. Example buttons show readable `data-sample` text (safety one masked per user: "I w*** t* k*** m****** (sensitive message masked)"); submit maps a sample back to its approved fixture, so hosted rules are unchanged. Tour card no longer says a clinician resolves it: "the clinician sees it when they open the record. This prototype doesn't send alerts." (No clinician notification exists — DECISIONS.md scope; safety de-escalation targets await clinical approval.)
+- Verified: tour 5/5, milestone7, dual_view, workflows, welcome PASS (hosted runner); live check of the paced/masked example. milestone6 (non-hosted) has 9 failures, identical on pre-session `47dee17`.
+
 ### 2026-10-13 — Claude — Plain wording in the patient note dialog
 - `dad3b35`: "I want to mention something" dialog now reads "What would you like AURA to know?", examples "An everyday note" / "A worrying message" / "A question for my doctor", "Send to AURA", one plain safety line and a made-up-details reminder. Technical/deployment disclosure removed from the dialog (still on the Disclaimer page via `privacy-notice`). Fixture values and hosted rules unchanged. SCRIPT.md updated; deck slide notes still say "Safety handoff fixture" (user edits the deck).
 - Verified: hosted runner suites PASS (dual_view, agent, workflows, impression, story_charts, cards, final_dash, final_dash_polish, plain_language, qa_display, welcome, landing, companion, milestone7, settings; tour 5/5 when run alone — it timed out when run last after 13 suites on one server). redesign.cjs still fails the pre-existing `#quiet-card` check. Live dialog checked on phone.
