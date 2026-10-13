@@ -7,7 +7,7 @@ Owners below are proposed responsibilities, not evidence that work was completed
 |---|---|---|---|
 | Form text | `FORM_CONTENT.md` | DRAFT | User approves; reviewer checks claims/versions |
 | Form constraints | `REQUIREMENTS.md` | CAPTURED | Verify against live form before uploading |
-| Cover image | `assets/aura-cover.png` | MISSING | User/Miora designer generates; review at thumbnail size |
+| Cover image | `assets/aura-cover.png` | AWAITING_USER | User generates with Miora; reference screenshots in `docs/presentation/screenshots/v2/`; review at thumbnail size |
 | Demo video | Actual URL in `manifest.json` | MISSING | User/presenter records 7-minute script; confirm signed-out access |
 | Development history bundle | `assets/development-history.pdf` | MISSING | User supplies genuine logs plus≥3 screenshots; agent sanitizes/packs only with authority |
 | Architecture PPTX | `assets/aura-health-deck.pptx` | REVIEW_PENDING | Claude export exists:18 slides/2,757,539 bytes; re-render companion overview and inspect/approve |
