@@ -264,6 +264,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — One worktree per agent
+- User: create worktrees and inform the other agents. `/home/makodev58/aura-health` is back on `main` (integration/deploy folder; it had been left on `improve/feature-codex`, clean and pushed). New worktrees: `../aura-health-claude` (`improve/feature-claude`), `../aura-health-codex` (`improve/feature-codex`, Codex's existing branch at `f5f06d1`), `../aura-health-codebuddy` (`improve/feature-codebuddy`), all from `origin/main` `6d29f02`. Each has a `.venv` link to the main environment, ignored via `.git/info/exclude`. Folder/branch/port table and updated kickoff prompts in `docs/submission/WORKPLAN.md`.
+
 ### 2026-10-13 — Codex — Agent-specific branches and user-designated review/merge
 - Recorded user workflow: `improve/feature-codebuddy`, `improve/feature-claude`, `improve/feature-codex`, each starting from latest `origin/main`; independent review, sequential merges by the user's designated reviewer/merger. Updated arrival, current state, ownership, next steps and Git instructions; older branch/reviewer directions explicitly superseded.
 - Verified: `git pull --ff-only origin main` already up to date at `6d29f02`; created `improve/feature-codex`; documentation diff checked. Runtime tests not rerun for this handover-only change; existing test evidence remains dated above. No merge or deployment; unrelated untracked Tencent PDF preserved.
