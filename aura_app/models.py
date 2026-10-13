@@ -40,6 +40,8 @@ class TreatmentContext:
     review_cadence: str | None = None
     next_review: str | None = None
     treatment_notes: str | None = None
+    supply_days: int | None = None
+    last_refill: str | None = None
 
 
 @dataclass(frozen=True)
@@ -115,3 +117,23 @@ class AppError(Exception):
 
 
 INTERRUPTIONS = frozenset({"MICRO_CHECKIN", "TARGETED_CLARIFICATION", "STRUCTURED_ASSESSMENT"})
+
+MISSED_REASONS = {
+    "FORGOT": "Forgot", "SIDE_EFFECTS": "Side effects", "RAN_OUT": "Ran out",
+    "FELT_BETTER": "Felt better", "OTHER": "Other",
+}
+
+
+def valid_medication_payload(payload: Any) -> bool:
+    """Exact categorical input shape. No free text or model interpretation."""
+    if not isinstance(payload, dict) or not {"scheduled_time", "status"} <= set(payload) <= {"scheduled_time", "status", "reason"}:
+        return False
+    if not isinstance(payload["status"], str) or payload["status"] not in {"ACKNOWLEDGED", "MISSED", "UNKNOWN"}:
+        return False
+    if "reason" in payload and (payload["status"] != "MISSED" or not isinstance(payload["reason"], str)
+                                or payload["reason"] not in MISSED_REASONS):
+        return False
+    try:
+        return isinstance(payload["scheduled_time"], str) and datetime.fromisoformat(payload["scheduled_time"]).utcoffset() is not None
+    except (ValueError, TypeError):
+        return False

@@ -1,7 +1,7 @@
 """Transactional application orchestration; domain decisions stay in accepted engines."""
 
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any
 from uuid import uuid4
 from contextlib import contextmanager
@@ -15,7 +15,7 @@ from aura_safety.resources import ResourceRegistry
 from aura_longitudinal.registry import SignalRegistry, load_registry
 
 from .longitudinal import LongitudinalProjector, Projection, key_from, points_from_payload
-from .models import AppError, ApplicationEvent, ApplicationResult, EventType
+from .models import AppError, ApplicationEvent, ApplicationResult, EventType, MISSED_REASONS, valid_medication_payload
 from .repositories import RepositoryConflict, RepositoryFactory, UnitOfWork
 from .safety import ResolvedSafetyGate, SafetyGateUnavailable, UnconfiguredSafetyGate
 
@@ -74,9 +74,18 @@ class PatientEventService:
         if treatment and treatment.get("treatment_notes"):
             raise AppError("INVALID_EVENT", "free-text treatment notes require the safety-gated event path")
         allowed_treatment = {"medication_name", "medication_schedule", "regimen_start", "stable_since",
-                             "treating_clinician_ref", "review_cadence", "next_review", "treatment_notes"}
+                             "treating_clinician_ref", "review_cadence", "next_review", "treatment_notes",
+                             "supply_days", "last_refill"}
         if treatment and set(treatment) - allowed_treatment:
             raise AppError("INVALID_EVENT", "unsupported treatment context field")
+        if treatment and treatment.get("supply_days") is not None and (
+                type(treatment["supply_days"]) is not int or treatment["supply_days"] <= 0):
+            raise AppError("INVALID_EVENT", "supply_days must be a positive recorded quantity")
+        if treatment and treatment.get("last_refill") is not None:
+            try:
+                date.fromisoformat(treatment["last_refill"])
+            except (ValueError, TypeError):
+                raise AppError("INVALID_EVENT", "last_refill must be an ISO date") from None
         at = _iso(created_at or datetime.now(timezone.utc))
         row = {"patient_id": patient_id, "display_name": display_name, "age": age,
                "timezone": timezone_name, "onboarding_status": onboarding_status,
@@ -211,7 +220,10 @@ class PatientEventService:
             raise AppError("PERSISTENCE_ERROR", "event processing failed atomically", 500) from exc
 
     def _validate_and_consent(self, repo: UnitOfWork, event: ApplicationEvent):
-        if event.event_type == EventType.WEARABLE_OBSERVATION:
+        if event.event_type == EventType.MEDICATION_EVENT:
+            if not valid_medication_payload(event.payload):
+                raise AppError("INVALID_EVENT", "medication event requires a zoned schedule and categorical status; reason is allowed only for MISSED")
+        elif event.event_type == EventType.WEARABLE_OBSERVATION:
             if not any(row["consent_type"] == "WEARABLE" and row["granted"] for row in repo.consents(event.patient_id)):
                 raise AppError("CONSENT_REQUIRED", "wearable consent is required", 403)
             points_from_payload(event.payload, self.signal_registry)
@@ -251,8 +263,12 @@ class PatientEventService:
         elif kind == EventType.MEDICATION_EVENT:
             repo.save_medication({"event_id": event.event_id, "patient_id": event.patient_id,
                                   "scheduled_time": event.payload["scheduled_time"], "timestamp": row["occurred_at"],
-                                  "status": event.payload["status"], "source": event.source})
+                                  "status": event.payload["status"], "source": event.source,
+                                  "reason": event.payload.get("reason")})
             detail["status"] = event.payload["status"]
+            detail["scheduled_time"] = event.payload["scheduled_time"]
+            if "reason" in event.payload:
+                detail["reason"] = event.payload["reason"]
         elif kind == EventType.CONTEXT_EVENT:
             repo.save_context({"event_id": event.event_id, "patient_id": event.patient_id,
                                "start_at": event.payload["start"], "end_at": event.payload.get("end"),
@@ -489,6 +505,22 @@ class PatientEventService:
                                       "record_type": "CLINICIAN_REVIEW_ITEM", "occurred_at": _iso(event.occurred_at),
                                       "detail": {"item_id": item_id, "source_ref": source_ref,
                                                  "share_status": "NOT_SHARED"}})
+        # Include newly released held reports too, without duplicating prior items.
+        reports = [row for row in repo.events(event.patient_id) if row["event_type"] == "MEDICATION_EVENT"
+                   and row["payload"].get("reason") and not row["longitudinal_deferred"]]
+        for report in reports:
+            source_ref = f"medication:{report['event_id']}"
+            if source_ref not in existing:
+                item_id = str(uuid4())
+                reason = MISSED_REASONS[report["payload"]["reason"]].lower()
+                repo.save_review_item({"item_id": item_id, "patient_id": event.patient_id,
+                    "source_ref": source_ref, "summary": f"Missed dose reported — reason: {reason}. Worth discussing with your doctor or pharmacist.",
+                    "created_at": report["occurred_at"], "status": "OPEN", "patient_visible": True, "share_status": "NOT_SHARED"})
+                created.append(item_id)
+                existing.add(source_ref)
+                repo.append_timeline({"patient_id": event.patient_id, "event_id": event.event_id,
+                    "record_type": "CLINICIAN_REVIEW_ITEM", "occurred_at": _iso(event.occurred_at),
+                    "detail": {"item_id": item_id, "source_ref": source_ref, "share_status": "NOT_SHARED"}})
         return created
 
     def timeline(self, patient_id: str) -> list[dict]:
@@ -554,7 +586,8 @@ class PatientEventService:
                                         for b in baselines],
                     "meaningful_longitudinal_changes": list(changes.values()),
                     "patient_checkin_trend": [{"at": row["occurred_at"], "state": row["detail"]["state"]} for row in checkins],
-                    "medication_routine_events": [{"at": row["occurred_at"], "status": row["detail"]["status"]} for row in medication],
+                    "medication_routine_events": [{"at": row["occurred_at"], "status": row["detail"]["status"],
+                        **({"reason": row["detail"]["reason"]} if row["detail"].get("reason") else {})} for row in medication],
                     "active_context": active["longitudinal"]["active_contexts"] if active else [],
                     "explained_held_for_review": held,
                     "unresolved_items": repo.review_items(patient_id),

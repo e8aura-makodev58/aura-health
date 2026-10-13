@@ -24,6 +24,7 @@ from .agent import AgentService
 from .assessment import AssessmentService
 from aura_agent.roles import AgentRole
 from .workflows import WorkflowService
+from .companion import CompanionService
 
 
 class PatientIn(BaseModel):
@@ -105,6 +106,7 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     view_service = PatientViewService(service, wording_provider_id=communication_service.provider.model_id,
                                      wording_provider=communication_service.provider, synthetic_only=synthetic_only)
     evidence_service = EvidenceViewService(service)
+    companion_service = CompanionService(service)
     agent_service = agent_service or AgentService(service, synthetic_only=synthetic_only)
     # CDN-backed Swagger conflicts with the patient UI's strict same-origin CSP.
     app = FastAPI(title="AURA prototype application API", version="milestone-7",
@@ -177,6 +179,10 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     @app.get("/patients/{patient_id}/view")
     def patient_view(patient_id: str):
         return view_service.get(patient_id)
+
+    @app.get("/patients/{patient_id}/companion")
+    def companion(patient_id: str):
+        return companion_service.get(patient_id)
 
     @app.get("/patients/{patient_id}/evidence")
     def evidence_view(patient_id: str):

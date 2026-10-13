@@ -2,11 +2,27 @@
 
 Date: 2026-10-13. Implementation inspected at `3d95a66`.
 
+Chosen challenge: Healthcare Challenge Statement2 — "AI Healthier Every Day:
+Intelligent Support for Long-Term Self-Care", Scenario1 — "Mental Health Maintenance
+for Working Adults on Antidepressants". The presentation and required architecture
+upload use one deck: `docs/submission/assets/aura-health-deck.pptx`. Slide-ready
+SVG/PNG sources are in `docs/presentation/diagrams/`.
+
 This is the source document for generating the submission architecture diagram.
 It describes the implemented synthetic demonstration, with future architecture
 explicitly separated. It is not a deployment change or a clinical validation claim.
 The repository may receive concurrent presentation changes; this document records
 the backend and trust boundaries inspected at the commit above.
+
+Companion-build update2026-10-13: the Codex branch adds `aura_app/companion.py`,
+`GET /patients/{patient_id}/companion`, additive supply/refill/reason fields,
+categorical missed-dose reasons and linked review records. It reads committed
+evidence under the existing safety guard and uses Claude-owned curated lookup/
+suggestion interfaces. See `docs/PATIENT_COMPANION_BACKEND.md` for implementation,
+test evidence and pending branch integration. This is an application projection,
+not a new domain engine or autonomous medication agent. Final diagrams/deck should
+be reconciled to the merged release; the original detailed inventory below is
+still labelled with its inspected code version rather than claimed as live new UI.
 
 ## 1. Architecture in one paragraph
 

@@ -1,6 +1,7 @@
 """Application-path synthetic fixtures A–F; hidden labels never enter the service."""
 
 import argparse
+import calendar
 from datetime import date, datetime, time, timedelta, timezone
 import json
 from pathlib import Path
@@ -18,6 +19,17 @@ def _at(day: date, hour: int = 12) -> datetime:
     return datetime.combine(day, time(hour, 0), tzinfo=timezone.utc)
 
 
+def fixture_treatment(start: date, latest: date) -> dict:
+    """Explicit synthetic label/history, never an inferred treatment instruction."""
+    def earlier(months):
+        year, month = divmod(start.year * 12 + start.month - 1 - months, 12)
+        return date(year, month + 1, min(start.day, calendar.monthrange(year, month + 1)[1])).isoformat()
+    return {"medication_name": "Sertraline", "medication_schedule": "50 mg, once each morning",
+            "regimen_start": earlier(9), "stable_since": earlier(6), "review_cadence": "every 3 months",
+            "next_review": (latest + timedelta(days=13)).isoformat(), "supply_days": 28,
+            "last_refill": (latest - timedelta(days=20)).isoformat()}
+
+
 def run_case(case: str, seed: int, db_path: str | Path, *, through_day: int = 69,
              patient_id: str | None = None, event_prefix: str | None = None,
              include_explanation: bool = True) -> dict:
@@ -33,7 +45,8 @@ def run_case(case: str, seed: int, db_path: str | Path, *, through_day: int = 69
     prefix = event_prefix or f"{case}-{seed}"
     service.create_patient(patient_id=patient_id, display_name=f"Synthetic case {case}",
                            age=35, timezone_name="UTC",
-                           treatment={"medication_name": "fixture-only; no treatment instruction"},
+                           treatment=fixture_treatment(date.fromisoformat(timeline["start_date"]),
+                                                       date.fromisoformat(timeline["days"][through_day]["date"])),
                            consents=[{"consent_type": "WEARABLE", "granted": True, "version": "fixture-v1"}],
                            wearable_sources=[{"source_id": "synthetic_wearable", "source_type": "FIXTURE"}],
                            created_at=_at(date.fromisoformat(timeline["start_date"])))

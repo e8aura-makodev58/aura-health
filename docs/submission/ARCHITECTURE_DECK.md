@@ -1,7 +1,14 @@
 # Architecture Diagram PPT — authoring source
 
+Healthcare Challenge Statement 2 — "AI Healthier Every Day: Intelligent Support
+for Long-Term Self-Care", Scenario1 — "Mental Health Maintenance for Working Adults
+on Antidepressants". Name this chosen case at the opening of the presentation.
+
 Produce **one actual PPTX under 10 MB**, proposed path
 `assets/aura-health-deck.pptx`. This outline is not the required upload.
+The same deck serves the presentation and required Architecture Diagram PPT;
+do not produce a competing upload deck. Three slide-image pairs are available in
+`../presentation/diagrams/` (system overview, agent investigation, safety precedence).
 Use 16:9 slides, large text, dark ink on warm off-white and the AURA accent palette.
 Export and inspect every slide; verify shapes/arrows/fonts remain readable.
 
@@ -68,3 +75,10 @@ The visible trail reports actions/outcomes, not hidden chain-of-thought.
 
 Presenter notes should name sources/versions and limitations. Do not add unmeasured
 time savings, accuracy/suicide-risk claims, real patient data or provider credentials.
+
+The approved companion feature branches add routine/review projection, curated
+medication lookup/topic selection and optional curated suggestions. Reflect them
+as implemented in the final deck only after integration and inspection of the
+actual release. Counts/curated lookup are not autonomous agent actions. Medication
+content needs pharmacist review; reminder dates do not imply push notifications
+or a booked appointment. Keep the agentic Q&A loop distinct from these features.
