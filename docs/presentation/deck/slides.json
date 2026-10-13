@@ -1,0 +1,110 @@
+[
+  {
+    "slide": 1,
+    "file": "01-cover.html",
+    "scene": 1,
+    "notes": "Scene 1 · The challenge — 0:00–0:25\n\n[Slide: cover · \"AURA Health — a calm companion between doctor visits\" · Healthcare track badge.]\n\n\"We chose the Healthcare track's Challenge Statement 2, AI Healthier Every Day, Scenario 1: mental health maintenance for working adults on antidepressants. This is AURA Health.\""
+  },
+  {
+    "slide": 2,
+    "file": "02-challenge.html",
+    "scene": 1,
+    "notes": "(Continues scene 1.)\n\nScene 1 · The challenge — 0:00–0:25\n\n[Slide: cover · \"AURA Health — a calm companion between doctor visits\" · Healthcare track badge.]\n\n\"We chose the Healthcare track's Challenge Statement 2, AI Healthier Every Day, Scenario 1: mental health maintenance for working adults on antidepressants. This is AURA Health.\""
+  },
+  {
+    "slide": 3,
+    "file": "03-problem.html",
+    "scene": 2,
+    "notes": "Scene 2 · The problem — 0:25–0:55\n\n[Slide: three short lines.]\n\n\"Staying well on an antidepressant happens mostly between appointments. A dose gets missed, sleep drifts later, a flu knocks you out for a few days. Most apps ask you to log your mood every evening, which is hard when you're tired or low. And when the appointment comes, it's all pieced together from memory.\""
+  },
+  {
+    "slide": 4,
+    "file": "04-what-aura-does.html",
+    "scene": 3,
+    "notes": "Scene 3 · A calm start — 0:55–1:35\n\n[Screen: landing → See the patient's day → \"Take a breath\" → Continue → summary.]\n\n\"AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts the system has checked: sleep time later than usual since late February, and how the person has been checking in. It quietly reads everyday wearable data and compares it with this person's usual, not a population average.\""
+  },
+  {
+    "slide": 5,
+    "file": "05-calm-start.html",
+    "scene": 3,
+    "notes": "(Continues scene 3.)\n\nScene 3 · A calm start — 0:55–1:35\n\n[Screen: landing → See the patient's day → \"Take a breath\" → Continue → summary.]\n\n\"AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts the system has checked: sleep time later than usual since late February, and how the person has been checking in. It quietly reads everyday wearable data and compares it with this person's usual, not a population average.\""
+  },
+  {
+    "slide": 6,
+    "file": "06-my-medication.html",
+    "scene": 4,
+    "notes": "Scene 4 · My medication, my day — 1:35–2:35\n\n[Screen: Today's dose → tap Skipped → \"What got in the way?\" → Side effects.]\n\n\"Every morning there's one tap: taken, not yet, or skipped. If it's skipped, AURA asks what got in the way, because that's what's worth bringing to a doctor. My medication explains the person's own prescription in plain words: what it's for, how it's usually taken, what patient leaflets say about a missed dose. These answers come from approved information, not made up by AI, and they always point back to the pharmacist.\"\n\n[Then type in Ask a question: \"Can I take ibuprofen with it?\"]\n\n\"And when AURA can't answer, it says so: I'm not able to identify that medication, please check with your pharmacist. Exactly what the challenge asks for.\""
+  },
+  {
+    "slide": 7,
+    "file": "07-something-changes.html",
+    "scene": 5,
+    "notes": "Scene 5 · Something changes — 2:35–3:15\n\n[Screen: Demo guide → Simulate: flu 3 days → back to the patient home.]\n\n\"Now a flu, simulated over three days. AURA notices resting heart rate is higher than in the person's recent records, and says exactly that: a recent change, not a change from their usual. And when a change shows up, it offers a small idea for today: a short walk, a message to someone you trust, or planning a session. Optional, never about medication.\""
+  },
+  {
+    "slide": 8,
+    "file": "08-appointment.html",
+    "scene": 6,
+    "notes": "Scene 6 · Ready for the appointment — 3:15–3:45\n\n[Screen: Prepare for my appointment → missed doses → Not sent.]\n\n\"Before the visit, everything is in one place: what changed, when, and the missed dose with its reason, ready to discuss with the doctor or pharmacist. Nothing is sent automatically. It stays Not sent until the patient decides.\""
+  },
+  {
+    "slide": 9,
+    "file": "09-clinician-agent.html",
+    "scene": 7,
+    "notes": "Scene 7 · What the clinician sees — the agent at work — 3:45–4:50\n\n[Screen: Clinician → assessment cards → Ask about this record:]\n\n\"If the patient shares, their clinician sees what changed and when, with exact values and sources. And the clinician can ask. Here AURA works as an agent: it decides which signals, tools and dates to look at, reads the record, and drafts an answer where every statement cites its source. A second, independent check then reviews each statement and removes anything unsupported. How AURA looked shows exactly what it did. It can only read; it never changes the record or the treatment.\"\n\n[If it falls back:]\n\n\"This time the draft didn't pass the checks, so AURA shows the related facts and says why.\""
+  },
+  {
+    "slide": 10,
+    "file": "10-safety-first.html",
+    "scene": 8,
+    "notes": "Scene 8 · Safety first — 4:50–5:15\n\n[Screen: patient → I want to mention something → Safety handoff fixture → safety panel.]\n\n\"Anything a patient types is safety-checked first. If there's a concern, fixed safety resources take over the screen and the AI steps back. Those messages are never AI-written. The same applies to medication questions: asking to double a dose goes to safety, not to an answer.\""
+  },
+  {
+    "slide": 11,
+    "file": "11-architecture.html",
+    "scene": 9,
+    "notes": "Scene 9 · How it's built — 5:15–6:00\n\n[Slides: architecture overview · agent loop · safety precedence (`diagrams/`).]\n\n\"Our rule: signals propose, rules decide, AI words it. Deterministic engines own the personal baselines and the safety state. Medication information is curated; AI only matches a question to an approved topic. The clinician agent investigates with read-only tools, and every answer passes number, date and citation checks plus an independent verifier. In this demo the model runs on synthetic data only; a hospital would run it on its own private infrastructure.\""
+  },
+  {
+    "slide": 12,
+    "file": "12-agent-loop.html",
+    "scene": 9,
+    "notes": "(Continues scene 9.)\n\nScene 9 · How it's built — 5:15–6:00\n\n[Slides: architecture overview · agent loop · safety precedence (`diagrams/`).]\n\n\"Our rule: signals propose, rules decide, AI words it. Deterministic engines own the personal baselines and the safety state. Medication information is curated; AI only matches a question to an approved topic. The clinician agent investigates with read-only tools, and every answer passes number, date and citation checks plus an independent verifier. In this demo the model runs on synthetic data only; a hospital would run it on its own private infrastructure.\""
+  },
+  {
+    "slide": 13,
+    "file": "13-safety-precedence.html",
+    "scene": 9,
+    "notes": "(Continues scene 9.)\n\nScene 9 · How it's built — 5:15–6:00\n\n[Slides: architecture overview · agent loop · safety precedence (`diagrams/`).]\n\n\"Our rule: signals propose, rules decide, AI words it. Deterministic engines own the personal baselines and the safety state. Medication information is curated; AI only matches a question to an approved topic. The clinician agent investigates with read-only tools, and every answer passes number, date and citation checks plus an independent verifier. In this demo the model runs on synthetic data only; a hospital would run it on its own private infrastructure.\""
+  },
+  {
+    "slide": 14,
+    "file": "14-trade-offs.html",
+    "scene": 9,
+    "notes": "(Continues scene 9.)\n\nScene 9 · How it's built — 5:15–6:00\n\n[Slides: architecture overview · agent loop · safety precedence (`diagrams/`).]\n\n\"Our rule: signals propose, rules decide, AI words it. Deterministic engines own the personal baselines and the safety state. Medication information is curated; AI only matches a question to an approved topic. The clinician agent investigates with read-only tools, and every answer passes number, date and citation checks plus an independent verifier. In this demo the model runs on synthetic data only; a hospital would run it on its own private infrastructure.\""
+  },
+  {
+    "slide": 15,
+    "file": "15-challenge-fit.html",
+    "scene": 10,
+    "notes": "Scene 10 · Fit with the challenge — 6:00–6:25\n\n[Slide: six features: built / partial / next (from `../submission/CHALLENGE_MAPPING.md`).]\n\n\"Against the challenge: medication understanding, adherence with barriers, health tracking, follow-up dates for refills and medication reviews, and appointment preparation are in the demo. Push reminders, screenings and pharmacist-reviewed content come next. One choice is deliberate: AURA describes changes; it doesn't predict relapse or give medication advice.\""
+  },
+  {
+    "slide": 16,
+    "file": "16-how-we-built-it.html",
+    "scene": 11,
+    "notes": "Scene 11 · How we built it — 6:25–6:45\n\n[Slide: genuine CodeBuddy and Miora session screenshots.]\n\n\"We built the safety and longitudinal core first, then the agent, then the experience. CodeBuddy built the companion screens from a written contract; Miora made the artwork. Our tip: write down what must never change before asking an AI to build anything.\""
+  },
+  {
+    "slide": 17,
+    "file": "17-impact.html",
+    "scene": 12,
+    "notes": "Scene 12 · Impact and close — 6:45–7:05\n\n[Slide: pilot metrics (labelled as targets) · closing line.]\n\n\"In a pilot we'd measure missed doses with a recorded reason, preparation time before visits, and how many appointments start with a prepared note. AURA Health: a calm companion between doctor visits, so both sides start the conversation on the same page.\""
+  },
+  {
+    "slide": 18,
+    "file": "18-close.html",
+    "scene": 12,
+    "notes": "(Continues scene 12.)\n\nScene 12 · Impact and close — 6:45–7:05\n\n[Slide: pilot metrics (labelled as targets) · closing line.]\n\n\"In a pilot we'd measure missed doses with a recorded reason, preparation time before visits, and how many appointments start with a prepared note. AURA Health: a calm companion between doctor visits, so both sides start the conversation on the same page.\""
+  }
+]
