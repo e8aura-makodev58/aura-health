@@ -10,11 +10,11 @@ from pathlib import Path
 from aura_communication.provider import DisabledProvider
 from .api import create_app
 from .communication import PatientCommunicationService
-from .models import EventType
+from .models import EventType, valid_medication_payload
 from .persistence import SQLiteRepositoryFactory
 from .safety import FixtureSafetyGate, SafetyGateUnavailable
 from .service import PatientEventService
-from .simulator import run_case
+from .simulator import run_case, fixture_treatment
 
 
 CHECKPOINTS = (
@@ -48,7 +48,7 @@ class DemoFixtureGate:
         if event.event_type == EventType.PATIENT_CHECKIN:
             normal = set(payload) == {"state"} and payload["state"] in {"Good", "Okay", "Rough"}
         elif event.event_type == EventType.MEDICATION_EVENT:
-            normal = set(payload) == {"scheduled_time", "status"} and payload["status"] in {"ACKNOWLEDGED", "MISSED", "UNKNOWN"}
+            normal = valid_medication_payload(payload)
         elif event.event_type == EventType.CONTEXT_EXPLANATION:
             normal = payload.get("explanation") == "new stable work schedule"
         elif event.event_type == EventType.PATIENT_FREE_TEXT:
@@ -83,7 +83,17 @@ def _seed_existing(db_path, seed=7):
 
 def prepare(db_path, seed=7):
     from .demo_workspace import prepare_snapshot
-    return prepare_snapshot(db_path, seed, _seed_existing)
+    from datetime import datetime
+    factory = prepare_snapshot(db_path, seed, _seed_existing)
+    factory.initialize()
+    # Upgrade only the exact old demo placeholder; never replace a real/user context.
+    with factory.transaction() as repo:
+        for item in demo_catalog(seed):
+            patient = repo.patient(item["patient_id"])
+            if patient["treatment"].get("medication_name") == "fixture-only; no treatment instruction":
+                stamps = [datetime.fromisoformat(row["occurred_at"]) for row in repo.events(item["patient_id"])]
+                repo.save_treatment({"patient_id": item["patient_id"], **fixture_treatment(min(stamps).date(), max(stamps).date())})
+    return factory
 
 
 def create_demo_app(db_path=None, seed=7):

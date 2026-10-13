@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS patients (
 CREATE TABLE IF NOT EXISTS treatment_context (
  patient_id TEXT PRIMARY KEY, medication_name TEXT, medication_schedule TEXT,
  regimen_start TEXT, stable_since TEXT, treating_clinician_ref TEXT,
- review_cadence TEXT, next_review TEXT, treatment_notes TEXT,
+ review_cadence TEXT, next_review TEXT, treatment_notes TEXT, supply_days INTEGER, last_refill TEXT,
  FOREIGN KEY(patient_id) REFERENCES patients(patient_id)
 );
 CREATE TABLE IF NOT EXISTS consents (
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS checkins (
 );
 CREATE TABLE IF NOT EXISTS medication_events (
  event_id TEXT PRIMARY KEY, patient_id TEXT NOT NULL, scheduled_time TEXT NOT NULL,
- timestamp TEXT NOT NULL, status TEXT NOT NULL, source TEXT NOT NULL,
+ timestamp TEXT NOT NULL, status TEXT NOT NULL, source TEXT NOT NULL, reason TEXT,
  FOREIGN KEY(event_id) REFERENCES app_events(event_id)
 );
 CREATE TABLE IF NOT EXISTS contexts (
@@ -178,10 +178,11 @@ class SQLiteUnitOfWork:
             raise RepositoryConflict("patient already exists") from exc
 
     def save_treatment(self, row):
-        self.conn.execute("INSERT INTO treatment_context VALUES (?,?,?,?,?,?,?,?,?)",
+        self.conn.execute("INSERT INTO treatment_context (patient_id,medication_name,medication_schedule,regimen_start,stable_since,treating_clinician_ref,review_cadence,next_review,treatment_notes,supply_days,last_refill) VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(patient_id) DO UPDATE SET medication_name=excluded.medication_name,medication_schedule=excluded.medication_schedule,regimen_start=excluded.regimen_start,stable_since=excluded.stable_since,treating_clinician_ref=excluded.treating_clinician_ref,review_cadence=excluded.review_cadence,next_review=excluded.next_review,treatment_notes=excluded.treatment_notes,supply_days=excluded.supply_days,last_refill=excluded.last_refill",
                           (row["patient_id"], row.get("medication_name"), row.get("medication_schedule"),
                            row.get("regimen_start"), row.get("stable_since"), row.get("treating_clinician_ref"),
-                           row.get("review_cadence"), row.get("next_review"), row.get("treatment_notes")))
+                           row.get("review_cadence"), row.get("next_review"), row.get("treatment_notes"),
+                           row.get("supply_days"), row.get("last_refill")))
 
     def consents(self, patient_id):
         return self._all("SELECT * FROM consents WHERE patient_id=? ORDER BY consent_type", (patient_id,))
@@ -255,9 +256,12 @@ class SQLiteUnitOfWork:
                            _json(row.get("structured_answers", {})), _json(row.get("context_tags", []))))
 
     def save_medication(self, row):
-        self.conn.execute("INSERT INTO medication_events VALUES (?,?,?,?,?,?)",
+        self.conn.execute("INSERT INTO medication_events (event_id,patient_id,scheduled_time,timestamp,status,source,reason) VALUES (?,?,?,?,?,?,?)",
                           (row["event_id"], row["patient_id"], row["scheduled_time"], row["timestamp"],
-                           row["status"], row["source"]))
+                           row["status"], row["source"], row.get("reason")))
+
+    def medication_events(self, patient_id):
+        return self._all("SELECT * FROM medication_events WHERE patient_id=? ORDER BY rowid", (patient_id,))
 
     def save_baseline(self, row):
         self.conn.execute("INSERT INTO baselines VALUES (?,?,?,?,?,?,?, ?,?) ON CONFLICT(patient_id,signal,source,metric) DO UPDATE SET anchor_json=excluded.anchor_json,trust_state=excluded.trust_state,sensing_state=excluded.sensing_state,rolling_json=excluded.rolling_json,updated_at=excluded.updated_at",
@@ -396,6 +400,14 @@ class SQLiteRepositoryFactory:
             columns = {row[1] for row in conn.execute("PRAGMA table_info(safety_references)")}
             if "previous_episode_id" not in columns:
                 conn.execute("ALTER TABLE safety_references ADD COLUMN previous_episode_id TEXT")
+            for table, additions in {
+                "treatment_context": {"supply_days": "INTEGER", "last_refill": "TEXT"},
+                "medication_events": {"reason": "TEXT"},
+            }.items():
+                columns = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+                for name, sql_type in additions.items():
+                    if name not in columns:
+                        conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {sql_type}")
 
     @contextmanager
     def transaction(self) -> Iterator[SQLiteUnitOfWork]:

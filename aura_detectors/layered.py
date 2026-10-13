@@ -8,6 +8,7 @@ import re
 from aura_agent.tasks import structured_task
 from aura_safety.domain import DetectorOutput, Mode
 from aura_app.safety import SafetyGateUnavailable
+from aura_app.models import EventType, valid_medication_payload
 
 
 class LayeredSafetyGate:
@@ -27,19 +28,23 @@ class LayeredSafetyGate:
         self.rules = [(re.compile(row["pattern"], re.I), Mode[row["proposal"]]) for row in self.policy["rules"]]
 
     def resolve(self, event, source_episode_id, source_sequence):
+        if event.event_type == EventType.MEDICATION_EVENT and not valid_medication_payload(event.payload):
+            raise SafetyGateUnavailable("invalid categorical medication input")
         if self.fixtures:
             try:
                 return self.fixtures.resolve(event, source_episode_id, source_sequence)
             except SafetyGateUnavailable:
                 pass
         payload = event.payload
+        if event.event_type == EventType.MEDICATION_EVENT:
+            return ()
         texts = [payload[key] for key in ("text", "question", "explanation") if isinstance(payload.get(key), str)]
         answers = payload.get("structured_answers", {})
         texts.extend(str(value) for value in answers.values())
         if not texts:
             # Only reviewed categorical shapes bypass semantic free-text detection.
             if ((set(payload) == {"state"} and payload["state"] in {"Good", "Okay", "Rough"}) or
-                (set(payload) == {"scheduled_time", "status"} and payload["status"] in {"ACKNOWLEDGED", "MISSED", "UNKNOWN"})):
+                (event.event_type == EventType.MEDICATION_EVENT and valid_medication_payload(payload))):
                 return ()
             raise SafetyGateUnavailable("unresolved structured safety input")
         text = "\n".join(texts)

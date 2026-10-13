@@ -11,8 +11,9 @@ Owners below are proposed responsibilities, not evidence that work was completed
 | Demo video | Actual URL in `manifest.json` | MISSING | User/presenter records 7-minute script; confirm signed-out access |
 | Development history bundle | `assets/development-history.pdf` | MISSING | User supplies genuine logs plus≥3 screenshots; agent sanitizes/packs only with authority |
 | Architecture PPTX | `assets/aura-health-deck.pptx` | MISSING | Deck author uses outline/diagram; exports actual PPTX; inspect all slides |
-| Live demo URL | `manifest.json` | HEALTH_CHECKED | `/health` returned ok / synthetic_only=true on 2026-10-13; full signed-out walkthrough still needed at release |
-| GitHub URL | `manifest.json` | CONFIGURED | Origin matches repository; verify anonymous judge access at release |
+| Architecture slide diagrams | `../presentation/diagrams/` | REVIEW_PENDING | Codex: three editable SVGs +1920×1080 PNGs,2026-10-13; see diagram README; Claude inserts into deck and reviews |
+| Live demo URL | `manifest.json` | PARTIALLY_CHECKED | Health/status and fresh signed-out browser session/Q&A checked2026-10-13; final A–F walkthrough pending |
+| GitHub URL | `manifest.json` | ACCESS_BLOCKED | Anonymous URL returned HTTP404 on2026-10-13; user/reviewer to arrange judge access or correct link |
 | Optional social post | Actual URL in `manifest.json` | NOT_STARTED | User decides platform/publication; all 4 hashtags |
 | Release/approval | `manifest.json` | PENDING | Final tested commit plus user approval; no final tag created |
 
@@ -23,3 +24,13 @@ Do not insert invented evidence details merely to fill the table.
 
 Required upload files are not yet produced. Markdown outlines and marketing
 clips do not satisfy the PPT/video/history upload requirements.
+
+Codex diagrams: original vector drawings based on implemented architecture,
+created2026-10-13; code snapshot `f5f06d1` (architecture source inspected at
+`3d95a66`). SVGs4956/4560/6403 bytes and PNGs235065/210503/290724 bytes for
+agent/safety/overview respectively. Exact16:9 dimensions verified, labels fitted
+and rendered images inspected. No external artwork; user/deck review pending.
+
+Preliminary release verification:303 Python tests and7 assertions in two local
+browser suites passed on `f5f06d1`. Live rehearsal1 partial generated /2 fallbacks;
+see `EVIDENCE_LEDGER.md`. These do not approve a final merged release.

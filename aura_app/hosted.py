@@ -24,7 +24,7 @@ from .agent import AgentService
 from .system_settings import SyntheticAgentProvider
 from .communication import PatientCommunicationService
 from .demo import DemoFixtureGate, demo_catalog, prepare
-from .models import AppError, EventType
+from .models import AppError, EventType, valid_medication_payload
 from .persistence import SQLiteRepositoryFactory
 from .service import PatientEventService
 from .system_settings import SystemSettings, SyntheticSettingsProvider, settings_api
@@ -79,9 +79,11 @@ class SyntheticOnlyService(PatientEventService):
         elif event.event_type == EventType.PATIENT_FREE_TEXT:
             permitted = set(payload) == {"text"} and isinstance(payload["text"],str) and payload["text"] in {"fixture ordinary message", "fixture safety concern"}
         elif event.event_type == EventType.MEDICATION_EVENT:
-            permitted = (set(payload) == {"status", "scheduled_time"}
-                         and isinstance(payload["status"],str) and payload["status"] in {"ACKNOWLEDGED", "MISSED", "UNKNOWN"}
-                         and payload["scheduled_time"] == at.isoformat())
+            from zoneinfo import ZoneInfo
+            with self.repositories.transaction() as repo:
+                tz = ZoneInfo(self._patient(repo, event.patient_id)["timezone"])
+            permitted = (valid_medication_payload(payload)
+                         and datetime.fromisoformat(payload["scheduled_time"]).astimezone(tz).date() == at.astimezone(tz).date())
         elif event.event_type == EventType.CONTEXT_EXPLANATION:
             context = contexts.get(payload.get("context_event_id"), {}) if isinstance(payload.get("context_event_id"),str) else {}
             permitted = (set(payload) <= {"context_event_id", "relevant_drift_ref", "explanation", "affected_signals"}
