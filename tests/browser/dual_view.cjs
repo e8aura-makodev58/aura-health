@@ -54,7 +54,11 @@ async function main(){
       assert.equal(await page.locator("#signal-list").isVisible(),false);
       assert.equal(await page.locator(".bottom-nav").isVisible(),false);
       await page.setViewportSize({width:390,height:844});
-      for(const selector of ["#quiet-card", "#talk", ".patient-links"]){const box=await page.locator(selector).boundingBox();assert.ok(box.y>=0&&box.y+box.height<=844,selector);}
+      // The help button stays fully in view; the daily companion cards now lead the home, so the
+      // first one must start within the first screen (the quiet card follows below them).
+      {const box=await page.locator("#talk").boundingBox();assert.ok(box.y>=0&&box.y+box.height<=844,"#talk");}
+      await page.waitForSelector("#dose-card:not([hidden])",{timeout:20000});
+      {const box=await page.locator("#dose-card").boundingBox();assert.ok(box.y>=0&&box.y<844,"#dose-card starts in view");}
       await page.screenshot({path:path.join(out,"patient-stable-phone.png"),fullPage:true});
     });
     await check("DV4_RANGE_DISPLAY_ONLY",async()=>{

@@ -293,6 +293,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Merged CodeBuddy `781713a` (timeline strip) with a phone-size fix
+- Merged `improve/feature-codebuddy` (capped timeline SVG width at 720 px; labels sized inside the drawing). Measured: desktop fixed (labels ~19 px), but phone labels became ~8 px; added a phone rule (21 user units → ~15 px). Screenshots checked at 1440 and 390.
+- `dual_view.cjs` DV3 expected the quiet card above the fold on phones; the companion cards now lead the patient home (since the event-target fix), so DV3 now checks the help button fully in view and Today's dose starting in the first screen. Browser final-dash, story-charts, plain-language, dual-view (12), cards PASS.
 ### 2026-10-13 — Claude — Reviewed/merged Codex `9a13e34`; medication retry-identity fix; hybrid deck
 - Codex branch merged into `main` (post-flu verifier payload trim with tests AW2b/AW2c, companion docs, updated overview diagram). Deck rebuilt so slide 11 shows the updated diagram.
 - Fixed Codex's finding in `aura_app/medication_ask.py`: the patient question event ID now includes a hash of the question text, so reusing a run ID with different words is a new message with its own safety assessment (test MED4b).

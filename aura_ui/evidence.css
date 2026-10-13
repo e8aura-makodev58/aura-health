@@ -61,7 +61,7 @@
 #agent-patient_insight .agent-disclosure{font-size:.67rem;margin-top:4px}
 .finding-timeline{padding:8px 16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface-soft);margin:14px 0}
 .finding-timeline svg{display:block;width:100%;max-width:720px;max-height:145px;margin:0 auto}
-.finding-timeline-label{font-size:11px;fill:var(--ink-soft)}
+.finding-timeline-label{font-size:12px;fill:var(--ink-soft)}@media(max-width:700px){.finding-timeline-label{font-size:21px}}
 .finding-timeline-track{fill:var(--line)}.finding-timeline-span{fill:var(--accent-blue)}
 .chart-callout{display:block;font-size:.77rem;text-decoration:none;color:var(--accent);background:var(--surface-soft);border-radius:var(--radius-sm);padding:8px;margin:8px 0}
 .question-copy{font-size:.8rem;text-align:left;border-radius:var(--radius-pill);margin:4px;padding:9px 12px}
