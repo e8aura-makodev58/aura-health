@@ -264,6 +264,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Merged agent branches; tasks assigned per agent
+- User: merge `improve/feature-codex` and `improve/feature-claude` into `main` (done, `8e0dd05`; HANDOVER log conflict resolved keeping both entries). Claude and CodeBuddy branches fast-forwarded to `main`; Codex's folder had an uncommitted `HANDOVER.md` edit, left untouched (Codex pulls itself).
+- `docs/submission/WORKPLAN.md` now lists tasks per agent with "Done when" criteria: Claude C1–C5 (script, deck, video draft, claims review, merges when directed), Codex X1–X5 (diagrams, demo-question rehearsal, cross-check, architecture docs, release checks), CodeBuddy B1–B4 (cover, timeline-strip labels, device frames, evidence PDF), user U1–U4. Kickoff messages included.
 ### 2026-10-13 — Claude — One worktree per agent
 - User: create worktrees and inform the other agents. `/home/makodev58/aura-health` is back on `main` (integration/deploy folder; it had been left on `improve/feature-codex`, clean and pushed). New worktrees: `../aura-health-claude` (`improve/feature-claude`), `../aura-health-codex` (`improve/feature-codex`, Codex's existing branch at `f5f06d1`), `../aura-health-codebuddy` (`improve/feature-codebuddy`), all from `origin/main` `6d29f02`. Each has a `.venv` link to the main environment, ignored via `.git/info/exclude`. Folder/branch/port table and updated kickoff prompts in `docs/submission/WORKPLAN.md`.
 
