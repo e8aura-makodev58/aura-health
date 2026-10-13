@@ -142,6 +142,7 @@ class CompanionService:
                     "adherence": {"window_days": self.config.window_days,
                         "taken_days": sum(row["status"] == "ACKNOWLEDGED" for row in days.values()),
                         "recorded_days": len(days),
+                        "missed_days": sum(row["status"] == "MISSED" for row in days.values()),
                         "missed_reasons": [{"reason": reason, "label": label, "count": reasons[reason]}
                                            for reason, label in MISSED_REASONS.items() if reasons[reason]]},
                     "coming_up": coming_up, "suggestions": suggestions}

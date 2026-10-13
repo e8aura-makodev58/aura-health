@@ -66,6 +66,10 @@ def investigation_trail(trace, keys, generation_used):
             if args.get('key_id'):
                 reads[names[tool]].append(label(args['key_id']))
     flush()
+    # Merge repeated reads; keep at most six investigation steps so the outcome line always shows.
+    steps = list(dict.fromkeys(steps))
+    if len(steps) > 6:
+        steps = steps[:5] + [f"{len(steps) - 5} more reads"]
     verifier = next((row for row in trace if row.get('action') == 'INDEPENDENT_VERIFIER'), None)
     if verifier:
         checked, rejected = verifier.get('claims_checked', 0), len(verifier.get('rejected_indices', []))
@@ -77,7 +81,7 @@ def investigation_trail(trace, keys, generation_used):
         steps.append("Stopped: " + ("the AI usage limit was reached" if str(failure.get('provider_failure') or '').startswith('demo_budget')
                                     else "the draft failed a fact check" if rejected_code else "the AI was unavailable")
                      + "; showing related facts instead")
-    return steps[:8]
+    return steps
 
 
 class AgentService:

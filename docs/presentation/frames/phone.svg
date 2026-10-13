@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="800" viewBox="0 0 390 800" role="img" aria-label="AURA Health phone frame">
+  <title>AURA Health phone frame</title>
+  <desc>Place a 390×780 screenshot in the screen area. Screen area: x=15, y=15, width=360, height=770.</desc>
+  <defs>
+    <linearGradient id="phone-bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2320"/>
+      <stop offset="1" stop-color="#1a1512"/>
+    </linearGradient>
+    <clipPath id="phone-screen-clip">
+      <rect x="15" y="15" width="360" height="770" rx="32"/>
+    </clipPath>
+  </defs>
+  <!-- Device body -->
+  <rect x="0" y="0" width="390" height="800" rx="40" fill="url(#phone-bezel)"/>
+  <!-- Screen area (place screenshot here) -->
+  <rect x="15" y="15" width="360" height="770" rx="32" fill="#fbfaf7"/>
+  <!-- Notch -->
+  <rect x="150" y="15" width="90" height="22" rx="0 0 12 12" fill="#1a1512"/>
+  <!-- Home indicator -->
+  <rect x="160" y="770" width="70" height="4" rx="2" fill="#7a7066" opacity="0.4"/>
+  <!-- Side buttons -->
+  <rect x="-2" y="120" width="4" height="30" rx="2" fill="#1a1512"/>
+  <rect x="-2" y="170" width="4" height="50" rx="2" fill="#1a1512"/>
+  <rect x="-2" y="240" width="4" height="50" rx="2" fill="#1a1512"/>
+  <!-- Power button -->
+  <rect x="388" y="180" width="4" height="60" rx="2" fill="#1a1512"/>
+</svg>

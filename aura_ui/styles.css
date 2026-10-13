@@ -311,6 +311,7 @@ main {padding-inline:24px}
 .chart-status {font-size:.7rem;margin:8px 0 0}
 .chart-card svg {width:100%;height:auto;display:block;margin:8px 0}
 .chart-axis {font-size:15px;fill:var(--muted)}.chart-empty {font-size:14px;fill:var(--muted)}
+.finding-timeline-label {font-size:11px;fill:var(--muted)}
 .chart-grid {stroke:var(--line-soft);stroke-width:1}
 .chart-observed {fill:var(--accent-blue);opacity:.85}
 .chart-rolling {stroke:var(--accent-ink);stroke-width:2.5;fill:none}.chart-rolling-point {fill:var(--accent-ink)}
@@ -426,3 +427,56 @@ body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:b
 .suggested-questions {display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
 .suggested-questions .text-button {min-height:40px;padding:8px 16px;border:1px solid var(--line);border-radius:var(--radius-pill);background:var(--white);box-shadow:var(--shadow-sm);text-decoration:none;color:var(--accent);font-weight:600}
 .suggested-questions .text-button:hover {background:var(--surface-soft);color:var(--accent-ink)}
+
+/* Patient companion cards (PATIENT_COMPANION_SPEC.md §4) */
+.companion-cards {display:grid;gap:12px;margin:0 0 20px}
+.companion-card {padding:20px}
+.companion-card h2 {margin:0 0 6px}
+.companion-detail {font-size:.92rem;margin:0 0 8px;color:var(--ink)}
+.dose-actions {display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+.dose-btn {background:var(--surface-soft);padding:14px 6px;font-size:.88rem;border-radius:var(--radius-md);box-shadow:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.dose-btn:hover {background:var(--accent-sunny);color:var(--ink)}
+.dose-btn[aria-pressed="true"].dose-taken {background:var(--accent-leaf);color:var(--ink)}
+.dose-btn[aria-pressed="true"].dose-skipped {background:var(--warning-bg);border-color:var(--warning-border)}
+.dose-btn[aria-pressed="true"].dose-notyet {background:var(--accent-blue);color:var(--ink)}
+.dose-reason {margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.dose-reason>p {margin-bottom:8px}
+.reason-chips {display:flex;flex-wrap:wrap;gap:6px}
+.reason-chip {font-size:.8rem;padding:8px 14px;border:1px solid var(--line);border-radius:var(--radius-pill);background:var(--white);min-height:40px}
+.reason-chip:hover {background:var(--surface-soft)}
+.reason-chip[aria-pressed="true"] {background:var(--accent);color:var(--white);border-color:var(--accent)}
+.topic-chips {display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.topic-chip {font-size:.8rem;padding:8px 14px;border:1px solid var(--line);border-radius:var(--radius-pill);background:var(--white);min-height:40px;cursor:pointer}
+.topic-chip:hover {background:var(--surface-soft)}
+.topic-chip[aria-pressed="true"] {background:var(--accent-lilac);border-color:var(--accent-lilac)}
+.medication-answer {margin-top:12px;padding:14px;background:var(--surface-soft);border-radius:var(--radius-md);border-left:3px solid var(--accent-leaf)}
+.medication-answer p {margin:0 0 6px;font-size:.88rem;color:var(--ink)}
+.medication-answer .fine {color:var(--muted)}
+.medication-ask {margin-top:14px}
+.medication-ask summary {font-size:.82rem;color:var(--ink-soft)}
+.medication-ask textarea {margin-top:8px;font-size:.85rem}
+.medication-ask .text-button {margin-top:8px}
+.coming-up-list {list-style:none;padding:0;margin:8px 0 0}
+.coming-up-list li {display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:.88rem}
+.coming-up-list li:last-child {border-bottom:0}
+.coming-up-list .coming-up-icon {width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:var(--surface-soft);font-size:1.2rem;flex-shrink:0}
+.coming-up-list .coming-up-date {font-weight:600;color:var(--ink)}
+.coming-up-list .coming-up-label {color:var(--ink-soft)}
+.suggestion-options {display:flex;flex-direction:column;gap:8px;margin:12px 0 8px}
+.suggestion-chip {display:flex;align-items:center;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white);font-size:.88rem;cursor:pointer;min-height:48px;box-shadow:var(--shadow-sm)}
+.suggestion-chip:hover {background:var(--surface-soft);box-shadow:var(--shadow-md)}
+.suggestion-chip[aria-pressed="true"] {background:var(--accent-lilac);border-color:var(--accent-lilac)}
+.suggestion-chip .suggestion-check {margin-left:auto;font-size:1.1rem;color:var(--accent-leaf)}
+.suggestion-chip[aria-pressed="true"] .suggestion-check {display:inline}
+.suggestion-chip:not([aria-pressed="true"]) .suggestion-check {display:none}
+.missed-dose-items {margin:12px 0}
+.missed-dose-items h2 {font-size:1rem}
+.missed-dose-list {list-style:none;padding:0;margin:8px 0 0}
+.missed-dose-list li {padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:.85rem}
+.missed-dose-list li:last-child {border-bottom:0}
+@media(max-width:380px) { .dose-actions {grid-template-columns:1fr} }
+/* Single column at every width: the patient home column is narrow, and two columns left staggered gaps. */
+
+.things-to-try {margin:12px 0 4px;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white)}
+.things-to-try ul {margin:8px 0 0;padding-left:18px}
+.things-to-try li {margin:4px 0;font-size:.85rem}

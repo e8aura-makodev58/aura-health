@@ -117,7 +117,7 @@ class CompanionTests(unittest.TestCase):
             self.service.process(self.event(f"day{day}", day=day, status="ACKNOWLEDGED", reason=None))
         self.service.process(self.event("skip", status="MISSED", reason="FORGOT"))
         result = self.companion.get(self.pid)
-        self.assertEqual(result["adherence"], {"window_days": 7, "taken_days": 6, "recorded_days": 7,
+        self.assertEqual(result["adherence"], {"window_days": 7, "taken_days": 6, "recorded_days": 7, "missed_days": 1,
             "missed_reasons": [{"reason": "FORGOT", "label": "Forgot", "count": 1}]})
         self.assertEqual(result["dose_today"]["status"], "MISSED")
         self.assertEqual(result["dose_today"]["scheduled_time"], BASE.replace(hour=8).isoformat())

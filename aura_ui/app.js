@@ -13,7 +13,8 @@ let patientId = null, catalog = [], current = null, communication = null;
 let epoch = 0, busy = false, pending = null, offline = false, dialogKind = "text", lastCheckin = null;
 let hosted = false, presentationRole = "patient";
 window.auraAgentContext = () => ({patientId, record: current?.evidence,
-  revision: current?.view.latest_event_id, offline: offline || Boolean(pending), role: presentationRole});
+  revision: current?.view.latest_event_id, offline: offline || Boolean(pending), role: presentationRole,
+  latestOccurredAt: current?.view?.latest_occurred_at});
 const selections = new Set();
 let plainTerms={patient:[],clinician:[]};
 fetch('/assets/plain_terms.json').then(r=>r.json()).then(terms=>{plainTerms=terms;if(current)render();}).catch(()=>{});
@@ -34,6 +35,8 @@ window.auraPlain = text => {
   copy=copy.replace(/\bdegC(?: deviation)?\b/g,'°C');
   copy=copy.replace(/\bUNOBSERVED\b/g,'No watch readings').replace(/\bOBSERVED\b/g,'Readings available').replace(/\bTRUSTED\b/g,patient?'Your usual established':'Baseline established').replace(/\bPROVISIONAL\b/g,'Usual still being learned').replace(/\bREESTABLISHING\b/g,'Usual being learned again');
   if(patient)copy=copy.replace(/Nightly HRV \(RMSSD\)/g,'Time between heartbeats').replace(/minutes since sleep-start midnight/g,'sleep time').replace(/\(\+1d\)/g,'(next day)').replace(/\(\+0d\)/g,'');
+  // Clinician wording keeps exact numbers but drops internal measurement names.
+  copy=copy.replace(/minutes since sleep-start midnight/g,'minutes').replace(/current[- ]versus[- ](?:recent|rolling) (?:difference|deviation)/gi,'difference from the recent average').replace(/(?:recent|rolling) versus own reference (?:difference|deviation)/gi,'difference from baseline').replace(/stored trend magnitude per day/gi,'trend per day');
   copy=copy.replace(/No configured descriptive drift was found for ([^.]+)\./gi,'No change flagged for $1.').replace(/Insufficient covered data to compare ([^.]+) with its reference\./gi,'Still gathering readings for $1.').replace(/relative to the anchored reference/gi,patient?'than your usual':'than baseline').replace(/relative to the recent rolling pattern/gi,'than your recent pattern');
   const replacements=[[/sleep midpoint/gi,'sleep time'],[/anchored reference|governed personal reference|governed reference/gi,patient?'your usual':'baseline'],[/recent rolling reference|rolling reference|stored rolling mean/gi,'recent average'],[/reference trust/gi,'usual pattern'],[/re-establishing reference|reference being re-established/gi,'usual being learned again'],[/provisional reference/gi,'usual still being learned'],[/personal reference/gi,patient?'your usual':'baseline'],[/rolling versus own reference deviation/gi,'difference from baseline'],[/deviation/gi,'change'],[/consecutive recorded days/gi,'days in a row'],[/recorded days/gi,'days'],[/source extraction/gi,'record summary'],[/transient_change|TRANSIENT_DEVIATION/g,'Recent change'],[/PERSISTENT_DRIFT/g,'Longer change'],[/SENSING_GAP/g,'Watch data unavailable'],[/SENSING_RETURN/g,'Watch data returned'],[/E3_RESEARCH/g,'Newer measure'],[/EXPLAINED_HELD_FOR_REVIEW/g,'Explained, held for review'],[/INPUT_HELD_FOR_SAFETY/g,'Held for safety review']];
   for(const [pattern,replacement] of replacements)copy=copy.replace(pattern,replacement);
@@ -347,6 +350,8 @@ async function submitEvent(type, payload, special = false) {
   pending = {path:`/patients/${encodeURIComponent(patientId)}/${special ? "context-explanations" : "events"}`, body};
   await sendPending();
 }
+// Exposed for companion.js dose recording — uses the same path, idempotency and refresh cycle.
+window.auraSubmitEvent = submitEvent;
 async function sendPending() {
   if (busy || !pending) return; busy = true; toggleBusy(true);
   try {
@@ -372,7 +377,7 @@ async function openDemo(role) {
   if (current) { render(); goPage(); } else await loadPatient($("scenario").value);
   window.scrollTo(0, 0);
 }
-$("start-demo").addEventListener("click", async () => { await openDemo("clinician"); $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); });
+$("start-demo").addEventListener("click", async () => { await openDemo("patient"); $("demo-panel").hidden = false; $("demo-toggle").setAttribute("aria-expanded", "true"); });
 $("start-patient")?.addEventListener("click", () => openDemo("patient"));
 $("start-clinician")?.addEventListener("click", () => openDemo("clinician"));
 $("scenario").addEventListener("change", () => { location.hash = "home"; loadPatient($("scenario").value); });
