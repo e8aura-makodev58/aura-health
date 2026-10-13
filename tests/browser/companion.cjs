@@ -22,6 +22,8 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
     await page.goto(base);
     await page.waitForFunction(()=>window.auraAgentContext().record&&document.getElementById('notice').hidden);
     await page.getByRole('button',{name:'Patient',exact:true}).click();
+    // The once-per-session welcome comes first; continue past it.
+    if(await page.locator('#breath-welcome').isVisible())await page.locator('#breath-continue').click();
 
     // If the /companion endpoint is not available yet, cards stay hidden.
     // The test still validates the no-error path and safety behaviour.
@@ -104,7 +106,7 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
     await page.waitForSelector('#review-view:not([hidden])');
     const missedSection=page.locator('#missed-dose-items');
     if(await missedSection.isVisible()){
-      assert.match(await page.locator('#missed-dose-summary').innerText(),/Missed doses/i);
+      assert.match(await page.locator('#missed-dose-summary').innerText(),/missed doses?/i);
       assert.match(await page.locator('#missed-dose-summary').innerText(),/pharmacist/i);
       console.log('COMPANION9_MISSED_DOSE_REVIEW_PAGE PASS');
     } else {

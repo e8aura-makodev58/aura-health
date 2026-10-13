@@ -45,8 +45,12 @@ function renderCompanion(data) {
     document.getElementById("medication-disclaimer").textContent = med.content_status || "";
     const chips = document.getElementById("topic-chips");
     chips.replaceChildren();
-    // Server signals unknown medication by providing no topics
-    if (med.topics) {
+    // Unknown medication: say so up front with the server's exact abstention line.
+    let abstain = document.getElementById("medication-abstain");
+    if (!abstain) { abstain = document.createElement("p"); abstain.id = "medication-abstain"; abstain.className = "medication-answer"; chips.before(abstain); }
+    abstain.hidden = med.known !== false;
+    abstain.textContent = med.known === false ? (med.abstain || "") : "";
+    if (med.topics && med.known !== false) {
       for (const topic of med.topics) {
         const chip = document.createElement("button");
         chip.className = "topic-chip";
@@ -120,16 +124,14 @@ function renderMissedDoses(data) {
   if (!adherence || !missedCount) { section.hidden = true; return; }
   section.hidden = false;
   const reasons = adherence.missed_reasons || [];
-  const reasonText = reasons.length
-    ? reasons.map(r => `${r.count} — reason: ${r.label.toLowerCase()}`).join("; ")
-    : "no reason recorded";
+  const doses = missedCount === 1 ? "1 missed dose" : `${missedCount} missed doses`;
   document.getElementById("missed-dose-summary").textContent =
-    `Missed doses in the last ${adherence.window_days} days: ${missedCount} — ${reasonText}. Worth discussing with your doctor or pharmacist.`;
+    `${doses} in the last ${adherence.window_days} days. Worth discussing with your doctor or pharmacist.`;
   const list = document.getElementById("missed-dose-list");
   list.replaceChildren();
   for (const reason of reasons) {
     const li = document.createElement("li");
-    li.textContent = `${reason.count} missed — ${reason.label}. Discuss with your doctor or pharmacist.`;
+    li.textContent = `What got in the way: ${reason.label.toLowerCase()}${reason.count > 1 ? ` (${reason.count} times)` : ""}`;
     list.append(li);
   }
 }
@@ -275,7 +277,7 @@ document.addEventListener("click", (event) => {
 });
 
 // Hook into the existing render cycle — no polling interval
-document.addEventListener("aura-record-view", () => {
+window.addEventListener("aura-record-view", () => {
   const ctx = window.auraAgentContext?.();
   if (!ctx?.patientId || ctx.role !== "patient") {
     document.getElementById("companion-cards").hidden = true;
