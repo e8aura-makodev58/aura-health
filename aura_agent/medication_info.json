@@ -1,0 +1,77 @@
+{
+  "version": "medication-info-dev-v1",
+  "content_status": "Development content — needs pharmacist review",
+  "source_label": "Approved medication information (development content)",
+  "footer": "If you're unsure, check with your pharmacist or doctor.",
+  "abstain_unknown_medication": "I'm not able to identify that medication, please check with your pharmacist.",
+  "abstain_unknown_topic": "I'm not able to answer that here, please check with your pharmacist or doctor.",
+  "topics": [
+    {
+      "id": "purpose",
+      "label": "What is it for?"
+    },
+    {
+      "id": "how_to_take",
+      "label": "How do I take it?"
+    },
+    {
+      "id": "missed_dose",
+      "label": "What if I miss a dose?"
+    },
+    {
+      "id": "side_effects",
+      "label": "Common side effects"
+    },
+    {
+      "id": "alcohol",
+      "label": "Alcohol"
+    }
+  ],
+  "medications": [
+    {
+      "name": "Sertraline",
+      "aliases": [
+        "sertraline",
+        "zoloft",
+        "lustral"
+      ],
+      "answers": {
+        "purpose": "Sertraline is an antidepressant from a group of medicines called SSRIs. It is used for depression and some anxiety conditions. It usually takes a few weeks to feel the full effect, and many people keep taking it for months, as agreed with their doctor, to help keep symptoms from coming back.",
+        "how_to_take": "Your prescription label says: {schedule}. Sertraline is usually taken once a day, with or without food. Taking it at about the same time each day can make it easier to remember. Your own label and leaflet are the instructions to follow.",
+        "missed_dose": "Patient leaflets for sertraline usually say: if you forget a dose, take it when you remember, unless it is nearly time for your next one, and do not take two doses together to make up for a missed one. Check your own leaflet, and talk to your doctor before making any change to how you take it.",
+        "side_effects": "Leaflets for sertraline list common side effects such as feeling sick, headaches, trouble sleeping, feeling sleepy, diarrhoea or a dry mouth. Many ease in the first few weeks. If a side effect worries you or does not go away, talk to your doctor or pharmacist. Leaflets also advise talking to your doctor before stopping.",
+        "alcohol": "Alcohol can make some side effects, such as feeling sleepy, stronger, and it can affect mood. Leaflets usually suggest avoiding or limiting alcohol, especially when you first start. Your pharmacist can tell you what applies to you."
+      }
+    },
+    {
+      "name": "Escitalopram",
+      "aliases": [
+        "escitalopram",
+        "lexapro",
+        "cipralex"
+      ],
+      "answers": {
+        "purpose": "Escitalopram is an antidepressant from a group of medicines called SSRIs. It is used for depression and some anxiety conditions. It usually takes a few weeks to feel the full effect, and many people keep taking it for months, as agreed with their doctor, to help keep symptoms from coming back.",
+        "how_to_take": "Your prescription label says: {schedule}. Escitalopram is usually taken once a day, with or without food. Taking it at about the same time each day can make it easier to remember. Your own label and leaflet are the instructions to follow.",
+        "missed_dose": "Patient leaflets for escitalopram usually say: if you forget a dose, take it when you remember, unless it is nearly time for your next one, and do not take two doses together to make up for a missed one. Check your own leaflet, and talk to your doctor before making any change to how you take it.",
+        "side_effects": "Leaflets for escitalopram list common side effects such as feeling sick, headaches, trouble sleeping, feeling sleepy, sweating or a dry mouth. Many ease in the first few weeks. If a side effect worries you or does not go away, talk to your doctor or pharmacist. Leaflets also advise talking to your doctor before stopping.",
+        "alcohol": "Alcohol can make some side effects, such as feeling sleepy, stronger, and it can affect mood. Leaflets usually suggest avoiding or limiting alcohol, especially when you first start. Your pharmacist can tell you what applies to you."
+      }
+    },
+    {
+      "name": "Fluoxetine",
+      "aliases": [
+        "fluoxetine",
+        "prozac"
+      ],
+      "answers": {
+        "purpose": "Fluoxetine is an antidepressant from a group of medicines called SSRIs. It is used for depression and some other conditions. It usually takes a few weeks to feel the full effect, and many people keep taking it for months, as agreed with their doctor, to help keep symptoms from coming back.",
+        "how_to_take": "Your prescription label says: {schedule}. Fluoxetine is usually taken once a day, with or without food, often in the morning. Taking it at about the same time each day can make it easier to remember. Your own label and leaflet are the instructions to follow.",
+        "missed_dose": "Patient leaflets for fluoxetine usually say: if you forget a dose, take it when you remember, unless it is nearly time for your next one, and do not take two doses together to make up for a missed one. Check your own leaflet, and talk to your doctor before making any change to how you take it.",
+        "side_effects": "Leaflets for fluoxetine list common side effects such as feeling sick, headaches, trouble sleeping, feeling restless, diarrhoea or a dry mouth. Many ease in the first few weeks. If a side effect worries you or does not go away, talk to your doctor or pharmacist. Leaflets also advise talking to your doctor before stopping.",
+        "alcohol": "Alcohol can make some side effects, such as feeling sleepy, stronger, and it can affect mood. Leaflets usually suggest avoiding or limiting alcohol, especially when you first start. Your pharmacist can tell you what applies to you."
+      }
+    }
+  ],
+  "advice_request": "I can't advise on changing your medication. Please talk to your doctor or pharmacist before making any change."
+}
