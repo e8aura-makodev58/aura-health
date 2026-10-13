@@ -265,6 +265,17 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — CodeBuddy — Claude review fixes applied (commit `9cee661`)
+All six points from Claude's review of `eb12169` addressed on `improve/feature-codebuddy`:
+1. **Removed `companionMock` and both fallbacks.** On any error (companion fetch or medication/ask), cards/answers are hidden. No built-in medication text anywhere.
+2. **Dose recording uses the app's existing submit path.** `window.auraSubmitEvent = submitEvent` exposed in `app.js`. `scheduled_time` reads `ctx.latestOccurredAt` (added to `auraAgentContext`), matching `current.view.latest_occurred_at`. "Recorded" shown only after `aura-input-committed` fires (server confirms). "Not yet" sends nothing. "Skipped" shows reason chips including "Prefer not to say"; each choice sends exactly one MISSED event.
+3. **Topic chips call `POST /patients/{id}/medication/ask` with `{run_id, topic_id}`** and display `answer` + `source_label`. `BLOCKED` status hides the answer.
+4. **Registered `companion.cjs` in `run.py`.** Removed `auraLandingInAutomation`; test opens patient view first. Port 8046 noted.
+5. **Missed-dose summary uses server-provided `missed_days`** from `adherence` (Codex will add it), not `recorded − taken`.
+6. **No abstention re-add on render** (removed entirely; server-driven via topics). **No polling interval** — uses `aura-record-view` only. **Suggestion footer** changed to "Only if it feels right today."
+
+Files: `aura_ui/companion.js` (rewritten), `aura_ui/app.js` (+3 lines: `auraSubmitEvent`, `latestOccurredAt`), `aura_ui/index.html` (+2 lines: "Prefer not to say" chip, footer text), `tests/browser/companion.cjs` (rewritten), `tests/browser/run.py` (+1 choice).
+- Lints clean. Browser tests not run (need running server + Codex's `/companion` endpoint). Ready for integration.
 ### 2026-10-13 — CodeBuddy — Patient companion UI built (spec §4)
 - Built the four patient-home companion cards per `docs/PATIENT_COMPANION_SPEC.md` §4 on `improve/feature-codebuddy` (`4147856`): Today's dose (Taken/Not yet/Skipped → reason chips: FORGOT, SIDE_EFFECTS, RAN_OUT, FELT_BETTER, OTHER per §3.2), My medication (card + topic chips + ask box + curated answers + abstention), Coming up (review/refill/appointment), A small idea for today (curated suggestion chips, optional, never about medication). Missed-dose items on the review/appointment page. Hidden when safety pathway active (§1.4). Builds against §3 API contract with mock fallback until Codex/Claude endpoints land. Works at 390px and 1280px.
 - Files: `aura_ui/companion.js` (new), `aura_ui/index.html`, `aura_ui/styles.css`, `aura_app/api.py` (one-line asset allowlist addition), `tests/browser/companion.cjs` (10 checks).
