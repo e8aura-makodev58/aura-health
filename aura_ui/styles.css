@@ -311,6 +311,7 @@ main {padding-inline:24px}
 .chart-status {font-size:.7rem;margin:8px 0 0}
 .chart-card svg {width:100%;height:auto;display:block;margin:8px 0}
 .chart-axis {font-size:15px;fill:var(--muted)}.chart-empty {font-size:14px;fill:var(--muted)}
+.finding-timeline-label {font-size:11px;fill:var(--muted)}
 .chart-grid {stroke:var(--line-soft);stroke-width:1}
 .chart-observed {fill:var(--accent-blue);opacity:.85}
 .chart-rolling {stroke:var(--accent-ink);stroke-width:2.5;fill:none}.chart-rolling-point {fill:var(--accent-ink)}
