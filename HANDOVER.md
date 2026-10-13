@@ -296,6 +296,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Plain wording in the patient note dialog
+- `dad3b35`: "I want to mention something" dialog now reads "What would you like AURA to know?", examples "An everyday note" / "A worrying message" / "A question for my doctor", "Send to AURA", one plain safety line and a made-up-details reminder. Technical/deployment disclosure removed from the dialog (still on the Disclaimer page via `privacy-notice`). Fixture values and hosted rules unchanged. SCRIPT.md updated; deck slide notes still say "Safety handoff fixture" (user edits the deck).
+- Verified: hosted runner suites PASS (dual_view, agent, workflows, impression, story_charts, cards, final_dash, final_dash_polish, plain_language, qa_display, welcome, landing, companion, milestone7, settings; tour 5/5 when run alone — it timed out when run last after 13 suites on one server). redesign.cjs still fails the pre-existing `#quiet-card` check. Live dialog checked on phone.
+
 ### 2026-10-13 — Claude — Safety example no longer leaves the visitor stuck
 - User: after "Show the safety example" the safety panel stayed with no way out. The panel staying is intended (patients can't dismiss it); `8ba5908` keeps the tour card open after the example, explains this, and offers "Reset the demo" (clears it) or "Keep exploring". Panel wording itself unchanged (safety content).
 - Verified: `tour.cjs` 5/5 PASS on a local hosted server (new TOUR5); live: card shows and Reset clears the panel. Deployed.
