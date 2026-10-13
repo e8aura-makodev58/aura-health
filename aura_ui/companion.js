@@ -1,47 +1,17 @@
 /* Patient companion UI — PATIENT_COMPANION_SPEC.md §4.
-   Presentation only. Builds against the §3 API contract with a mock
-   fallback until Codex's GET /companion endpoint lands.
-   Safety state always takes priority (spec §1.4). */
+   Presentation only. Requires Codex's GET /companion endpoint.
+   Safety state always takes priority (spec §1.4).
+   On any error the cards are hidden; no built-in medication text is shown. */
 "use strict";
 
-const companionMock = {
-  safety_normal: true,
-  medication: {
-    name: "Sertraline", schedule: "50 mg, once each morning",
-    known: true,
-    purpose: "Sertraline belongs to a group of medicines called SSRIs. It is used to treat depression and anxiety. It can take a few weeks to start working. Development content — needs pharmacist review.",
-    how_to_take: "Take it once each morning with water, with or without food. Swallow whole. Development content — needs pharmacist review.",
-    missed_dose: "If you forget a dose, take it as soon as you remember. If it is close to your next dose, skip the missed one. Do not take two doses together. Development content — needs pharmacist review.",
-    side_effects: "Common side effects may include feeling sick, dry mouth, or changes in sleep. These often settle. Tell your doctor if they persist. Development content — needs pharmacist review.",
-    alcohol: "It is best to avoid alcohol while taking this medicine. If you are unsure, check with your pharmacist or doctor. Development content — needs pharmacist review.",
-    topics: [
-      {id:"purpose", label:"What is it for?"},
-      {id:"how_to_take", label:"How do I take it?"},
-      {id:"missed_dose", label:"What if I miss a dose?"},
-      {id:"side_effects", label:"Common side effects"},
-      {id:"alcohol", label:"Alcohol"}
-    ],
-    content_status: "Development content — needs pharmacist review"
-  },
-  dose_today: {scheduled_time: "2026-03-11T08:00:00+00:00", status: null},
-  adherence: {window_days: 7, taken_days: 6, recorded_days: 7,
-    missed_reasons: [{reason: "SIDE_EFFECTS", label: "Side effects", count: 1}]},
-  coming_up: [
-    {kind: "MEDICATION_REVIEW", date: "2026-03-24", label: "Medication review with your doctor"},
-    {kind: "REFILL", date: "2026-03-19", label: "Refill estimated"},
-    {kind: "APPOINTMENT", date: "2026-03-24", label: "Next appointment"}
-  ],
-  suggestions: {
-    because: "You've been moving less than your usual since early March.",
-    options: [
-      {id:"short_walk", label:"A short walk outside"},
-      {id:"message_someone", label:"Message someone you trust"},
-      {id:"plan_session", label:"Plan a session with your therapist or counsellor"}
-    ]
-  }
-};
-
 const comingUpIcons = {MEDICATION_REVIEW:"▤", REFILL:"○", APPOINTMENT:"→"};
+
+function companionDateLabel(iso) {
+  try {
+    return new Intl.DateTimeFormat("en-GB",
+      {day:"numeric", month:"short", timeZone:"UTC"}).format(new Date(iso));
+  } catch { return iso; }
+}
 
 function renderCompanion(data) {
   const root = document.getElementById("companion-cards");
@@ -55,15 +25,17 @@ function renderCompanion(data) {
     document.getElementById("dose-detail").textContent =
       `${data.medication.name} · ${data.medication.schedule}`;
     const status = data.dose_today?.status;
-    const btns = doseCard.querySelectorAll(".dose-btn");
-    btns.forEach(btn => btn.setAttribute("aria-pressed",
-      String(btn.dataset.dose === status)));
+    for (const btn of doseCard.querySelectorAll(".dose-btn"))
+      btn.setAttribute("aria-pressed", String(btn.dataset.dose === status));
     document.getElementById("dose-reason").hidden = status !== "MISSED";
-    document.getElementById("dose-saved").textContent =
-      status ? `Recorded: ${status === "ACKNOWLEDGED" ? "Taken" : status === "MISSED" ? "Skipped" : "Not yet"}` : "";
+    // Clear any stale "Recorded" text from a prior interaction
+    document.getElementById("dose-saved").textContent = "";
+    // Reset reason chip selection on re-render
+    for (const chip of document.querySelectorAll(".reason-chip"))
+      chip.setAttribute("aria-pressed", "false");
   }
 
-  // My medication
+  // My medication — topic chips built once; abstention is server-driven
   const medCard = document.getElementById("medication-card");
   medCard.hidden = !data.medication;
   if (data.medication) {
@@ -73,13 +45,8 @@ function renderCompanion(data) {
     document.getElementById("medication-disclaimer").textContent = med.content_status || "";
     const chips = document.getElementById("topic-chips");
     chips.replaceChildren();
-    if (med.known === false) {
-      const abstain = document.createElement("p");
-      abstain.className = "medication-answer";
-      abstain.style.display = "block";
-      abstain.textContent = "I'm not able to identify that medication, please check with your pharmacist.";
-      medCard.append(abstain);
-    } else if (med.topics) {
+    // Server signals unknown medication by providing no topics
+    if (med.topics) {
       for (const topic of med.topics) {
         const chip = document.createElement("button");
         chip.className = "topic-chip";
@@ -89,6 +56,8 @@ function renderCompanion(data) {
         chips.append(chip);
       }
     }
+    // Hide any previous answer on re-render
+    document.getElementById("medication-answer").hidden = true;
   }
 
   // Coming up
@@ -143,51 +112,12 @@ function renderCompanion(data) {
   renderMissedDoses(data);
 }
 
-function companionDateLabel(iso) {
-  try {
-    return new Intl.DateTimeFormat("en-GB",
-      {day:"numeric", month:"short", timeZone:"UTC"}).format(new Date(iso));
-  } catch { return iso; }
-}
-
-let selectedTopic = null;
-function medicationTopic(topicId) {
-  const data = window.auraCompanionData;
-  if (!data?.medication) return;
-  selectedTopic = topicId;
-  for (const chip of document.querySelectorAll(".topic-chip")) {
-    chip.setAttribute("aria-pressed", String(chip.dataset.topicId === topicId));
-  }
-  const answerArea = document.getElementById("medication-answer");
-  answerArea.hidden = false;
-  document.getElementById("answer-text").textContent = data.medication[topicId] || "";
-  document.getElementById("answer-source").textContent =
-    "Approved medication information (development content)";
-}
-
-async function loadCompanion(patientId) {
-  try {
-    const response = await fetch(`/patients/${encodeURIComponent(patientId)}/companion`, {cache:"no-store"});
-    if (response.ok) {
-      const data = await response.json();
-      window.auraCompanionData = data;
-      renderCompanion(data);
-      return;
-    }
-  } catch { /* endpoint not ready yet — use mock */ }
-  // Mock fallback: synthetic data per spec §2
-  window.auraCompanionData = companionMock;
-  renderCompanion(companionMock);
-}
-
 function renderMissedDoses(data) {
   const section = document.getElementById("missed-dose-items");
   const adherence = data?.adherence;
-  if (!adherence || adherence.taken_days >= adherence.recorded_days) {
-    section.hidden = true;
-    return;
-  }
-  const missedCount = adherence.recorded_days - adherence.taken_days;
+  // Use server-provided missed_days (spec §3.1 adherence), not recorded − taken
+  const missedCount = adherence?.missed_days;
+  if (!adherence || !missedCount) { section.hidden = true; return; }
   section.hidden = false;
   const reasons = adherence.missed_reasons || [];
   const reasonText = reasons.length
@@ -204,89 +134,147 @@ function renderMissedDoses(data) {
   }
 }
 
-// Dose recording buttons
-document.addEventListener("click", async (event) => {
-  const doseBtn = event.target.closest("[data-dose]");
-  if (doseBtn) {
-    const status = doseBtn.dataset.dose;
-    const ctx = window.auraAgentContext?.() || {};
-    const patientId = ctx.patientId;
-    if (!patientId) return;
-    // Show reason chips if MISSED
-    document.getElementById("dose-reason").hidden = status !== "MISSED";
-    // Update button states
-    for (const btn of document.querySelectorAll(".dose-btn"))
-      btn.setAttribute("aria-pressed", String(btn === doseBtn));
-    document.getElementById("dose-saved").textContent =
-      status === "ACKNOWLEDGED" ? "Recorded: Taken" :
-      status === "MISSED" ? "Recorded: Skipped" : "Recorded: Not yet";
-    // Send event
-    try {
-      const at = new Date().toISOString();
-      await fetch(`/patients/${encodeURIComponent(patientId)}/events`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({event_type:"MEDICATION_EVENT", occurred_at:at, source:"patient",
-          payload:{scheduled_time:at, status}, correlation_id:window.auraUniqueId(),
-          idempotency_key:window.auraUniqueId(), event_id:window.auraUniqueId()})
-      });
-    } catch { /* offline — state already reflected in UI */ }
-    return;
-  }
-  const reasonBtn = event.target.closest("[data-reason]");
-  if (reasonBtn) {
-    const reason = reasonBtn.dataset.reason;
-    for (const btn of document.querySelectorAll(".reason-chip"))
-      btn.setAttribute("aria-pressed", String(btn === reasonBtn));
-    const ctx = window.auraAgentContext?.() || {};
-    const patientId = ctx.patientId;
-    if (!patientId) return;
-    try {
-      const at = new Date().toISOString();
-      await fetch(`/patients/${encodeURIComponent(patientId)}/events`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({event_type:"MEDICATION_EVENT", occurred_at:at, source:"patient",
-          payload:{scheduled_time:at, status:"MISSED", reason}, correlation_id:window.auraUniqueId(),
-          idempotency_key:window.auraUniqueId(), event_id:window.auraUniqueId()})
-      });
-    } catch { /* offline */ }
-    return;
-  }
-});
-
-// Medication ask
-document.addEventListener("click", async (event) => {
-  const askBtn = event.target.closest("#medication-ask-btn");
-  if (!askBtn) return;
-  const question = document.getElementById("medication-question").value.trim();
-  if (!question) return;
-  askBtn.disabled = true;
+// Topic chips call POST /patients/{id}/medication/ask with {run_id, topic_id}
+async function medicationTopic(topicId) {
+  for (const chip of document.querySelectorAll(".topic-chip"))
+    chip.setAttribute("aria-pressed", String(chip.dataset.topicId === topicId));
   const answerArea = document.getElementById("medication-answer");
-  answerArea.hidden = false;
+  const ctx = window.auraAgentContext?.();
+  if (!ctx?.patientId) return;
   try {
-    const ctx = window.auraAgentContext?.() || {};
+    const response = await fetch(`/patients/${encodeURIComponent(ctx.patientId)}/medication/ask`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({run_id: window.auraUniqueId(), topic_id: topicId})
+    });
+    if (!response.ok) throw new Error("Request failed");
+    const result = await response.json();
+    // BLOCKED means the safety gate stopped the answer — hide it
+    if (result.status === "BLOCKED") {
+      answerArea.hidden = true;
+      return;
+    }
+    answerArea.hidden = false;
+    document.getElementById("answer-text").textContent = result.answer || "";
+    document.getElementById("answer-source").textContent = result.source_label || "";
+  } catch {
+    // On error, hide the answer — never show built-in medication text
+    answerArea.hidden = true;
+  }
+}
+
+// Free-text ask (inside the <details> fold)
+async function medicationAsk(question) {
+  const ctx = window.auraAgentContext?.();
+  if (!ctx?.patientId) return;
+  const answerArea = document.getElementById("medication-answer");
+  try {
     const response = await fetch(`/patients/${encodeURIComponent(ctx.patientId)}/medication/ask`, {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({run_id: window.auraUniqueId(), question})
     });
-    if (response.ok) {
-      const result = await response.json();
-      document.getElementById("answer-text").textContent = result.answer;
-      document.getElementById("answer-source").textContent = result.source_label || "";
-    } else {
-      throw new Error("endpoint not ready");
-    }
+    if (!response.ok) throw new Error("Request failed");
+    const result = await response.json();
+    if (result.status === "BLOCKED") { answerArea.hidden = true; return; }
+    answerArea.hidden = false;
+    document.getElementById("answer-text").textContent = result.answer || "";
+    document.getElementById("answer-source").textContent = result.source_label || "";
   } catch {
-    // Mock abstention: safety gate first, then topic classifier
-    document.getElementById("answer-text").textContent =
-      "I'm not able to answer that here, please check with your pharmacist or doctor.";
-    document.getElementById("answer-source").textContent =
-      "Development content — needs pharmacist review";
-  } finally {
-    askBtn.disabled = false;
+    answerArea.hidden = true;
+  }
+}
+
+async function loadCompanion(patientId) {
+  const root = document.getElementById("companion-cards");
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patientId)}/companion`, {cache:"no-store"});
+    if (!response.ok) throw new Error("Companion unavailable");
+    const data = await response.json();
+    window.auraCompanionData = data;
+    renderCompanion(data);
+  } catch {
+    // On any error, hide the cards — never show built-in medication text
+    root.hidden = true;
+  }
+}
+
+// Dose recording — uses the app's existing submit path (window.auraSubmitEvent)
+// scheduled_time = current.view.latest_occurred_at, matching the existing
+// medication buttons in app.js. "Recorded" shown only after server confirms
+// (aura-input-committed event fires only on success). "Not yet" sends nothing.
+// Each reason choice sends exactly one MISSED event (with reason when chosen).
+function recordDose(status, reason) {
+  if (status === "UNKNOWN") return; // "Not yet" sends nothing
+  const submit = window.auraSubmitEvent;
+  if (!submit) return;
+  const payload = {scheduled_time: doseScheduledTime(), status};
+  if (status === "MISSED" && reason && reason !== "PREFER_NOT_TO_SAY") payload.reason = reason;
+  document.getElementById("dose-saved").textContent = "Recording…";
+  let committed = false;
+  // One-shot listener: aura-input-committed fires only when the server confirms.
+  const handler = () => {
+    committed = true;
+    const label = status === "ACKNOWLEDGED" ? "Taken" : "Skipped";
+    document.getElementById("dose-saved").textContent = `Recorded: ${label}`;
+  };
+  window.addEventListener("aura-input-committed", handler, {once: true});
+  // submitEvent may return early (busy/pending) without committing — clean up
+  submit("MEDICATION_EVENT", payload).finally(() => {
+    window.removeEventListener("aura-input-committed", handler);
+    // If not committed, clear the "Recording…" text
+    if (!committed) document.getElementById("dose-saved").textContent = "";
+  });
+}
+
+function doseScheduledTime() {
+  const ctx = window.auraAgentContext?.();
+  // Match the existing medication buttons: use latest_occurred_at for fixture patients
+  return ctx?.latestOccurredAt || new Date().toISOString();
+}
+
+document.addEventListener("click", (event) => {
+  const doseBtn = event.target.closest("[data-dose]");
+  if (doseBtn) {
+    const status = doseBtn.dataset.dose;
+    // Update button visual state immediately
+    for (const btn of document.querySelectorAll(".dose-btn"))
+      btn.setAttribute("aria-pressed", String(btn === doseBtn));
+    // Show reason chips if MISSED; hide otherwise
+    document.getElementById("dose-reason").hidden = status !== "MISSED";
+    // Reset reason chip selection
+    for (const chip of document.querySelectorAll(".reason-chip"))
+      chip.setAttribute("aria-pressed", "false");
+    if (status === "UNKNOWN") {
+      document.getElementById("dose-saved").textContent = "";
+      return; // "Not yet" sends nothing
+    }
+    if (status === "ACKNOWLEDGED") {
+      recordDose(status);
+    }
+    // MISSED: wait for a reason chip click before sending
+    return;
+  }
+
+  const reasonBtn = event.target.closest("[data-reason]");
+  if (reasonBtn) {
+    const reason = reasonBtn.dataset.reason;
+    for (const chip of document.querySelectorAll(".reason-chip"))
+      chip.setAttribute("aria-pressed", String(chip === reasonBtn));
+    // Each choice sends exactly one MISSED event (with reason when chosen)
+    recordDose("MISSED", reason);
+    return;
+  }
+
+  const askBtn = event.target.closest("#medication-ask-btn");
+  if (askBtn) {
+    const question = document.getElementById("medication-question").value.trim();
+    if (!question) return;
+    askBtn.disabled = true;
+    medicationAsk(question).finally(() => { askBtn.disabled = false; });
+    return;
   }
 });
 
-// Hook into the existing render cycle
+// Hook into the existing render cycle — no polling interval
 document.addEventListener("aura-record-view", () => {
   const ctx = window.auraAgentContext?.();
   if (!ctx?.patientId || ctx.role !== "patient") {
@@ -300,15 +288,4 @@ document.addEventListener("aura-record-view", () => {
     return;
   }
   loadCompanion(ctx.patientId);
-});
-
-// Also load when patient view first renders
-window.addEventListener("load", () => {
-  const checkReady = setInterval(() => {
-    const ctx = window.auraAgentContext?.();
-    if (ctx?.patientId && ctx.role === "patient" && ctx.record) {
-      clearInterval(checkReady);
-      loadCompanion(ctx.patientId);
-    }
-  }, 500);
 });

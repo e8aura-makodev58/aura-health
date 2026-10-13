@@ -13,7 +13,8 @@ let patientId = null, catalog = [], current = null, communication = null;
 let epoch = 0, busy = false, pending = null, offline = false, dialogKind = "text", lastCheckin = null;
 let hosted = false, presentationRole = "patient";
 window.auraAgentContext = () => ({patientId, record: current?.evidence,
-  revision: current?.view.latest_event_id, offline: offline || Boolean(pending), role: presentationRole});
+  revision: current?.view.latest_event_id, offline: offline || Boolean(pending), role: presentationRole,
+  latestOccurredAt: current?.view?.latest_occurred_at});
 const selections = new Set();
 let plainTerms={patient:[],clinician:[]};
 fetch('/assets/plain_terms.json').then(r=>r.json()).then(terms=>{plainTerms=terms;if(current)render();}).catch(()=>{});
@@ -347,6 +348,8 @@ async function submitEvent(type, payload, special = false) {
   pending = {path:`/patients/${encodeURIComponent(patientId)}/${special ? "context-explanations" : "events"}`, body};
   await sendPending();
 }
+// Exposed for companion.js dose recording — uses the same path, idempotency and refresh cycle.
+window.auraSubmitEvent = submitEvent;
 async function sendPending() {
   if (busy || !pending) return; busy = true; toggleBusy(true);
   try {
