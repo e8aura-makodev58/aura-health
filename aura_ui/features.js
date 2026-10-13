@@ -123,7 +123,15 @@
   for(const entry of [byId('workspace-review'),byId('workspace-safety'),byId('recorded-details')])detailsGroup.append(entry);
   patterns.append(evidenceGroup,contextGroup,detailsGroup);
   // Existing IDs remain, but extra nested '+' sections become ordinary inspectable sections.
-  function simplify(){for(const d of patterns.querySelectorAll('details')){if(d.closest('[data-technical]')||d.classList.contains('workspace-disclosure')||d.classList.contains('other-measurements')||d.classList.contains('more-changes'))continue;const section=el('section',null,d.className);if(d.id)section.id=d.id;for(const child of [...d.childNodes]){if(child.tagName==='SUMMARY'){const heading=el('h3',child.textContent);section.append(heading);}else section.append(child);}d.replaceWith(section);}}
+  // Keep the summary's parts apart: title as the heading, status labels and captions on one line below.
+  function summaryHeading(summary,details){
+    const parts=[];const collect=n=>{for(const c of n.childNodes){if(c.nodeType===1&&c.classList.contains('signal-meta'))collect(c);else{const t=c.textContent.trim();if(t&&!(c.nodeType===1&&c.getAttribute('aria-hidden')==='true'))parts.push(t);}}};
+    collect(summary);const [title,...rest]=parts;
+    const bodyText=new Set([...details.querySelectorAll(':scope>.details-body>p')].map(p=>p.textContent.trim()));
+    const meta=rest.filter(t=>!bodyText.has(t));
+    return meta.length?[el('h3',title||''),el('p',meta.join(' · '),'fine section-meta')]:[el('h3',title||'')];
+  }
+  function simplify(){for(const d of patterns.querySelectorAll('details')){if(d.closest('[data-technical]')||d.classList.contains('workspace-disclosure')||d.classList.contains('other-measurements')||d.classList.contains('more-changes'))continue;const section=el('section',null,d.className);if(d.id)section.id=d.id;for(const child of [...d.childNodes]){if(child.tagName==='SUMMARY')section.append(...summaryHeading(child,d));else section.append(child);}d.replaceWith(section);}}
   simplify();window.addEventListener('aura-record-view',simplify);
   function disclosureCounts(){
     const record=window.auraAgentContext().record;if(!record)return;

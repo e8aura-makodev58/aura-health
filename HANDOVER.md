@@ -237,6 +237,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Clinician sections: run-together headings fixed (user-reported)
+- User: clinician "Sources, references…" text was connected ("Sleep durationData availableUsual establishedNo change flagged…"). Cause: `simplify()` in `aura_ui/features.js` (pre-dates CodeBuddy) flattens nested `<details>` into sections and used `summary.textContent` as the heading. Now the title is the `h3` and labels/captions go on one `.section-meta` line joined with " · " (captions repeating the body text are dropped). Applies to signal cards, timeline, held/context sections.
+- Verified: hosted browser suites milestone7, final-dash, final-dash-polish, plain-language, dual-view, workflows, impression, story-charts PASS; deployed; live screenshots at 1280 and 390 px read "Sleep duration" / "Data available · Usual established".
 ### 2026-10-12 — Claude — Reviewed, merged and deployed CodeBuddy UI redesign (`improve/UI_UX`)
 - User: "merge to main then build and deploy"; approved illustration size budget up to 500 KB. Review: only allowed paths changed; safety panel wording/position, help button and "Not sent" intact; no Headspace assets; Miora WebP illustrations (100–245 KB, replacing CodeBuddy's earlier SVG placeholders). Fast-forwarded `main` to `96022ec`.
 - Fixes on top: `agent.js` recap placeholder is null-safe (it broke `cards.cjs`: patient recap never rendered when the element is absent); greeting uses the current time (not the record time), drops "Winding down", and moves to its own line `#home-greeting` above the heading (agent.js resets the heading on every recap, so the greeting never showed); media README/SOW size budget 500 KB; `test_ui_media.py` uses `aura-mark.svg` (`calm-sun.svg` was deleted).
