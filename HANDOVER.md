@@ -272,6 +272,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Companion deployed; safety refresh fix after typed medication questions
+- Deployed `6c4e265` (user: "proceed to deploy"). Live: `/companion` for demo-B-7 returns Sertraline, refill + review, suggestion; patient cards render at 390/1280 with no page errors; "Is it ok to have a glass of wine with dinner?" → curated alcohol answer; Taken saves ("Recorded: Taken").
+- Found live: "Should I double my dose this week?" is (correctly) flagged by the live safety detector and the safety state moves on, but the page did not reload, so the safety panel did not appear and the cards stayed. Fix: `companion.js` reloads the record after every typed medication question. Live recheck: safety panel "Safety policy takes priority" visible, companion cards hidden. Note for demos: dose-change questions engage the safety pathway by design; use topic chips or ordinary questions.
 ### 2026-10-13 — Claude — Integrated the patient companion (Codex → Claude → CodeBuddy) into `main`
 - Reviewed Codex `8b4a0c6` (companion endpoint, exact medication payload validation in all three gates, additive migration, synthetic Sertraline prescription; no appointment item without a booked appointment — accepted). Merged `improve/feature-codex`, `improve/feature-claude`, `improve/feature-codebuddy` in that order; only `HANDOVER.md` conflicted (both sides kept).
 - Integration fixes: `adherence.missed_days` added to `GET /companion` (PC5 updated); `companion.js` listened for `aura-record-view` on `document` but the app dispatches on `window`, so the cards never loaded — fixed; unknown medication shows the exact abstention line up front instead of topic chips; missed-dose wording ("1 missed dose in the last 7 days… What got in the way: forgot"); `companion.cjs` continues past the breathing welcome.

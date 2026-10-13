@@ -176,7 +176,11 @@ async function medicationAsk(question) {
     });
     if (!response.ok) throw new Error("Request failed");
     const result = await response.json();
+    // A typed question is saved and safety-checked like any patient text: reload the
+    // record so a changed safety state (panel, hidden cards) shows at once.
+    if (typeof refresh === "function") { try { await refresh(); } catch { /* existing offline handling */ } }
     if (result.status === "BLOCKED") { answerArea.hidden = true; return; }
+    document.getElementById("medication-question").value = "";
     answerArea.hidden = false;
     document.getElementById("answer-text").textContent = result.answer || "";
     document.getElementById("answer-source").textContent = result.source_label || "";
