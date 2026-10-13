@@ -45,7 +45,15 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   await page.locator('.tour-back').click();await ready(page);await page.locator('.tour-next').click();await ready(page);
   assert.equal(await step(page),2);assert.equal(doses.length,1,'Back/Next did not record another dose');
   console.log('TOUR1_START_HELP_VISIBLE_ONE_DOSE_BACK_SAFE PASS');
-  for(let index=3;index<9;index++){await page.locator('.tour-next').click();await ready(page);assert.equal(await step(page),index);}
+  for(let index=3;index<9;index++){
+   await page.locator('.tour-next').click();await ready(page);assert.equal(await step(page),index);
+   if(index===7){ // no model locally, so the agent falls back: a visible, user-chosen "Ask again" is offered
+    assert.match(await page.locator('.tour-status').innerText(),/couldn't complete this answer/);
+    await page.locator('.tour-retry').click();await ready(page);
+    assert.match(await page.locator('.tour-status').innerText(),/couldn't complete this answer/);
+    assert.equal(await step(page),7);
+   }
+  }
   assert.match(await page.locator('.tour-chapter').innerText(),/When things change · 9 of 9/);
   assert.match(await page.locator('.tour-status').innerText(),/reflects the flu/);
   await page.locator('.tour-next').click();

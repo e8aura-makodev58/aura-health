@@ -73,13 +73,15 @@
      target: () => document.querySelector(".record-questions") || $("agent-record_qa"),
      action: async run => {
        $("agent-question-text").value = QUESTION;
+       $("agent-record_qa").replaceChildren(); // wait for this answer, not an earlier one
        document.querySelector(".question-submit")?.click();
        const done = await wait(() => document.querySelector("#agent-record_qa .investigation-trail, #agent-record_qa .agent-claim")
          || /unavailable|could not|paused/i.test($("agent-record_qa")?.textContent || ""), 120000, run);
        if (!done) return "AURA couldn't complete this answer in time. You can still continue.";
        const checked = /AI-written/.test(document.querySelector("#agent-record_qa .agent-disclosure")?.textContent || "");
-       return checked ? "It chose what to read, then a second check reviewed every statement. See How AURA looked."
-                      : "AURA couldn't complete this answer; here are the related records it found.";
+       if (checked) return "It chose what to read, then a second check reviewed every statement. See How AURA looked.";
+       tour.retry = true; // visible, user-chosen retry only; never automatic
+       return "AURA couldn't complete this answer; here are the related records it found. You can ask again, or continue.";
      }},
     {chapter: "When things change", title: "When life changes", text: "Three days of flu, simulated. AURA describes what changed in this person's own records.",
      enter: async () => { patientHome(); await wait(() => visible($("month-recap")), 20000); },
@@ -186,6 +188,7 @@
     ui.chapter.textContent = `${step.chapter} · ${index + 1} of ${STEPS.length}`;
     ui.title.textContent = step.title; ui.text.textContent = step.text;
     ui.status.textContent = ""; ui.next.textContent = index === STEPS.length - 1 ? "Finish" : "Next →"; ui.next.disabled = true;
+    ui.card.querySelector(".tour-retry")?.remove(); tour.retry = false;
     try { await step.enter(); } catch { /* still show the step */ }
     if (!tour || tour.run !== run || tour.index !== index) return;
     spotlight(step.target());
@@ -199,7 +202,24 @@
       spotlight(step.target());
     }
     ui.status.textContent = tour.messages[index] || "";
+    showRetry(index, run);
     ui.next.disabled = false; ui.next.focus({preventScroll: true});
+  }
+
+  function showRetry(index, run) {
+    tour.ui.card.querySelector(".tour-retry")?.remove();
+    if (!tour.retry || !STEPS[index].action) return;
+    tour.retry = false;
+    const again = el("button", "tour-retry", "Ask again");
+    again.addEventListener("click", async () => {
+      again.disabled = true; tour.ui.next.disabled = true; tour.ui.status.textContent = "Asking again…";
+      let message;
+      try { message = await STEPS[index].action(run); } catch { message = "This part isn't available just now. You can still continue."; }
+      if (!tour || tour.run !== run || tour.index !== index) return;
+      tour.messages[index] = message; tour.ui.status.textContent = message; again.remove();
+      showRetry(index, run); spotlight(STEPS[index].target()); tour.ui.next.disabled = false;
+    });
+    tour.ui.card.querySelector(".tour-actions").prepend(again);
   }
 
   // Spotlight: a static outline around the target and a gentle dimming everywhere else.
