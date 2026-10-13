@@ -17,7 +17,7 @@ from fastapi.responses import JSONResponse
 
 from aura_communication.config import load_config
 from aura_communication.provider import ProviderUnavailable
-from aura_communication.vendor import PROVIDERS, VendorProvider
+from aura_communication.vendor import PROVIDERS, REASONING_LEVELS, VendorProvider
 from .models import AppError
 
 
@@ -86,7 +86,9 @@ class SystemSettings:
 
     def snapshot(self):
         with self.lock:
-            return {**deepcopy(self.state),"synthetic_only":True,
+            state=deepcopy(self.state)
+            for entry in state["models"].values(): entry.setdefault("reasoning","medium")
+            return {**state,"synthetic_only":True,"reasoning_levels":list(REASONING_LEVELS),
                 "providers":[{"id":key,"label":value["label"],"credential_configured":bool(self.keys.get(key)),
                               "variants":list(value["endpoints"])} for key,value in PROVIDERS.items()]}
 
@@ -94,7 +96,7 @@ class SystemSettings:
         with self.lock:
             key=self.state["provider"]; model=self.state["models"][key]["model"]
             return {"synthetic_only":True,"live_enabled":bool(self.state["enabled"] and self.keys.get(key) and model),
-                    "provider":PROVIDERS[key]["label"],"model":model,
+                    "provider":PROVIDERS[key]["label"],"model":model,"reasoning":self.state["models"][key].get("reasoning","medium"),
                     "institutional_deployment":"Future intent: institution-managed on-premises or private-cloud model; not validated deployment."}
 
     def credential(self,body):
@@ -119,21 +121,26 @@ class SystemSettings:
         self._write("provider-settings.json",state); self.state=state
 
     def update(self,body):
-        self._exact(body,{"provider","model","variant","enabled"}); key=self._provider(body["provider"])
+        if not isinstance(body,dict) or not {"provider","model","variant","enabled"}<=set(body)<={"provider","model","variant","enabled","reasoning"}:
+            raise AppError("INVALID_SETTINGS","Invalid settings fields")
+        key=self._provider(body["provider"])
         model=body["model"]; variant=body["variant"]
+        reasoning=body.get("reasoning",self.state["models"].get(key,{}).get("reasoning","medium"))
+        if reasoning not in REASONING_LEVELS:
+            raise AppError("INVALID_SETTINGS","Select a valid reasoning level")
         if not isinstance(model,str) or not re.fullmatch(r"[A-Za-z0-9_.:/~@+-]{1,160}",model):
             raise AppError("INVALID_SETTINGS","Enter the provider's text-model ID")
         if not isinstance(variant,str) or variant not in PROVIDERS[key]["endpoints"] or type(body["enabled"]) is not bool:
             raise AppError("INVALID_SETTINGS","Select a valid endpoint and enablement option")
         with self.lock:
             if body["enabled"] and not self.keys.get(key): raise AppError("INVALID_SETTINGS","Save an API key before enabling live wording")
-            models={**self.state["models"],key:{"model":model,"variant":variant}}
+            models={**self.state["models"],key:{"model":model,"variant":variant,"reasoning":reasoning}}
             self._revise(provider=key,models=models,enabled=body["enabled"])
             return self.snapshot()
 
     def _options(self,provider=None):
         key=provider or self.state["provider"]; entry=self.state["models"][key]
-        return key,entry["model"],self.keys.get(key,""),entry["variant"],self.state["revision"]
+        return key,entry["model"],self.keys.get(key,""),entry["variant"],self.state["revision"],entry.get("reasoning","medium")
 
     def reserve(self):
         with self.lock:
@@ -182,7 +189,7 @@ class SyntheticSettingsProvider:
     @property
     def model_id(self):
         with self.settings.lock:
-            key,model,secret,_variant,revision=self.settings._options()
+            key,model,secret,_variant,revision,_reasoning=self.settings._options()
             return f"{key}:{model}@{revision}" if self.settings.state["enabled"] and secret and model else f"disabled@{revision}"
 
     def generate(self,contract):
@@ -213,7 +220,7 @@ class SyntheticAgentProvider(SyntheticSettingsProvider):
         self.settings.reserve()
         from dataclasses import replace
         config = replace(self.settings.config, provider_timeout_seconds=self.agent_config.provider_timeout_seconds)
-        return VendorProvider(*options[:3], variant=options[3], config=config,
+        return VendorProvider(*options[:3], variant=options[3], config=config, reasoning=options[5],
                               transport=self.settings.transport).agent_step(messages, tools)
 
 

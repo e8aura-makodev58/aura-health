@@ -15,7 +15,7 @@ async function main(){
     assert.equal(route.request().headers().authorization,'Bearer synthetic-operator-token');
     if(action==='credential')state.providers.find(row=>row.id===body.provider).credential_configured=true;
     if(action==='remove-key')state.providers.find(row=>row.id===body.provider).credential_configured=false;
-    if(action==='save'){state.provider=body.provider;state.enabled=body.enabled;state.models[body.provider]={model:body.model,variant:body.variant};}
+    if(action==='save'){state.provider=body.provider;state.enabled=body.enabled;state.models[body.provider]={model:body.model,variant:body.variant,reasoning:body.reasoning};}
     await route.fulfill({json:action==='models'?{models:['fixture-text'],status:'READY'}:state});
   });
   try{
@@ -27,16 +27,21 @@ async function main(){
     await page.locator('#settings-key').fill('synthetic-key-not-real');await page.locator('#settings-save-key').click();
     await page.waitForFunction(()=>document.getElementById('settings-feedback').textContent.startsWith('Key saved'));
     assert.equal(await page.locator('#settings-key').inputValue(),'');
-    await page.locator('#settings-discover').click();await page.waitForFunction(()=>document.getElementById('settings-models').children.length===1);
-    await page.locator('#settings-model').fill('fixture-text');await page.locator('#settings-save').click();
+    // The model list fills itself from the provider once a key exists; picking one fills the exact ID.
+    await page.waitForFunction(()=>[...document.getElementById('settings-model-list').options].some(o=>o.value==='fixture-text'));
+    assert.equal(await page.locator('#settings-reasoning').inputValue(),'medium');
+    await page.locator('#settings-model-list').selectOption('fixture-text');assert.equal(await page.locator('#settings-model').inputValue(),'fixture-text');
+    await page.locator('#settings-reasoning').selectOption('high');
+    await page.locator('#settings-discover').click();await page.waitForFunction(()=>document.getElementById('settings-feedback').textContent.startsWith('Model list refreshed'));
+    await page.locator('#settings-save').click();
     await page.waitForFunction(()=>document.getElementById('settings-feedback').textContent.startsWith('Provider settings saved'));
-    assert.equal(state.models.tencent.model,'fixture-text');assert.equal(state.enabled,false);
+    assert.equal(state.models.tencent.model,'fixture-text');assert.equal(state.models.tencent.reasoning,'high');assert.equal(state.enabled,false);
     for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await page.locator('#close-settings').isVisible(),true);}
     await page.locator('#settings-lock').click();assert.equal(await page.locator('#settings-editor').isHidden(),true);assert.equal(await page.locator('#settings-admin').inputValue(),'');
     assert.deepEqual(await page.evaluate(()=>({local:localStorage.length,session:sessionStorage.length})),{local:0,session:0});
     await page.locator('#close-settings').click();assert.equal(await page.locator('#settings-dialog').isVisible(),false);
-    assert.deepEqual(calls,['read','credential','models','save']);assert.deepEqual(errors,[]);
-    console.log('SETTINGS_UI PASS: unlock, four providers, Tencent regions, write-only key, discovery, save, lock, 320/390/1280 widths; no paid calls');
+    assert.deepEqual(calls.filter(a=>a!=='models'),['read','credential','save']);assert.ok(calls.filter(a=>a==='models').length>=2,'models listed automatically and on refresh');assert.deepEqual(errors,[]);
+    console.log('SETTINGS_UI PASS: unlock, four providers, Tencent regions, write-only key, auto model list, reasoning level, save, lock, 320/390/1280 widths; no paid calls');
   }finally{await browser.close();}
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

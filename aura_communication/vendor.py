@@ -18,6 +18,10 @@ PROVIDERS = {
 }
 
 
+# Operator-selected reasoning level for agent calls. "none" keeps the fastest behaviour.
+REASONING_LEVELS = ("none", "low", "medium", "high")
+
+
 def _output_kind(result):
     """Short non-sensitive label for an unusable provider reply."""
     try:
@@ -35,8 +39,9 @@ def _output_kind(result):
 
 
 class VendorProvider:
-    def __init__(self, provider, model, api_key, *, variant=None, config=None, transport=None):
+    def __init__(self, provider, model, api_key, *, variant=None, config=None, transport=None, reasoning="none"):
         self.provider, self.model = provider, model
+        self.reasoning = reasoning if reasoning in REASONING_LEVELS else "none"
         self.base = PROVIDERS[provider]["endpoints"][variant or next(iter(PROVIDERS[provider]["endpoints"]))]
         self.model_id = f"{provider}:{model}"
         self._key, self.config, self._transport = api_key, config or load_config(), transport
@@ -111,13 +116,17 @@ class VendorProvider:
             if not any("json" in str(m.get("content") or "").lower() for m in messages):
                 payload["messages"] = [dict(messages[0], content=str(messages[0].get("content") or "") + "\nReturn plain JSON only."), *messages[1:]]
         if self.provider=='deepseek':
-            payload['thinking']={'type':'disabled'}
+            payload['thinking']={'type':'disabled' if self.reasoning=='none' else 'enabled'}
             # Stable endpoint: local strict validation remains authoritative.
             if tools:payload['tools']=[{'type':spec['type'],'function':{key:value for key,value in spec['function'].items() if key!='strict'}} for spec in tools]
+        # Reasoning tokens share the output budget, so allow more when reasoning is on.
+        budget = 4096 if self.reasoning == "none" else 16384
         if self.provider == "openai":
-            payload.update(max_completion_tokens=4096, store=False, reasoning_effort="none")
+            payload.update(max_completion_tokens=budget, store=False, reasoning_effort=self.reasoning)
         else:
-            payload.update(max_tokens=4096)
+            payload.update(max_tokens=budget)
+            if self.provider == "openrouter" and self.reasoning != "none":
+                payload["reasoning"] = {"effort": self.reasoning}
         result = self._request("POST", "/chat/completions", payload)
         try:
             choice = result["choices"][0]
