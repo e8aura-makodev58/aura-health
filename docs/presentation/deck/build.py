@@ -190,20 +190,8 @@ def slides():
           </div>
         </div>
       </div>""")))
-    # 7 Something changes
-    s.append(("something-changes", 5, page(f"""
-      <div class='content'><div class='row' style='gap:56px'>
-        <div class='col' style='width:600px'>
-          <div class='kicker'>Something changes</div>
-          <h2>A simulated three-day flu</h2>
-          <p class='cap'>AURA notices resting heart rate is higher than in the person's <b>recent</b> records, and says exactly that: a recent change, not a change from their usual.</p>
-          <p class='cap'>When a change shows up, it offers <b>a small idea for today</b>. Optional, never about medication.</p>
-        </div>
-        {phone('s05a-after-flu-phone', 320)}
-        <div class='col' style='margin-top:120px'>{card('s05b-suggestion', 470)}</div>
-      </div></div>""")))
-    # 8 Appointment
-    s.append(("appointment", 6, page(f"""
+    # 7 Appointment
+    s.append(("appointment", 5, page(f"""
       <div class='content'><div class='row' style='gap:70px'>
         <div class='col' style='width:720px'>
           <div class='kicker'>Ready for the appointment</div>
@@ -214,8 +202,8 @@ def slides():
         </div>
         {phone('s06a-appointment-phone', 330)}
       </div></div>""")))
-    # 9 Clinician + agent
-    s.append(("clinician-agent", 7, page(f"""
+    # 8 Clinician + agent
+    s.append(("clinician-agent", 6, page(f"""
       <div class='content'>
         <div class='kicker'>What the clinician sees · the agent at work</div>
         <h2 style='font-size:50px'>It decides what to look at, cites every statement, and is checked</h2>
@@ -225,24 +213,38 @@ def slides():
             <p class='cap'>What changed and when, with exact values and sources.</p>
           </div>
           <div class='col' style='width:1080px'>
-            <div class='desk' style='height:400px'><img src='{SHOT}s07b-qa-trail-desktop.png' style='width:1060px' alt=''></div>
-            <div class='callout' style='position:static'><b>How AURA looked</b>: which records it read, then “A second check reviewed 10 statements; 1 removed as unsupported”. It can only read; it never changes the record or the treatment.</div>
+            <div class='desk' style='height:440px'><img src='{SHOT}s07b-qa-trail-desktop.png' style='width:1060px' alt=''></div>
+            <div class='callout' style='position:static'><b>How AURA looked</b>: which records it read, then “A second check reviewed 3 statements; all supported”. It can only read; it never changes the record or the treatment.</div>
           </div>
         </div>
       </div>""")))
+    # 9 Something changes (story order: after the clinician)
+    s.append(("something-changes", 7, page(f"""
+      <div class='content'><div class='row' style='gap:56px'>
+        <div class='col' style='width:600px'>
+          <div class='kicker'>Something changes</div>
+          <h2>A simulated three-day flu</h2>
+          <p class='cap'>AURA notices resting heart rate is higher than in the person's <b>recent</b> records, and says exactly that: a recent change, not a change from their usual.</p>
+          <p class='cap'>When a change shows up, it offers <b>a small idea for today</b>. Optional, never about medication.</p>
+        </div>
+        {phone('s05a-after-flu-phone', 320)}
+        <div class='col' style='margin-top:120px'>{card('s05b-suggestion', 470)}</div>
+      </div></div>""")))
     # 10 Safety
     s.append(("safety-first", 8, page(f"""
-      <div class='content'><div class='row' style='gap:80px'>
-        <div class='col' style='width:900px'>
+      <div class='content'><div class='row' style='gap:56px'>
+        <div class='col' style='width:820px'>
           <div class='kicker'>Safety first</div>
           <h2>Anything a patient types is safety-checked first</h2>
           <div class='points'>
-            {point('coral', 'If there is a concern, fixed safety resources take over the screen and the AI steps back.')}
-            {point('sunny', 'Those messages are never AI-written.')}
-            {point('lilac', 'Asking to double a dose goes to safety, not to an answer.')}
+            {point('coral', 'If there is a concern, fixed safety resources take over the screen and the AI steps back. They are never AI-written.')}
+            {point('sunny', "The patient can't dismiss them. The clinician sees the same safety state when they open the record.")}
+            {point('lilac', 'No alerts are sent in this prototype: who is told, and how fast, is for the care team to decide.')}
+            {point('leaf', 'Asking to double a dose goes to safety, not to an answer.')}
           </div>
         </div>
-        {phone('s08-safety-phone', 330)}
+        <div class='col' style='align-items:center'>{phone('s08a-note-masked-phone', 300)}<span class='cap'>The example, masked</span></div>
+        <div class='col' style='align-items:center'>{phone('s08-safety-phone', 300)}<span class='cap'>Safety takes over</span></div>
       </div></div>""")))
     # 11-12 diagrams full bleed
     s.append(("architecture", 9, page(f"<img class='full' src='{DIAG}system-overview.png' alt=''>", brand=False, foot=False)))

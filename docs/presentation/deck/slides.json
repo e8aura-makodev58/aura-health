@@ -21,13 +21,13 @@
     "slide": 4,
     "file": "04-what-aura-does.html",
     "scene": 3,
-    "notes": "Scene 3 · A calm start — 0:55–1:35\n\n[Screen: landing → See the patient's day → \"Take a breath\" → Continue → summary.]\n\n\"AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts the system has checked: sleep time later than usual since late February, and how the person has been checking in. It quietly reads everyday wearable data and compares it with this person's usual, not a population average.\""
+    "notes": "Scene 3 · A calm start — 0:55–1:35\n\n[Screen: landing → Play the 3-minute story → Start (the in-app guided story; each step highlights one thing and AURA does the tapping) → \"Take a breath\" → summary.]\n\n\"AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts the system has checked: sleep time later than usual since late February, and how the person has been checking in. It quietly reads everyday wearable data and compares it with this person's usual, not a population average.\""
   },
   {
     "slide": 5,
     "file": "05-calm-start.html",
     "scene": 3,
-    "notes": "(Continues scene 3.)\n\nScene 3 · A calm start — 0:55–1:35\n\n[Screen: landing → See the patient's day → \"Take a breath\" → Continue → summary.]\n\n\"AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts the system has checked: sleep time later than usual since late February, and how the person has been checking in. It quietly reads everyday wearable data and compares it with this person's usual, not a population average.\""
+    "notes": "(Continues scene 3.)\n\nScene 3 · A calm start — 0:55–1:35\n\n[Screen: landing → Play the 3-minute story → Start (the in-app guided story; each step highlights one thing and AURA does the tapping) → \"Take a breath\" → summary.]\n\n\"AURA starts with a breath, not a dashboard. Then one short summary, written by AI from facts the system has checked: sleep time later than usual since late February, and how the person has been checking in. It quietly reads everyday wearable data and compares it with this person's usual, not a population average.\""
   },
   {
     "slide": 6,
@@ -37,27 +37,27 @@
   },
   {
     "slide": 7,
-    "file": "07-something-changes.html",
+    "file": "07-appointment.html",
     "scene": 5,
-    "notes": "Scene 5 · Something changes — 2:35–3:15\n\n[Screen: Demo guide → Simulate: flu 3 days → back to the patient home.]\n\n\"Now a flu, simulated over three days. AURA notices resting heart rate is higher than in the person's recent records, and says exactly that: a recent change, not a change from their usual. And when a change shows up, it offers a small idea for today: a short walk, a message to someone you trust, or planning a session. Optional, never about medication.\""
+    "notes": "Scene 5 · Ready for the appointment — 2:35–3:05\n\n[Screen: Prepare for my appointment → missed doses → Not sent.]\n\n\"Before the visit, everything is in one place: what changed, when, and the missed dose with its reason, ready to discuss with the doctor or pharmacist. Nothing is sent automatically. It stays Not sent until the patient decides.\""
   },
   {
     "slide": 8,
-    "file": "08-appointment.html",
+    "file": "08-clinician-agent.html",
     "scene": 6,
-    "notes": "Scene 6 · Ready for the appointment — 3:15–3:45\n\n[Screen: Prepare for my appointment → missed doses → Not sent.]\n\n\"Before the visit, everything is in one place: what changed, when, and the missed dose with its reason, ready to discuss with the doctor or pharmacist. Nothing is sent automatically. It stays Not sent until the patient decides.\""
+    "notes": "Scene 6 · What the clinician sees — the agent at work — 3:05–4:10\n\n[Screen: Clinician → assessment cards → Ask about this record:]\n\n\"If the patient shares, their clinician sees what changed and when, with exact values and sources. And the clinician can ask. Here AURA works as an agent: it decides which signals, tools and dates to look at, reads the record, and drafts an answer where every statement cites its source. A second, independent check then reviews each statement and removes anything unsupported. How AURA looked shows exactly what it did. It can only read; it never changes the record or the treatment.\"\n\n[If it falls back:]\n\n\"This time the draft didn't pass the checks, so AURA shows the related facts and says why.\""
   },
   {
     "slide": 9,
-    "file": "09-clinician-agent.html",
+    "file": "09-something-changes.html",
     "scene": 7,
-    "notes": "Scene 7 · What the clinician sees — the agent at work — 3:45–4:50\n\n[Screen: Clinician → assessment cards → Ask about this record:]\n\n\"If the patient shares, their clinician sees what changed and when, with exact values and sources. And the clinician can ask. Here AURA works as an agent: it decides which signals, tools and dates to look at, reads the record, and drafts an answer where every statement cites its source. A second, independent check then reviews each statement and removes anything unsupported. How AURA looked shows exactly what it did. It can only read; it never changes the record or the treatment.\"\n\n[If it falls back:]\n\n\"This time the draft didn't pass the checks, so AURA shows the related facts and says why.\""
+    "notes": "Scene 7 · Something changes — 4:10–4:50\n\n[Screen: guided story step 9 → simulated flu → the patient home with the new summary and a small idea for today.]\n\n\"Now a flu, simulated over three days. AURA notices resting heart rate is higher than in the person's recent records, and says exactly that: a recent change, not a change from their usual. And when a change shows up, it offers a small idea for today: a short walk, a message to someone you trust, or planning a session. Optional, never about medication.\""
   },
   {
     "slide": 10,
     "file": "10-safety-first.html",
     "scene": 8,
-    "notes": "Scene 8 · Safety first — 4:50–5:15\n\n[Screen: patient → I want to mention something → Safety handoff fixture → safety panel.]\n\n\"Anything a patient types is safety-checked first. If there's a concern, fixed safety resources take over the screen and the AI steps back. Those messages are never AI-written. The same applies to medication questions: asking to double a dose goes to safety, not to an answer.\""
+    "notes": "Scene 8 · Safety first — 4:50–5:15\n\n[Screen: finish card → Show the safety example → the note box opens with A worrying message (masked on screen) → Send to AURA → safety panel → the card explains, with Reset the demo.]\n\n\"Anything a patient types is safety-checked first. If there's a concern, fixed safety resources take over the screen and the AI steps back. Those messages are never AI-written, and the patient can't dismiss them. The clinician sees the same safety state when they open the record. This prototype doesn't send alerts: who is told, and how fast, is for the care team to decide. The same applies to medication questions: asking to double a dose goes to safety, not to an answer.\""
   },
   {
     "slide": 11,

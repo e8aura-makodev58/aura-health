@@ -1,7 +1,7 @@
 # AURA Health deck
 
 The submission deck `docs/submission/assets/aura-health-deck.pptx` (also the required
-"Architecture Diagram PPT"). 18 slides, 16:9, built from `../SCRIPT.md` v2.
+"Architecture Diagram PPT"). 18 slides, 16:9, built from `../SCRIPT.md` (v4, story order: medication, appointment, clinician + agent, flu, safety).
 
 - `build.py` writes one 1920×1080 HTML page per slide to `slides/` and `slides.json` with the
   speaker notes, taken verbatim from the script's scene narration (stage directions in brackets).

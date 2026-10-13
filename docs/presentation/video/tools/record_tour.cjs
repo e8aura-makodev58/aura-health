@@ -31,7 +31,9 @@ const cursor=()=>{const add=()=>{if(document.getElementById('rec-cursor'))return
   await click('.tour-next',300);
  }
  if(mode==='phone'){await pause(1500);mark('finish');await pause(4500);await click('text=Show the safety example',300);mark('wait_safety');
-  await p.waitForSelector('#safety-panel:not([hidden])',{timeout:60000}).catch(()=>errors.push('safety'));mark('safety_shown');await p.evaluate(()=>window.scrollTo(0,0));await pause(8000);mark('end');}
+  await p.waitForFunction(()=>document.getElementById('input-dialog').open,null,{timeout:20000}).catch(()=>errors.push('note box'));mark('note_open');
+  await p.waitForSelector('#safety-panel:not([hidden])',{timeout:60000}).catch(()=>errors.push('safety'));mark('safety_shown');
+  await p.waitForFunction(()=>/Safety takes priority/.test(document.querySelector('.tour-title')?.textContent||''),null,{timeout:60000}).catch(()=>errors.push('safety card'));mark('safety_card');await pause(10000);mark('end');}
  else mark('end');
  const video=await p.video().path();await c.close();
  fs.writeFileSync(`${out}/marks-tour-${mode}.json`,JSON.stringify({marks,video,errors},null,1));

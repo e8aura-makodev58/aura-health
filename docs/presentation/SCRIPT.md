@@ -1,6 +1,6 @@
-# AURA Health — presentation and video script (v2, patient-first)
+# AURA Health — presentation and video script (v4, patient-first)
 
-Status: v3 (2026-10-13, Claude): same scenes as v2, reordered to match the in-app guided story (flu after the clinician scene). Replaces v1 (clinician-first,
+Status: v4 (2026-10-13, Claude): v3 order (matches the in-app guided story); scene 8 updated for the paced, masked safety example and what the clinician sees. v3 reordered v2 to put the flu after the clinician scene. Replaces v1 (clinician-first,
 written before the patient companion existed). Target **7:00** (allowed 5–8 min), about 950
 spoken words. This script drives the demo video, the deck (also the required architecture
 PPT), the live pitch, and the in-app "Play the 3-minute story" tour (same scene order).
@@ -68,11 +68,13 @@ Then *My medication* → *What if I miss a dose?*
 > to someone you trust, or planning a session. Optional, never about medication."
 
 ### 8 · Safety first — 4:50–5:15
-**Screen:** patient → *I want to mention something* → *A worrying message* → safety panel.
+**Screen:** finish card → *Show the safety example* → the note box opens with *A worrying message* (masked on screen) → *Send to AURA* → safety panel → the card explains, with *Reset the demo*.
 > "Anything a patient types is safety-checked first. If there's a concern, fixed safety
-> resources take over the screen and the AI steps back. Those messages are never AI-written.
-> The same applies to medication questions: asking to double a dose goes to safety, not to an
-> answer."
+> resources take over the screen and the AI steps back. Those messages are never AI-written,
+> and the patient can't dismiss them. The clinician sees the same safety state when they open
+> the record. This prototype doesn't send alerts: who is told, and how fast, is for the care
+> team to decide. The same applies to medication questions: asking to double a dose goes to
+> safety, not to an answer."
 
 ### 9 · How it's built — 5:15–6:00
 **Slides:** architecture overview · agent loop · safety precedence (`diagrams/`).
@@ -110,6 +112,8 @@ Then *My medication* → *What if I miss a dose?*
   appointment → clinician + Q&A → flu → safety → slides. Reset the session first (Demo guide → *Reset this synthetic session*).
   Do the safety scene last: it changes the session's safety state.
 - **AI allowance:** 30 calls/minute, 300/hour, shared. One take ≈ 25–45 calls.
+- **Live model:** OpenAI gpt-6-luna, reasoning medium (operator setting). An agent answer takes
+  about a minute; the video trims the wait.
 - **Video:** Claude records the screen walkthrough per scene; the user records the voice-over.
 - **Tour:** the in-app "Play the 3-minute story" follows scenes 3–8 in the same order; the video
   records that guided story itself.

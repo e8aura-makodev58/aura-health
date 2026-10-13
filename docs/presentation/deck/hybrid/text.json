@@ -986,7 +986,306 @@
  },
  {
   "slide": 7,
-  "file": "07-something-changes.html",
+  "file": "07-appointment.html",
+  "blocks": [
+   {
+    "x": 154,
+    "y": 60.5,
+    "w": 228.046875,
+    "h": 35,
+    "align": "left",
+    "lineHeight": 31.2,
+    "size": 26,
+    "runs": [
+     {
+      "text": "AURA HEALTH",
+      "weight": 800,
+      "color": "rgb(42, 35, 32)",
+      "size": 26,
+      "spacing": 3.64
+     }
+    ],
+    "tag": "DIV",
+    "cls": "brand"
+   },
+   {
+    "x": 96,
+    "y": 150,
+    "w": 720,
+    "h": 32,
+    "align": "start",
+    "lineHeight": 28.799999999999997,
+    "size": 24,
+    "runs": [
+     {
+      "text": "READY FOR THE APPOINTMENT",
+      "weight": 800,
+      "color": "rgb(156, 87, 0)",
+      "size": 24,
+      "spacing": 3.36
+     }
+    ],
+    "tag": "DIV",
+    "cls": "kicker"
+   },
+   {
+    "x": 96,
+    "y": 218,
+    "w": 720,
+    "h": 127.59375,
+    "align": "start",
+    "lineHeight": 63.8,
+    "size": 58,
+    "runs": [
+     {
+      "text": "Everything for the visit, in one place",
+      "weight": 800,
+      "color": "rgb(42, 35, 32)",
+      "size": 58,
+      "spacing": -0.87
+     }
+    ],
+    "tag": "H2",
+    "cls": ""
+   },
+   {
+    "x": 96,
+    "y": 385.59375,
+    "w": 720,
+    "h": 78.375,
+    "align": "start",
+    "lineHeight": 39.2,
+    "size": 28,
+    "runs": [
+     {
+      "text": "What changed, when, and the missed dose with its reason, ready to discuss with the doctor or pharmacist.",
+      "weight": 400,
+      "color": "rgb(74, 65, 59)",
+      "size": 28,
+      "spacing": 0
+     }
+    ],
+    "tag": "P",
+    "cls": "cap"
+   },
+   {
+    "x": 124,
+    "y": 849.453125,
+    "w": 477,
+    "h": 35,
+    "align": "start",
+    "lineHeight": 31.2,
+    "size": 26,
+    "runs": [
+     {
+      "text": "Nothing is sent automatically · Not sent",
+      "weight": 700,
+      "color": "rgb(42, 35, 32)",
+      "size": 26,
+      "spacing": 0
+     }
+    ],
+    "tag": "DIV",
+    "cls": "pill"
+   },
+   {
+    "x": 96,
+    "y": 1006,
+    "w": 540,
+    "h": 30,
+    "align": "start",
+    "lineHeight": 26.4,
+    "size": 22,
+    "runs": [
+     {
+      "text": "Healthcare track · Challenge Statement 2 · Scenario 1",
+      "weight": 400,
+      "color": "rgb(122, 112, 102)",
+      "size": 22,
+      "spacing": 0
+     }
+    ],
+    "tag": "SPAN",
+    "cls": ""
+   },
+   {
+    "x": 1315,
+    "y": 1006,
+    "w": 509,
+    "h": 30,
+    "align": "start",
+    "lineHeight": 26.4,
+    "size": 22,
+    "runs": [
+     {
+      "text": "Synthetic demo data · aura-health.makodev58.com",
+      "weight": 400,
+      "color": "rgb(122, 112, 102)",
+      "size": 22,
+      "spacing": 0
+     }
+    ],
+    "tag": "SPAN",
+    "cls": ""
+   }
+  ]
+ },
+ {
+  "slide": 8,
+  "file": "08-clinician-agent.html",
+  "blocks": [
+   {
+    "x": 154,
+    "y": 60.5,
+    "w": 228.046875,
+    "h": 35,
+    "align": "left",
+    "lineHeight": 31.2,
+    "size": 26,
+    "runs": [
+     {
+      "text": "AURA HEALTH",
+      "weight": 800,
+      "color": "rgb(42, 35, 32)",
+      "size": 26,
+      "spacing": 3.64
+     }
+    ],
+    "tag": "DIV",
+    "cls": "brand"
+   },
+   {
+    "x": 96,
+    "y": 150,
+    "w": 1728,
+    "h": 32,
+    "align": "start",
+    "lineHeight": 28.799999999999997,
+    "size": 24,
+    "runs": [
+     {
+      "text": "WHAT THE CLINICIAN SEES · THE AGENT AT WORK",
+      "weight": 800,
+      "color": "rgb(156, 87, 0)",
+      "size": 24,
+      "spacing": 3.36
+     }
+    ],
+    "tag": "DIV",
+    "cls": "kicker"
+   },
+   {
+    "x": 96,
+    "y": 196,
+    "w": 1728,
+    "h": 55,
+    "align": "start",
+    "lineHeight": 55,
+    "size": 50,
+    "runs": [
+     {
+      "text": "It decides what to look at, cites every statement, and is checked",
+      "weight": 800,
+      "color": "rgb(42, 35, 32)",
+      "size": 50,
+      "spacing": -0.75
+     }
+    ],
+    "tag": "H2",
+    "cls": ""
+   },
+   {
+    "x": 96,
+    "y": 706.5,
+    "w": 640,
+    "h": 78.375,
+    "align": "start",
+    "lineHeight": 39.2,
+    "size": 28,
+    "runs": [
+     {
+      "text": "What changed and when, with exact values and sources.",
+      "weight": 400,
+      "color": "rgb(74, 65, 59)",
+      "size": 28,
+      "spacing": 0
+     }
+    ],
+    "tag": "P",
+    "cls": "cap"
+   },
+   {
+    "x": 803,
+    "y": 760,
+    "w": 1026,
+    "h": 105.28125,
+    "align": "start",
+    "lineHeight": 35.1,
+    "size": 26,
+    "runs": [
+     {
+      "text": "How AURA looked",
+      "weight": 700,
+      "color": "rgb(42, 35, 32)",
+      "size": 26,
+      "spacing": 0
+     },
+     {
+      "text": ": which records it read, then “A second check reviewed 3 statements; all supported”. It can only read; it never changes the record or the treatment.",
+      "weight": 400,
+      "color": "rgb(42, 35, 32)",
+      "size": 26,
+      "spacing": 0
+     }
+    ],
+    "tag": "DIV",
+    "cls": "callout"
+   },
+   {
+    "x": 96,
+    "y": 1006,
+    "w": 540,
+    "h": 30,
+    "align": "start",
+    "lineHeight": 26.4,
+    "size": 22,
+    "runs": [
+     {
+      "text": "Healthcare track · Challenge Statement 2 · Scenario 1",
+      "weight": 400,
+      "color": "rgb(122, 112, 102)",
+      "size": 22,
+      "spacing": 0
+     }
+    ],
+    "tag": "SPAN",
+    "cls": ""
+   },
+   {
+    "x": 1315,
+    "y": 1006,
+    "w": 509,
+    "h": 30,
+    "align": "start",
+    "lineHeight": 26.4,
+    "size": 22,
+    "runs": [
+     {
+      "text": "Synthetic demo data · aura-health.makodev58.com",
+      "weight": 400,
+      "color": "rgb(122, 112, 102)",
+      "size": 22,
+      "spacing": 0
+     }
+    ],
+    "tag": "SPAN",
+    "cls": ""
+   }
+  ]
+ },
+ {
+  "slide": 9,
+  "file": "09-something-changes.html",
   "blocks": [
    {
     "x": 154,
@@ -1159,305 +1458,6 @@
   ]
  },
  {
-  "slide": 8,
-  "file": "08-appointment.html",
-  "blocks": [
-   {
-    "x": 154,
-    "y": 60.5,
-    "w": 228.046875,
-    "h": 35,
-    "align": "left",
-    "lineHeight": 31.2,
-    "size": 26,
-    "runs": [
-     {
-      "text": "AURA HEALTH",
-      "weight": 800,
-      "color": "rgb(42, 35, 32)",
-      "size": 26,
-      "spacing": 3.64
-     }
-    ],
-    "tag": "DIV",
-    "cls": "brand"
-   },
-   {
-    "x": 96,
-    "y": 150,
-    "w": 720,
-    "h": 32,
-    "align": "start",
-    "lineHeight": 28.799999999999997,
-    "size": 24,
-    "runs": [
-     {
-      "text": "READY FOR THE APPOINTMENT",
-      "weight": 800,
-      "color": "rgb(156, 87, 0)",
-      "size": 24,
-      "spacing": 3.36
-     }
-    ],
-    "tag": "DIV",
-    "cls": "kicker"
-   },
-   {
-    "x": 96,
-    "y": 218,
-    "w": 720,
-    "h": 127.59375,
-    "align": "start",
-    "lineHeight": 63.8,
-    "size": 58,
-    "runs": [
-     {
-      "text": "Everything for the visit, in one place",
-      "weight": 800,
-      "color": "rgb(42, 35, 32)",
-      "size": 58,
-      "spacing": -0.87
-     }
-    ],
-    "tag": "H2",
-    "cls": ""
-   },
-   {
-    "x": 96,
-    "y": 385.59375,
-    "w": 720,
-    "h": 78.375,
-    "align": "start",
-    "lineHeight": 39.2,
-    "size": 28,
-    "runs": [
-     {
-      "text": "What changed, when, and the missed dose with its reason, ready to discuss with the doctor or pharmacist.",
-      "weight": 400,
-      "color": "rgb(74, 65, 59)",
-      "size": 28,
-      "spacing": 0
-     }
-    ],
-    "tag": "P",
-    "cls": "cap"
-   },
-   {
-    "x": 124,
-    "y": 849.453125,
-    "w": 477,
-    "h": 35,
-    "align": "start",
-    "lineHeight": 31.2,
-    "size": 26,
-    "runs": [
-     {
-      "text": "Nothing is sent automatically · Not sent",
-      "weight": 700,
-      "color": "rgb(42, 35, 32)",
-      "size": 26,
-      "spacing": 0
-     }
-    ],
-    "tag": "DIV",
-    "cls": "pill"
-   },
-   {
-    "x": 96,
-    "y": 1006,
-    "w": 540,
-    "h": 30,
-    "align": "start",
-    "lineHeight": 26.4,
-    "size": 22,
-    "runs": [
-     {
-      "text": "Healthcare track · Challenge Statement 2 · Scenario 1",
-      "weight": 400,
-      "color": "rgb(122, 112, 102)",
-      "size": 22,
-      "spacing": 0
-     }
-    ],
-    "tag": "SPAN",
-    "cls": ""
-   },
-   {
-    "x": 1315,
-    "y": 1006,
-    "w": 509,
-    "h": 30,
-    "align": "start",
-    "lineHeight": 26.4,
-    "size": 22,
-    "runs": [
-     {
-      "text": "Synthetic demo data · aura-health.makodev58.com",
-      "weight": 400,
-      "color": "rgb(122, 112, 102)",
-      "size": 22,
-      "spacing": 0
-     }
-    ],
-    "tag": "SPAN",
-    "cls": ""
-   }
-  ]
- },
- {
-  "slide": 9,
-  "file": "09-clinician-agent.html",
-  "blocks": [
-   {
-    "x": 154,
-    "y": 60.5,
-    "w": 228.046875,
-    "h": 35,
-    "align": "left",
-    "lineHeight": 31.2,
-    "size": 26,
-    "runs": [
-     {
-      "text": "AURA HEALTH",
-      "weight": 800,
-      "color": "rgb(42, 35, 32)",
-      "size": 26,
-      "spacing": 3.64
-     }
-    ],
-    "tag": "DIV",
-    "cls": "brand"
-   },
-   {
-    "x": 96,
-    "y": 150,
-    "w": 1728,
-    "h": 32,
-    "align": "start",
-    "lineHeight": 28.799999999999997,
-    "size": 24,
-    "runs": [
-     {
-      "text": "WHAT THE CLINICIAN SEES · THE AGENT AT WORK",
-      "weight": 800,
-      "color": "rgb(156, 87, 0)",
-      "size": 24,
-      "spacing": 3.36
-     }
-    ],
-    "tag": "DIV",
-    "cls": "kicker"
-   },
-   {
-    "x": 96,
-    "y": 196,
-    "w": 1728,
-    "h": 55,
-    "align": "start",
-    "lineHeight": 55,
-    "size": 50,
-    "runs": [
-     {
-      "text": "It decides what to look at, cites every statement, and is checked",
-      "weight": 800,
-      "color": "rgb(42, 35, 32)",
-      "size": 50,
-      "spacing": -0.75
-     }
-    ],
-    "tag": "H2",
-    "cls": ""
-   },
-   {
-    "x": 96,
-    "y": 706.5,
-    "w": 640,
-    "h": 78.375,
-    "align": "start",
-    "lineHeight": 39.2,
-    "size": 28,
-    "runs": [
-     {
-      "text": "What changed and when, with exact values and sources.",
-      "weight": 400,
-      "color": "rgb(74, 65, 59)",
-      "size": 28,
-      "spacing": 0
-     }
-    ],
-    "tag": "P",
-    "cls": "cap"
-   },
-   {
-    "x": 803,
-    "y": 720,
-    "w": 1026,
-    "h": 105.28125,
-    "align": "start",
-    "lineHeight": 35.1,
-    "size": 26,
-    "runs": [
-     {
-      "text": "How AURA looked",
-      "weight": 700,
-      "color": "rgb(42, 35, 32)",
-      "size": 26,
-      "spacing": 0
-     },
-     {
-      "text": ": which records it read, then “A second check reviewed 10 statements; 1 removed as unsupported”. It can only read; it never changes the record or the treatment.",
-      "weight": 400,
-      "color": "rgb(42, 35, 32)",
-      "size": 26,
-      "spacing": 0
-     }
-    ],
-    "tag": "DIV",
-    "cls": "callout"
-   },
-   {
-    "x": 96,
-    "y": 1006,
-    "w": 540,
-    "h": 30,
-    "align": "start",
-    "lineHeight": 26.4,
-    "size": 22,
-    "runs": [
-     {
-      "text": "Healthcare track · Challenge Statement 2 · Scenario 1",
-      "weight": 400,
-      "color": "rgb(122, 112, 102)",
-      "size": 22,
-      "spacing": 0
-     }
-    ],
-    "tag": "SPAN",
-    "cls": ""
-   },
-   {
-    "x": 1315,
-    "y": 1006,
-    "w": 509,
-    "h": 30,
-    "align": "start",
-    "lineHeight": 26.4,
-    "size": 22,
-    "runs": [
-     {
-      "text": "Synthetic demo data · aura-health.makodev58.com",
-      "weight": 400,
-      "color": "rgb(122, 112, 102)",
-      "size": 22,
-      "spacing": 0
-     }
-    ],
-    "tag": "SPAN",
-    "cls": ""
-   }
-  ]
- },
- {
   "slide": 10,
   "file": "10-safety-first.html",
   "blocks": [
@@ -1484,7 +1484,7 @@
    {
     "x": 96,
     "y": 150,
-    "w": 900,
+    "w": 820,
     "h": 32,
     "align": "start",
     "lineHeight": 28.799999999999997,
@@ -1504,7 +1504,7 @@
    {
     "x": 96,
     "y": 218,
-    "w": 900,
+    "w": 820,
     "h": 127.59375,
     "align": "start",
     "lineHeight": 63.8,
@@ -1524,14 +1524,34 @@
    {
     "x": 138,
     "y": 395.59375,
-    "w": 858,
+    "w": 778,
+    "h": 134.390625,
+    "align": "start",
+    "lineHeight": 44.8,
+    "size": 32,
+    "runs": [
+     {
+      "text": "If there is a concern, fixed safety resources take over the screen and the AI steps back. They are never AI-written.",
+      "weight": 400,
+      "color": "rgb(42, 35, 32)",
+      "size": 32,
+      "spacing": 0
+     }
+    ],
+    "tag": "SPAN",
+    "cls": ""
+   },
+   {
+    "x": 138,
+    "y": 555.984375,
+    "w": 778,
     "h": 89.59375,
     "align": "start",
     "lineHeight": 44.8,
     "size": 32,
     "runs": [
      {
-      "text": "If there is a concern, fixed safety resources take over the screen and the AI steps back.",
+      "text": "The patient can't dismiss them. The clinician sees the same safety state when they open the record.",
       "weight": 400,
       "color": "rgb(42, 35, 32)",
       "size": 32,
@@ -1543,15 +1563,15 @@
    },
    {
     "x": 138,
-    "y": 511.1875,
-    "w": 539,
-    "h": 44.796875,
+    "y": 671.578125,
+    "w": 778,
+    "h": 89.59375,
     "align": "start",
     "lineHeight": 44.8,
     "size": 32,
     "runs": [
      {
-      "text": "Those messages are never AI-written.",
+      "text": "No alerts are sent in this prototype: who is told, and how fast, is for the care team to decide.",
       "weight": 400,
       "color": "rgb(42, 35, 32)",
       "size": 32,
@@ -1563,9 +1583,9 @@
    },
    {
     "x": 138,
-    "y": 581.984375,
-    "w": 813,
-    "h": 44.796875,
+    "y": 787.171875,
+    "w": 778,
+    "h": 89.59375,
     "align": "start",
     "lineHeight": 44.8,
     "size": 32,
@@ -1580,6 +1600,46 @@
     ],
     "tag": "SPAN",
     "cls": ""
+   },
+   {
+    "x": 999,
+    "y": 849.21875,
+    "w": 274,
+    "h": 39.1875,
+    "align": "start",
+    "lineHeight": 39.2,
+    "size": 28,
+    "runs": [
+     {
+      "text": "The example, masked",
+      "weight": 400,
+      "color": "rgb(74, 65, 59)",
+      "size": 28,
+      "spacing": 0
+     }
+    ],
+    "tag": "SPAN",
+    "cls": "cap"
+   },
+   {
+    "x": 1412,
+    "y": 849.21875,
+    "w": 216,
+    "h": 39.1875,
+    "align": "start",
+    "lineHeight": 39.2,
+    "size": 28,
+    "runs": [
+     {
+      "text": "Safety takes over",
+      "weight": 400,
+      "color": "rgb(74, 65, 59)",
+      "size": 28,
+      "spacing": 0
+     }
+    ],
+    "tag": "SPAN",
+    "cls": "cap"
    },
    {
     "x": 96,

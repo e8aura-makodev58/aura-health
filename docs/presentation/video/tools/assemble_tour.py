@@ -29,12 +29,12 @@ def desk(start, end, hold=0):
          "-map", "0:v", "-map", "1:a", "-t", str(seconds), *ENC, str(out)]); add(out, f"desk {start}-{end}+{hold}", seconds)
 
 slide(1, 12); slide(2, 13); slide(3, 28); slide(4, 6)
-phone("t3", 2.3, 32.6)                               # 3 · A calm start (landing, guided story intro, breath, summary)
-phone("t4", 32.6, 67.4)                              # 4 · My medication, my day (dose, leaflet answer, honest limit)
-phone("t5", 67.4, 79.5, hold=6)                      # 5 · Ready for the appointment
-desk(53.6, 68.2); desk(75.2, 80.8); desk(87.6, 103.7, hold=4)  # 6 · Clinician + agent (fallback shown, Ask again, checked answer)
-phone("t7", 101.2, 104.0); phone("t7", 109.7, 121.7, hold=8)    # 7 · Something changes (flu wait trimmed)
-phone("t8", 121.7, 141.3)                            # 8 · Safety first (finish card, safety example)
+phone("t3", 2.3, 32.1)                               # 3 · A calm start (landing, guided story intro, breath, summary)
+phone("t4", 32.1, 70.8)                              # 4 · My medication, my day (dose, leaflet answer, honest limit)
+phone("t5", 70.8, 82.7, hold=6)                      # 5 · Ready for the appointment
+desk(43.3, 57.5); desk(68.6, 74.2); desk(88.4, 104.6, hold=4)  # 6 · Clinician + agent (fallback shown, Ask again, checked answer)
+phone("t7", 114.8, 117.6); phone("t7", 123.9, 136.0, hold=8)    # 7 · Something changes (flu wait trimmed)
+phone("t8", 136.0, 163.1)                            # 8 · Safety first (finish card, paced masked example, safety panel, explanation card)
 slide(11, 16); slide(12, 16); slide(13, 10); slide(14, 12)   # 9 · How it's built
 slide(15, 25); slide(16, 20); slide(17, 18); slide(18, 6)    # 10–12
 
