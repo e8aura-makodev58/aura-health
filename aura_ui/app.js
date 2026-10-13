@@ -110,6 +110,7 @@ function goPage() {
   $("clinician-role").setAttribute("aria-pressed", String(presentationRole === "clinician"));
   setText("patterns-heading", presentationRole === "clinician" ? "Between appointments" : "Your full data");
   for (const node of document.querySelectorAll(".view")) node.hidden = !current || node.id !== `${page}-view`;
+  updateWelcome();
   $("empty-state").hidden = Boolean(current);
   for (const link of document.querySelectorAll("[data-page]")) { if (link.dataset.page === page) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current"); }
   // Navigation cannot dismiss or replace the server's safety panel.
@@ -145,12 +146,35 @@ async function refresh() {
   current = {view,status,snapshot,timeline,evidence}; communication = output; offline = false; render();
 }
 
+// A once-per-session breathing welcome on the patient home. It never stands in
+// front of the safety pathway, and the help button stays available throughout.
+let welcomed = false;
+try { welcomed = sessionStorage.getItem("aura-welcomed") === "1"; } catch { /* storage unavailable */ }
+function updateWelcome() {
+  const automated = navigator.webdriver && !window.auraWelcomeInAutomation;
+  const safety = !$("safety-panel").hidden || Boolean(communication?.pinned_resources);
+  const show = !welcomed && !automated && !safety && Boolean(current) && presentationRole === "patient" && document.body.dataset.page === "home";
+  $("breath-welcome").hidden = !show;
+  $("home-view").classList.toggle("welcoming", show);
+}
+function finishWelcome() {
+  if (welcomed) return;
+  welcomed = true;
+  try { sessionStorage.setItem("aura-welcomed", "1"); } catch { /* storage unavailable */ }
+  updateWelcome();
+  $("home-heading").setAttribute("tabindex", "-1"); $("home-heading").focus({preventScroll: true});
+}
+$("breath-continue").addEventListener("click", event => { event.stopPropagation(); finishWelcome(); });
+$("breath-welcome").addEventListener("click", finishWelcome);
+document.addEventListener("keydown", event => { if (!$("breath-welcome").hidden && ["Enter", " ", "Escape"].includes(event.key)) { event.preventDefault(); finishWelcome(); } });
+
 function render() {
   const {view, status} = current;
   setText("patient-label", `${view.patient.display_name} · ${dateLabel(view.latest_occurred_at)}`);
   const hr = new Date().getHours();
   const greeting = hr >= 5 && hr < 12 ? "Good morning" : hr >= 12 && hr < 17 ? "Good afternoon" : "Good evening";
   setText("home-greeting", greeting);
+  updateWelcome();
   $("quiet-card").hidden = Boolean(communication?.message && !communication.pinned_resources);
   setText("quiet-heading",communication?.pinned_resources ? "The safety pathway is active." : "No question from AURA right now.");
   setText("home-subtitle", communication?.pinned_resources ? "The policy message and separate resources remain above, on every page." : "You can check in whenever it feels useful.");

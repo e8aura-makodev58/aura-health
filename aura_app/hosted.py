@@ -30,6 +30,18 @@ from .service import PatientEventService
 from .system_settings import SystemSettings, SyntheticSettingsProvider, settings_api
 
 
+
+def ai_call_budget():
+    """Shared site-wide AI call allowance. Explicit, reversible deployment setting;
+    unset keeps the conservative 10/minute, 60/hour."""
+    minute = os.environ.get("AURA_AI_CALLS_PER_MINUTE", "").strip()
+    hour = os.environ.get("AURA_AI_CALLS_PER_HOUR", "").strip()
+    budget = {"calls_per_minute": int(minute) if minute else 10, "calls_per_hour": int(hour) if hour else 60}
+    if not (1 <= budget["calls_per_minute"] <= 120 and 1 <= budget["calls_per_hour"] <= 2000
+            and budget["calls_per_minute"] <= budget["calls_per_hour"]):
+        raise ValueError("invalid AI call budget")
+    return budget
+
 class SyntheticOnlyService(PatientEventService):
     """Synthetic catalog records with bounded intake; no credibility classifier."""
 
@@ -152,7 +164,7 @@ class HostedDemo:
         prepare(self.baseline, seed)
         self.sessions = {}
         self.lock = asyncio.Lock()
-        self.settings = settings or SystemSettings(self.root / "system")
+        self.settings = settings or SystemSettings(self.root / "system", **ai_call_budget())
         self.system_app = settings_api(self.settings)
         # Presentation never needs a private workspace. Dispatch ONLY the shell
         # and allowlisted assets here; baseline patient routes are never exposed.
