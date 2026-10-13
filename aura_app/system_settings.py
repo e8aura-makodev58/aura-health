@@ -139,8 +139,10 @@ class SystemSettings:
         with self.lock:
             now=monotonic()
             while self.calls and now-self.calls[0]>3600: self.calls.popleft()
-            if len(self.calls)>=self.hour or sum(now-at<60 for at in self.calls)>=self.minute:
-                raise ProviderUnavailable("Synthetic demo call budget reached", kind="demo_budget")
+            if len(self.calls)>=self.hour:
+                raise ProviderUnavailable("Synthetic demo call budget reached", kind="demo_budget_hour")
+            if sum(now-at<60 for at in self.calls)>=self.minute:
+                raise ProviderUnavailable("Synthetic demo call budget reached", kind="demo_budget_minute")
             self.calls.append(now)
 
     def discover(self,body):

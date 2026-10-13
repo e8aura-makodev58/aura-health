@@ -265,12 +265,15 @@ main {padding-inline:24px}
 #home-view.has-recap .recap-hero .patient-recap {color:var(--ink)}
 #home-view.has-recap .recap-hero .patient-summary-details>summary,
 #home-view.has-recap .recap-hero .patient-summary-sources>summary {color:var(--ink)}
-.recap-placeholder {display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 20px;border-radius:var(--radius-xl);background:var(--surface-soft);margin:16px 0 20px;animation:breath-pulse 3s var(--ease-out) infinite}
-.breathing-icon {width:120px;height:120px;animation:breath-scale 3s var(--ease-out) infinite}
+.recap-placeholder {display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 20px;border-radius:var(--radius-xl);background:var(--surface-soft);margin:16px 0 20px;animation:breath-pulse 6s ease-in-out infinite}
+.breathing-icon {width:120px;height:120px;animation:breath-scale 6s ease-in-out infinite}
 .placeholder-text {font-size:.88rem;color:var(--ink-soft);text-align:center;max-width:280px}
 @keyframes breath-pulse {0%,100%{opacity:.7}50%{opacity:1}}
 @keyframes breath-scale {0%,100%{transform:scale(.92)}50%{transform:scale(1.08)}}
-@media(prefers-reduced-motion:reduce){.recap-placeholder{animation:none}.breathing-icon{animation:none}}
+.recap-pending {display:flex;align-items:center;gap:8px;margin:4px 0 0;color:var(--ink-soft)}
+.recap-pending-dot {width:12px;height:12px;border-radius:50%;background:var(--accent-sunny);flex-shrink:0;animation:breath-scale 6s ease-in-out infinite}
+.agent-disclosure-text {margin:6px 0 10px}
+@media(prefers-reduced-motion:reduce){.recap-placeholder{animation:none}.breathing-icon{animation:none}.recap-pending-dot{animation:none}}
 .patient-links {border-block:1px solid var(--line);margin:24px 0 16px}
 .patient-links a {display:flex;align-items:center;gap:12px;text-decoration:none;padding:16px 4px;min-height:56px;font-size:.9rem;border-radius:var(--radius-lg);transition:background var(--dur-fast) var(--ease-out)}
 .patient-links a:hover {background:var(--surface-soft)}

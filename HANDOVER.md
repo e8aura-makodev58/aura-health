@@ -242,6 +242,13 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Fixes from Sol's review (`docs/CLAUDE_QA_AND_LOADING_REVIEW.md` findings 1–4)
+- **1. Exact clinician Q&A facts:** `agent.js` uses the patient formatter (1-decimal rounding, "early March") only for patient-facing roles; Q&A/clinician text keeps exact numbers and dates.
+- **2. Fallback selector:** whole-word matching (`_mentions`), medication-routine and held-review facts included when asked about; routine-only questions no longer show unrelated findings; no-match questions return nothing rather than unrelated facts. Tests AW4e.
+- **3. Loading art lifetime:** the breathing placeholder is hidden on every exit (blocked, offline, error, done); while AI wording is pending over a shown preview, a small "Writing a fresh summary…" note with a dot is shown and removed afterwards. Breathing cycle 3 s → 6 s, ease-in-out; reduced motion respected.
+- **4. Retry wording:** budget failures split into `demo_budget_minute` ("Try again shortly") and `demo_budget_hour` (no promise). Q&A fallback reason shown as visible text, not only a tooltip. Quotas unchanged.
+- New browser suite `tests/browser/qa_display.cjs` (QA1 exact facts + visible reason; QA2 loading never outlives the request); QA1 confirmed failing on the previous code.
+- Verified: full Python suite OK; hosted browser qa_display, cards, agent, plain-language, final-dash, final-dash-polish, impression, dual-view, workflows, milestone7, story-charts PASS. Finding 5 (visible investigation trail) not done — awaiting the user.
 ### 2026-10-13 — Codex Sol — Review Claude's Q&A fixes and breathing-placeholder behavior
 - Reviewed `c9922cd`: clinician-question separation accepted for synthetic demo; patient safety route unchanged, caller-asserted actor not authentication. Added `docs/CLAUDE_QA_AND_LOADING_REVIEW.md`; linked follow-up from capability audit. Confirmed medication-only fallback omission, Q&A decimal/date coarsening and hourly-quota retry wording issue. No runtime fixes or deployment authorized/inferred.
 - Verified: full295 PASS/348.788s; hosted agent5/cards4 PASS. Actual script/CSS mocked probe:306ms graphic visibility with300ms preview/2000ms model delay,3s cycle, loader remains on BLOCKED response; reduced-motion none; zero final page errors. Initial probe lacked guard fingerprint, corrected without production changes. No paid calls; user PDF preserved. Recommendations await user direction.

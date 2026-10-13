@@ -1,14 +1,21 @@
 """Transparent extraction fallback, not AI investigation or prioritization."""
 
+import re
+
 from .roles import AgentRole
 
 
 SIGNAL_WORDS = {
     'SLEEP_MIDPOINT': ('sleep', 'bedtime', 'timing'), 'SLEEP_DURATION': ('sleep', 'duration', 'how long'),
-    'ACTIVITY': ('activity', 'active', 'steps', 'exercise', 'moving', 'walk'),
-    'RESTING_HEART_RATE': ('heart', 'pulse'), 'HRV': ('hrv', 'variability'),
+    'ACTIVITY': ('activity', 'active', 'steps', 'exercise', 'moving', 'walking'),
+    'RESTING_HEART_RATE': ('heart rate', 'heart', 'pulse'), 'HRV': ('hrv', 'variability'),
     'RESPIRATORY_RATE': ('breathing', 'respiratory'), 'SKIN_TEMPERATURE_DEVIATION': ('temperature', 'fever'),
 }
+
+
+def _mentions(text, *terms):
+    # Whole words or phrases only: "active" must not match "proactive".
+    return any(re.search(r'\b' + re.escape(term) + r's?\b', text) for term in terms)
 
 
 def related_facts(tools, question, limit=6):
@@ -16,22 +23,31 @@ def related_facts(tools, question, limit=6):
     selection only, never an answer. Status lines are not answers, so they
     are left out; retained findings come first."""
     words = question.lower()
-    signals = {signal for signal, terms in SIGNAL_WORDS.items() if any(term in words for term in terms)}
+    signals = {signal for signal, terms in SIGNAL_WORDS.items() if _mentions(words, *terms)}
     def relevant(fid):
         return not signals or tools.facts[fid].get('signal') in signals
     findings = [fid for fid in tools.groups['get_series'] if fid in tools.required and relevant(fid)]
-    reports = [fid for fid in tools.groups['get_decisions'] if tools.facts[fid].get('checkin_summary') or tools.facts[fid].get('checkin_run')]
+    decisions = tools.groups['get_decisions']
+    reports = [fid for fid in decisions if tools.facts[fid].get('checkin_summary') or tools.facts[fid].get('checkin_run')]
+    routine = [fid for fid in decisions if tools.facts[fid]['text'].startswith('Medication-routine record')]
     gaps = [fid for fid in tools.groups['get_gaps'] if relevant(fid)]
     context = [fid for fid in tools.groups['get_context'] if relevant(fid)]
-    wants = lambda *terms: any(term in words for term in terms)
-    ordered = findings[:4]
-    if not signals or wants('check-in', 'checkin', 'report', 'feel', 'mood', 'rough'):
-        ordered += reports[-2:]
-    if wants('gap', 'missing', 'wear', 'data'):
-        ordered += gaps[-2:]
-    if wants('context', 'explain', 'reason', 'around', 'reported'):
-        ordered += context[-2:]
-    ordered += findings[4:]
+    held = [fid for fid in tools.groups['get_review_snapshot'] if fid in tools.required]
+    topics = {
+        'routine': _mentions(words, 'medication', 'medicine', 'dose', 'pill', 'tablet', 'routine', 'missed'),
+        'reports': _mentions(words, 'check-in', 'checkin', 'report', 'feel', 'feeling', 'mood', 'rough'),
+        'gaps': _mentions(words, 'gap', 'missing', 'wearable', 'wear', 'data'),
+        'context': _mentions(words, 'context', 'explain', 'explanation', 'reason', 'around', 'reported'),
+        'held': _mentions(words, 'explain', 'explanation', 'held', 'review'),
+    }
+    ordered = []
+    if topics['routine']: ordered += routine[-3:]
+    if topics['held']: ordered += held[:2]
+    if signals or not any(topics.values()): ordered += findings[:4]
+    if topics['reports'] or not (signals or any(topics.values())): ordered += reports[-2:]
+    if topics['gaps']: ordered += gaps[-2:]
+    if topics['context']: ordered += context[-2:]
+    ordered += findings[4:] if signals else []
     return list(dict.fromkeys(fid for fid in ordered if fid in tools.delivered))[:limit]
 
 

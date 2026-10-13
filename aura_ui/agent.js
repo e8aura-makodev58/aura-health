@@ -110,7 +110,7 @@
     if(result.status!=='STALE')staleRetries=0;
     const bounded=['clinician_brief','patient_insight'].includes(role),visibleAI=result.generation_used&&(!bounded||Boolean(result.draft.headline))&&(role!=='patient_insight'||Boolean(result.headline_fact_ids?.length));
     const label=paused?'Assessment paused':visibleAI?'AI-written · sources checked':'Summary from the record';
-    const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;if(role!=='patient_insight')area.append(chip);
+    const chip=node('span',label,'agent-disclosure badge');chip.title=result.disclosure;if(role!=='patient_insight')area.append(chip);if(role==='record_qa'&&result.disclosure&&!result.generation_used)area.append(node('p',result.disclosure,'fine agent-disclosure-text'));
     if(paused){document.getElementById('assessment-complete')?.replaceChildren();window.clearAuraStory?.();document.getElementById('agent-visit_prep')?.replaceChildren();area.append(node('p','Safety interaction or record evaluation comes first. See the separate safety panel.'));return;}
     if(result.draft.headline&&role!=='patient_insight')area.append(node('h3',result.draft.headline.split(/\s+/).slice(0,20).join(' ')));
     const summary=result.record_presentation;
@@ -162,7 +162,7 @@
       if(shaped){number++;if(previous.size&&!previous.has(key))shaped.card.classList.add('assessment-changed');(extraGrid&&number>cap?extraGrid:grid).append(shaped.card);if(role==='clinician_brief')linkage.push(shaped.link);continue;}
       const line=node('section',null,'agent-claim');if(!claim.findings?.length){line.classList.add('also-recorded','fine');line.append(node('span','Also recorded','fine'));}if(previous.size&&!previous.has(key))line.classList.add('assessment-changed');
       if(role==='clinician_brief'&&claim.findings?.length){number++;line.id=`story-finding-${number}`;line.tabIndex=-1;line.append(node('span',String(number),'finding-number'));for(const finding of claim.findings)linkage.push({...finding,number,target_id:line.id});}
-      line.append(node('p',role==='clinician_brief'||claim.findings?.length?claim.text:displayText(claim.text)));
+      line.append(node('p',['patient_insight','visit_prep'].includes(role)&&!claim.findings?.length?displayText(claim.text):claim.text));
       if(role==='clinician_brief')for(const finding of claim.findings||[]){
         const origin=result.sources.find(f=>f.fact_id===finding.fact_id);
         const metric=result.sources.find(f=>f.source_ref===origin?.source_ref&&f.signal===finding.signal&&!f.finding&&/deviation/.test(f.text));
@@ -237,8 +237,12 @@
   async function arrival(){
     const ctx=window.auraAgentContext();if(!ctx.patientId||!ctx.record||document.body.dataset.page==='about')return;
     const role=ctx.role==='clinician'?'clinician_brief':'patient_insight',area=document.getElementById(`agent-${role}`),ticket=requestEpoch;
-    if(ctx.offline||!navigator.onLine){area.replaceChildren(node('p','Assessment paused while offline. Safety resources remain separate.'));return;}
-    const placeholder=document.getElementById('recap-placeholder');if(role==='patient_insight'&&placeholder&&!area.querySelector('.patient-recap'))placeholder.hidden=false;
+    const placeholder=document.getElementById('recap-placeholder');
+    // Loading art is decoration only: it never outlives the request, and safety,
+    // offline and error states replace it immediately.
+    const settle=()=>{if(placeholder)placeholder.hidden=true;area.querySelector('.recap-pending')?.remove();};
+    if(ctx.offline||!navigator.onLine){settle();area.replaceChildren(node('p','Assessment paused while offline. Safety resources remain separate.'));return;}
+    if(role==='patient_insight'&&placeholder&&!area.querySelector('.patient-recap'))placeholder.hidden=false;
     const key=`${ctx.patientId}:${role}:${ctx.revision}`;
     if(pending.has(key))return pending.get(key);
     const work=(async()=>{
@@ -248,10 +252,13 @@
       if(role==='patient_insight'&&arrival.preview.draft.claims.length)document.getElementById('month-recap').hidden=false;
       if(!arrival.generation_allowed||arrival.cached||completed.has(arrival.run_id)||(role==='patient_insight'&&!arrival.preview.draft.claims.length))return;
       completed.set(arrival.run_id,true);
+      if(role==='patient_insight'&&area.querySelector('.patient-recap')&&!area.querySelector('.recap-pending')){
+        const pendingNote=node('p','Writing a fresh summary…','recap-pending fine');pendingNote.prepend(node('span','','recap-pending-dot'));
+        pendingNote.firstChild.setAttribute('aria-hidden','true');area.append(pendingNote);}
       const generated=await fetch(`/patients/${encodeURIComponent(ctx.patientId)}/agent/${role}`,{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({run_id:arrival.run_id,window_days:arrival.window_days,client_offline:false})});
       const result=await generated.json();if(!valid(ticket,ctx))return;
       if(generated.ok&&result.status!=='STALE')render(result,area,role);
-    })().catch(()=>{ /* Immediate extraction remains visible; no retry loop. */ }).finally(()=>{pending.delete(key);if(ticket!==requestEpoch)arrival();});pending.set(key,work);return work;
+    })().catch(()=>{ /* Immediate extraction remains visible; no retry loop. */ }).finally(()=>{if(ticket===requestEpoch)settle();pending.delete(key);if(ticket!==requestEpoch)arrival();});pending.set(key,work);return work;
   }
   window.refreshAuraAssessment=arrival;
   // Chart backlinks must reveal a card nested in the one-tap overflow first.

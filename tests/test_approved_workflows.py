@@ -102,6 +102,17 @@ class ApprovedWorkflowTests(unittest.TestCase):
         self.assertEqual(draft['headline'],'Related facts from the record')
         self.assertTrue(any(text.startswith('Activity') for text in texts))
         self.assertFalse(any('sensing' in text or 'Recorded period ends' in text for text in texts))
+    def test_aw4e_fallback_selects_routine_facts_and_whole_words(self):
+        from aura_agent.templates import fallback
+        with self.repo.transaction() as repo:at=datetime.fromisoformat(repo.events(self.patient)[-1]['occurred_at'])
+        id=str(uuid4());self.service.process(ApplicationEvent(id,self.patient,EventType.MEDICATION_EVENT,at,datetime.now(timezone.utc),'synthetic_patient_ui',{'status':'MISSED','scheduled_time':at.isoformat()},id,id))
+        tools=RecordTools(EvidenceViewService(self.service).get(self.patient),AgentRole.RECORD_QA)
+        for name in tools.groups:tools.call(name,{})
+        texts=[c['text'] for c in fallback(tools,AgentRole.RECORD_QA,'Were any medication doses missed?')['claims']]
+        self.assertTrue(texts and all(text.startswith('Medication-routine record') for text in texts))
+        from aura_agent.templates import _mentions
+        self.assertFalse(_mentions('was the patient proactive?','active'));self.assertTrue(_mentions('any missed doses?','dose'))
+        self.assertEqual(fallback(tools,AgentRole.RECORD_QA,'Any temperature changes?')['claims'],[])
     def test_aw5_rules_or_semantic_cannot_lower_current_mode(self):
         result=self.service.process(self.event('I want to die.'))
         self.assertEqual(result.safety['state']['interaction_mode'],'ELEVATED')

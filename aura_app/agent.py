@@ -192,8 +192,10 @@ class AgentService:
                     disclosure=("Assistant paused: safety interaction or record evaluation comes first." if blocked else
                                 "Checked AI claims; unsupported claims removed. Required history uses labelled source extraction where needed." if result.get('reason')=='VALIDATED_PARTIAL_MODEL_DRAFT' else
                                 "" if result["generation_used"] else
-                                "The demo's AI usage limit was reached, so these are related facts from the record. Try again in a minute."
-                                if any(row.get('provider_failure') == 'demo_budget' for row in result.get('trace', [])) else
+                                "The demo's shared AI limit for this minute was reached, so these are related facts from the record. Try again shortly."
+                                if any(row.get('provider_failure') == 'demo_budget_minute' for row in result.get('trace', [])) else
+                                "The demo's shared hourly AI limit was reached, so these are related facts from the record."
+                                if any(row.get('provider_failure') == 'demo_budget_hour' for row in result.get('trace', [])) else
                                 "Summary from the record; generated wording is unavailable or was not validated."))
                 repo.append_agent_run(result)
                 repo.append_audit({"patient_id": patient_id, "event_id": latest["event_id"] if latest else "agent-no-event",
