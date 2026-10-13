@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-label="AURA Health laptop frame">
+  <title>AURA Health laptop frame</title>
+  <desc>Place a 1200×720 screenshot in the screen area. Screen area: x=40, y=30, width=1200, height=720.</desc>
+  <defs>
+    <linearGradient id="laptop-lid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2320"/>
+      <stop offset="1" stop-color="#1a1512"/>
+    </linearGradient>
+    <linearGradient id="laptop-base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a322e"/>
+      <stop offset="1" stop-color="#2a2320"/>
+    </linearGradient>
+  </defs>
+  <!-- Lid back panel -->
+  <rect x="0" y="0" width="1280" height="780" rx="16" fill="url(#laptop-lid)"/>
+  <!-- Screen bezel -->
+  <rect x="20" y="15" width="1240" height="750" rx="8" fill="#1a1512"/>
+  <!-- Screen area (place screenshot here) -->
+  <rect x="40" y="30" width="1200" height="720" rx="4" fill="#fbfaf7"/>
+  <!-- Camera dot -->
+  <circle cx="640" cy="22" r="3" fill="#7a7066" opacity="0.6"/>
+  <!-- Hinge / base -->
+  <rect x="-10" y="775" width="1300" height="20" rx="0" fill="url(#laptop-base)"/>
+  <rect x="540" y="775" width="200" height="20" rx="0" fill="#2a2320"/>
+  <!-- Base front edge -->
+  <rect x="-10" y="793" width="1300" height="7" rx="0 0 6 6" fill="#1a1512"/>
+</svg>
