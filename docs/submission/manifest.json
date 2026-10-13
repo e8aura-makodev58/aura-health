@@ -16,6 +16,28 @@
     "conversation_history": {"path": "assets/development-history.pdf", "max_bytes": 10000000, "status": "MISSING", "screenshot_count": 0, "chat_history_included": false},
     "architecture_ppt": {"path": "assets/aura-health-deck.pptx", "max_bytes": 10000000, "status": "MISSING"}
   },
+  "supporting_diagrams": {
+    "directory": "../presentation/diagrams/",
+    "names": ["system-overview", "agent-investigation", "safety-precedence"],
+    "formats": ["svg", "png"],
+    "png_dimensions": [1920, 1080],
+    "status": "REVIEW_PENDING"
+  },
+  "preliminary_checks": {
+    "date": "2026-10-13",
+    "branch": "improve/feature-codex",
+    "tested_commit": "f5f06d1",
+    "python_tests_passed": 303,
+    "python_seconds": 357.647,
+    "browser_suites": ["qa_display.cjs", "agent.cjs"],
+    "browser_assertions_passed": 7,
+    "browser_port": 8036,
+    "live_qa_attempts": 3,
+    "live_qa_partial_generated": 1,
+    "live_qa_fallbacks": 2,
+    "github_anonymous_http_status": 404,
+    "evidence": "EVIDENCE_LEDGER.md"
+  },
   "release": {"tested_commit": null, "signed_out_links_verified": false, "claims_reviewed": false, "user_approved": false},
   "submission": {"submitted": false, "submitted_at": null, "confirmation_reference": null}
 }
