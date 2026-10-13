@@ -242,6 +242,8 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-13 — Claude — Merged CodeBuddy's new breathing illustration (`98ccfd9`)
+- User: merge `improve/UI_UX`, push, deploy. One commit: new Miora breathing art (102 KB WebP, replaces 175 KB). Fast-forwarded `main`. The image has an opaque cream background that showed as a square on the welcome card; added a CSS radial mask on `.breath-welcome-art` and `.breathing-icon` so the edges fade into the card. Deployed; live screenshot checked. Browser welcome, qa_display, final-dash-polish PASS.
 ### 2026-10-13 — Claude — Breathing welcome and AI call allowance 30/300 (user-approved)
 - **AI allowance (user: "change ai calls to 30 / 300 … let us not skimp on ai inference"):** `AURA_AI_CALLS_PER_MINUTE` / `AURA_AI_CALLS_PER_HOUR` read by `ai_call_budget()` in `aura_app/hosted.py`; `compose.yaml` defaults 30/300 for the deployed demo. Unset keeps 10/60; invalid values refuse to start. Reverse by setting them in `.env`. Shared site-wide; per-run limits, validation and synthetic-only unchanged. Tests `tests/test_ai_call_budget.py`.
 - **Breathing welcome (user-approved):** patient home shows "Take a breath. AURA is gathering your recent days." with the breathing art and a Continue button, once per browser session (`sessionStorage`), patient view only. Never shown while the safety panel or pathway is active; the help button stays visible; Continue, tapping the card, Enter/Space/Escape dismiss it; the summary loads behind it; reduced motion stops the animation. Skipped under automated browsers unless `window.auraWelcomeInAutomation` is set (keeps the other suites unchanged). Test `tests/browser/welcome.cjs` (3 checks).
