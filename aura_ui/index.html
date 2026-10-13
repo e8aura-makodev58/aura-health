@@ -11,6 +11,7 @@
   <script src="/assets/settings.js" defer></script>
   <script src="/assets/agent.js" defer></script>
   <script src="/assets/features.js" defer></script>
+  <script src="/assets/companion.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -70,6 +71,57 @@
         <img src="/assets/media/breathing-circle.svg" alt="" aria-hidden="true" class="breathing-icon">
         <p class="placeholder-text">A moment while AURA puts your summary together.</p>
       </div>
+      <section id="companion-cards" class="companion-cards" hidden aria-label="Your daily companion" aria-live="polite">
+        <section id="dose-card" class="card companion-card dose-card" hidden aria-labelledby="dose-heading">
+          <div class="card-top"><h2 id="dose-heading">Today's dose</h2><span class="optional-label">Daily</span></div>
+          <p class="companion-detail" id="dose-detail"></p>
+          <div class="dose-actions" role="group" aria-label="Record today's dose">
+            <button data-dose="ACKNOWLEDGED" class="dose-btn dose-taken"><span aria-hidden="true">✓</span> Taken</button>
+            <button data-dose="UNKNOWN" class="dose-btn dose-notyet">Not yet</button>
+            <button data-dose="MISSED" class="dose-btn dose-skipped">Skipped</button>
+          </div>
+          <div id="dose-reason" class="dose-reason" hidden>
+            <p class="fine">What got in the way?</p>
+            <div class="reason-chips" role="group" aria-label="Reason for missed dose">
+              <button data-reason="FORGOT" class="reason-chip">Forgot</button>
+              <button data-reason="SIDE_EFFECTS" class="reason-chip">Side effects</button>
+              <button data-reason="RAN_OUT" class="reason-chip">Ran out</button>
+              <button data-reason="FELT_BETTER" class="reason-chip">Felt better</button>
+              <button data-reason="OTHER" class="reason-chip">Other</button>
+            </div>
+          </div>
+          <p class="fine" id="dose-saved"></p>
+        </section>
+        <section id="medication-card" class="card companion-card medication-card" hidden aria-labelledby="medication-heading">
+          <div class="card-top"><h2 id="medication-heading">My medication</h2></div>
+          <p class="companion-detail" id="medication-name"></p>
+          <p class="fine" id="medication-schedule"></p>
+          <div class="topic-chips" role="group" aria-label="Medication topics" id="topic-chips"></div>
+          <div id="medication-answer" class="medication-answer" hidden aria-live="polite">
+            <p id="answer-text"></p>
+            <p class="fine" id="answer-source"></p>
+          </div>
+          <details class="medication-ask">
+            <summary>Ask a question</summary>
+            <div class="details-body">
+              <label for="medication-question" class="fine">Your question goes through the safety boundary first.</label>
+              <textarea id="medication-question" rows="2" maxlength="500" placeholder="e.g. Can I take this with food?"></textarea>
+              <button id="medication-ask-btn" class="text-button">Ask</button>
+            </div>
+          </details>
+          <p class="fine" id="medication-disclaimer"></p>
+        </section>
+        <section id="coming-up-card" class="card companion-card coming-up-card" hidden aria-labelledby="coming-up-heading">
+          <h2 id="coming-up-heading">Coming up</h2>
+          <ul class="coming-up-list" id="coming-up-list"></ul>
+        </section>
+        <section id="suggestion-card" class="card companion-card suggestion-card" hidden aria-labelledby="suggestion-heading">
+          <h2 id="suggestion-heading">A small idea for today</h2>
+          <p class="companion-detail" id="suggestion-reason"></p>
+          <div class="suggestion-options" role="group" aria-label="Choose a suggestion" id="suggestion-options"></div>
+          <p class="fine">Optional. Never about medication.</p>
+        </section>
+      </section>
       <section id="quiet-card" class="quiet-card" aria-label="Current interaction"><span class="quiet-symbol" aria-hidden="true">◌</span><div><h2 id="quiet-heading">No question from AURA right now.</h2><p id="home-subtitle">You can check in whenever it feels useful.</p></div></section>
       <div id="communication-card" class="card communication-card" hidden><p class="eyebrow">A small question</p><p id="communication-message"></p><p id="wording-origin" class="fine"></p><button id="clarify" class="text-button">Add context</button><button id="why-home" class="text-button">Why AURA asked</button></div>
       <div class="patient-links">
@@ -95,7 +147,12 @@
       <details id="workspace-safety" class="card"><summary>Safety episode evidence <span class="summary-caption">Policy records, not a clinical risk assessment</span></summary><div id="safety-evidence" class="details-body"></div></details>
       <details id="recorded-details" class="recorded-details"><summary>Sources, references &amp; recorded timeline</summary><section class="data-strip"><div><h2 id="data-heading">Personal patterns</h2><p id="data-summary"></p></div></section><section class="pattern-overview"><h2>Current recorded observations</h2><p id="patterns-summary"></p><button id="why-patterns" class="text-button">Reference details</button></section><div id="signal-list" class="signal-grid"></div><details class="timeline-section"><summary>Your recent timeline <span class="summary-caption">Recorded events, in order</span></summary><ol id="timeline-list"></ol></details></details>
     </section>
-    <section id="review-view" class="view" hidden aria-labelledby="review-heading"><div class="page-intro"><img src="/assets/media/calm-state.svg" alt="" aria-hidden="true" class="page-hero-img"><p class="eyebrow">Prepared, not sent</p><h1 id="review-heading">For your next review</h1><p>Your context in one place, ready to look through before a clinician conversation.</p></div><div class="sharing-note"><span aria-hidden="true">◇</span><div><strong>Only a temporary preview.</strong><p>Nothing is shared automatically. Tick items to explore a selection; it is not saved as approval.</p></div></div><div class="review-overview"><span class="eyebrow">Recorded period</span><p id="review-period"></p><p id="selection-summary" class="fine">No items selected. Nothing is sent.</p></div><section id="appointment-preview" class="card appointment-preview" aria-label="Factual appointment preview"></section><details id="review-details"><summary>Inspect records &amp; explore a temporary selection</summary><div id="review-list"></div></details><button id="add-question" class="text-button">Add a question for your clinician <span aria-hidden="true">↗</span></button><p class="fine">Questions pass through the safety boundary. Unresolved text may be held and omitted.</p></section>
+    <section id="review-view" class="view" hidden aria-labelledby="review-heading"><div class="page-intro"><img src="/assets/media/calm-state.svg" alt="" aria-hidden="true" class="page-hero-img"><p class="eyebrow">Prepared, not sent</p><h1 id="review-heading">For your next review</h1><p>Your context in one place, ready to look through before a clinician conversation.</p></div><div class="sharing-note"><span aria-hidden="true">◇</span><div><strong>Only a temporary preview.</strong><p>Nothing is shared automatically. Tick items to explore a selection; it is not saved as approval.</p></div></div><div class="review-overview"><span class="eyebrow">Recorded period</span><p id="review-period"></p><p id="selection-summary" class="fine">No items selected. Nothing is sent.</p></div><section id="appointment-preview" class="card appointment-preview" aria-label="Factual appointment preview"></section>
+<section id="missed-dose-items" class="card missed-dose-items" hidden aria-label="Missed doses to discuss">
+  <h2>Missed doses to discuss</h2>
+  <p id="missed-dose-summary" class="fine"></p>
+  <ul id="missed-dose-list" class="missed-dose-list"></ul>
+</section><details id="review-details"><summary>Inspect records &amp; explore a temporary selection</summary><div id="review-list"></div></details><button id="add-question" class="text-button">Add a question for your clinician <span aria-hidden="true">↗</span></button><p class="fine">Questions pass through the safety boundary. Unresolved text may be held and omitted.</p></section>
     <section id="about-view" class="view" hidden aria-labelledby="about-heading"><div class="page-intro"><p class="eyebrow">Honest about its limits</p><h1 id="about-heading">Your context. Your choice.</h1></div><section class="card"><h2>A research-informed prototype</h2><p>For adults aged 25–60 on stable, clinician-managed antidepressant maintenance treatment. AURA organizes information; it does not replace a clinician.</p><h2>AI wording and synthetic data</h2><p id="privacy-notice"></p><p>Only synthetic fixtures are used here; no real wearable API is connected. For future institutional use, AURA is intended to connect to an institution-managed on-premises or private-cloud model, subject to review—not a validated deployment capability.</p><p>Synthetic fixtures demonstrate engineering behavior, not clinical efficacy. Safety resources and wording need review before real use.</p><h2>Missing data is just missing data</h2><p>Wearable availability and trust in a baseline are separate. There is currently no governed automatic exit from “Re-establishing”.</p><h2>This is not a secure clinical system</h2><p>There is no production patient authentication or automatic clinician sharing. Use synthetic data only.</p></section></section>
   </main>
   <div class="help-dock" id="patient-help"><button id="talk" class="primary"><span aria-hidden="true">✳</span> I want to mention something <span aria-hidden="true">↗</span></button></div>
