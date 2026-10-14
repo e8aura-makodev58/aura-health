@@ -62,7 +62,7 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                  "\nQuestion IDs may only be: " + json.dumps(QUESTIONS) +
                  "\nNever diagnose, predict relapse, judge risk, give treatment advice, infer causation or decide to interrupt/share. "
                  "Cite delivered fact_ids for EVERY claim; dates/numbers/categories must match cited facts. Retrieve all retained findings for brief/visit roles. "
-                 "Use ISO date strings copied EXACTLY from cited facts. Copy numeric strings exactly: do NOT round, convert units, calculate percentages or turn minutes into clock times. "
+                 "Use ISO date strings copied EXACTLY from cited facts. Copy numeric strings exactly: do NOT do arithmetic yourself, round, convert units or turn minutes into clock times. For check-in counts/percentages/coverage call summarize_checkins when available; copy its display sentence exactly into a cited claim (not the headline). Derived tool results are valid evidence. "
                  "Return plain JSON, never a code fence. claims is an ARRAY of objects, fact_ids an ARRAY of strings, findings an ARRAY of objects with EXACT fact_id/signal/direction/since copied from facts. "
                  "Write natural, readable sentences; use changes/context/gaps/routine/review sections and an optional headline of at most 20 words. "
                  "Each cited finding MUST have an exact findings entry: fact_id,signal,direction,since copied from its tool fact. "
@@ -189,6 +189,18 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                     messages.append({'role':'user','content':f'Server contract: retrieve {needed} before finalizing. Read all keys for retained history; use {{}} for this retrieval. No retrieved evidence is not evidence of no change. This does not relax output grounding.'})
                     continue
                 raw = json.loads(reply['content'])
+                if role.value == 'record_qa':
+                    calculated = {fid for fid, fact in tools.delivered.items()
+                                  if fact.get('analysis', {}).get('kind') == 'checkin_proportion'}
+                    cited = {fid for claim in raw.get('claims', []) for fid in claim.get('fact_ids', [])
+                             if fid in calculated and claim.get('text') == tools.delivered[fid]['analysis']['display']}
+                    if calculated - cited and any(item.get('action') == 'CALCULATION_ANSWER_REQUIRED' for item in trace):
+                        raise ValueError('CALCULATION_ANSWER_INCOMPLETE')
+                    if calculated - cited and not any(item.get('action') == 'CALCULATION_ANSWER_REQUIRED' for item in trace):
+                        trace.append({'action': 'CALCULATION_ANSWER_REQUIRED', 'fact_ids': sorted(calculated-cited)})
+                        messages.append({'role': 'assistant', 'content': reply['content']})
+                        messages.append({'role': 'user', 'content': 'The requested calculation returned derived evidence. Answer using its exact display sentence with its fact_id, including denominator, dates and coverage. Do not replace the calculated answer with a run-length observation or say the percentage is not recorded. All existing validation and remaining budgets still apply.'})
+                        continue
                 headline_facts = None
                 if presentation:
                     from .presentation import checked_headline
@@ -266,7 +278,7 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
     except Exception as exc:
         # Never persist raw provider errors (which can contain request data/secrets).
         reason = "INVALID_OR_UNAVAILABLE_MODEL" if provider.live else "OFFLINE_EXTRACTION"
-        codes = {"PROHIBITED_CLAIM", "UNDELIVERED_FACT", "FABRICATED_NUMBER_OR_DATE", "UNSUPPORTED_SIGNAL",'WINDOW_BUDGET','WINDOW_REQUIRED','TOOL_BUDGET','INVALID_MODEL_MESSAGE',
+        codes = {"CALCULATION_ANSWER_INCOMPLETE", "PROHIBITED_CLAIM", "UNDELIVERED_FACT", "FABRICATED_NUMBER_OR_DATE", "UNSUPPORTED_SIGNAL",'WINDOW_BUDGET','WINDOW_REQUIRED','TOOL_BUDGET','INVALID_MODEL_MESSAGE',
                  "UNSUPPORTED_CATEGORY", "OMITTED_RETAINED_FINDING", "PATIENT_BURDEN", "QUESTION_RANKER_CONTENT",
                  "UNAPPROVED_QUESTION", "FINDING_MISMATCH", "VERIFIER_REJECTED", "HEADLINE_BUDGET", "UNAUTHORIZED_TOOL", "PROMPT_BUDGET", "PARALLEL_TOOL_LIMIT", 'HEADLINE_SCHEMA', 'HEADLINE_JARGON', 'PATIENT_HEADLINE_STYLE', 'PATIENT_HEADLINE_PERSPECTIVE', 'TASK_INPUT_BUDGET'}
         if isinstance(exc, ValueError) and str(exc) in codes:
@@ -285,6 +297,8 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
         # Offline extraction returns the same retained facts, not the same
         # synthesized answer. Supply facts via the same scoped read tools.
         for name in tools.groups:
+            if name == 'summarize_checkins':
+                continue  # An extraction fallback must not invent analysis arguments.
             tools.call(name, {})
         output = fallback(tools, role, query)
     return {"draft": output, "trace": trace, "reason": reason,

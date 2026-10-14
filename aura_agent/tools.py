@@ -153,6 +153,16 @@ class RecordTools:
         specs = []
         for name in self.groups:
             props = {}
+            if name == "summarize_checkins":
+                specs.append({"type": "function", "function": {"name": name,
+                    "description": "Calculate check-in counts, coverage and percentages. Use last_days with null start/end for an inclusive window ending on the latest recorded patient-local date, or explicit ISO start/end with null last_days. Latest non-held report per local day wins; absent days remain unknown. State is Good, Okay or Rough. Default denominator: recorded_days; calendar_days reports the fraction explicitly recorded as that state, not the state of missing days. Cite the returned fact and copy its display text for a percentage answer. Call twice for period comparisons; do not calculate new numbers yourself.",
+                    "strict": True, "parameters": {"type": "object", "additionalProperties": False,
+                        "required": ["start", "end", "last_days", "state", "denominator"],
+                        "properties": {"start": {"type": ["string", "null"]}, "end": {"type": ["string", "null"]},
+                            "last_days": {"type": ["integer", "null"], "minimum": 1, "maximum": 56},
+                            "state": {"type": "string", "enum": ["Good", "Okay", "Rough"]},
+                            "denominator": {"type": "string", "enum": ["recorded_days", "calendar_days"]}}}}})
+                continue
             if name in {"get_series", "get_context", "get_gaps"}:
                 props = {"key_id": {"type": ["string", "null"], "enum": [*self.keys, None]},
                          "start": {"type": ["string", "null"]}, "end": {"type": ["string", "null"]}}
@@ -172,6 +182,16 @@ class RecordTools:
             raise ValueError("UNAUTHORIZED_TOOL")
         allowed = {key for spec in self.specs() if spec["function"]["name"] == name for key in spec["function"]["parameters"]["properties"]}
         if set(arguments) - allowed: raise ValueError("UNAUTHORIZED_TOOL")
+        if name == "summarize_checkins":
+            if not arguments:
+                return {"facts": [], "error": "WINDOW_REQUIRED", "scope": "explicit window and category arguments required"}
+            from .checkin_analysis import summarize
+            fact = summarize(self.evidence, arguments, self.cutoff, f"f{len(self.facts)+1}")
+            self.facts[fact['fact_id']] = fact
+            self.delivered[fact['fact_id']] = fact
+            return {"facts": [{**fact, "source_refs": ["ref:" + sha256(ref.encode()).hexdigest()[:16]
+                                                       for ref in fact['source_refs']]}],
+                    "scope": "deterministic descriptive calculation; patient-local days; missing is unknown"}
         if name in {"compare_windows", "day_of_week", "summarize_gaps"}:
             if not arguments: return {"facts": [], "scope": "explicit window arguments required"}
             return self._analysis(name, arguments)
