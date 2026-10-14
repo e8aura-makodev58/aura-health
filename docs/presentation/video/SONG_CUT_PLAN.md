@@ -2,7 +2,7 @@
 
 The song carries the self-explanatory opening and the close; a short voice-over carries the
 middle, where the agent, safety, architecture and build reflection need explaining.
-Song: [`../../submission/AURA_AD_SONG_v4.md`](../../submission/AURA_AD_SONG_v4.md) (sung version,
+Song: [`../../submission/AURA_AD_SONG_v5.md`](../../submission/AURA_AD_SONG_v5.md) (sung version,
 plus the instrumental version as a quiet bed under the voice). Video: the current silent cut,
 `aura-health-walkthrough-novoice.mp4` (5:58), with your 8-second Miora intro and outro added.
 
@@ -78,8 +78,8 @@ beat of silence before the final chorus. Captions already on screen stay as they
 > reviewed and tested. Our tip: write down what must never change before asking an AI to build
 > anything.
 
-Then the song takes over for the final chorus and the sung close: *"Aura Health, a calm
-companion, in the days between your visits, room for your day."*
+Then the song takes over for the final chorus and the sung close: *"Room for your day, room
+for your own way, Aura Health, room for your day."*
 
 ## What Claude can do once the audio exists
 
