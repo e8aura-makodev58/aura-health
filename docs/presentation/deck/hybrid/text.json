@@ -46,14 +46,14 @@
    {
     "x": 148,
     "y": 665.390625,
-    "w": 642,
+    "w": 198,
     "h": 35,
     "align": "start",
     "lineHeight": 31.2,
     "size": 26,
     "runs": [
      {
-      "text": "Healthcare track · Challenge Statement 2 · Scenario 1",
+      "text": "Healthcare track",
       "weight": 700,
       "color": "rgb(42, 35, 32)",
       "size": 26,

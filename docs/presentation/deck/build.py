@@ -122,7 +122,7 @@ def slides():
         <div style='display:flex;align-items:center;gap:22px;margin-bottom:36px'><img src='{MEDIA}aura-mark.svg' style='width:96px;height:96px' alt=''></div>
         <h1 style='font-size:120px'>AURA Health</h1>
         <p class='lead' style='font-size:44px;margin-top:22px;color:#2a2320'>A calm companion between doctor visits</p>
-        <div class='pill' style='background:#fff;border:2px solid #eee9e0;margin-top:54px'>Healthcare track · Challenge Statement 2 · Scenario 1</div>
+        <div class='pill' style='background:#fff;border:2px solid #eee9e0;margin-top:54px'>Healthcare track</div>
       </div>""", brand=False, foot=False)))
     # 2 Chosen challenge
     s.append(("challenge", 1, page("""

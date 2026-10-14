@@ -1,5 +1,7 @@
 # Voice-over sheet — `aura-health-walkthrough-novoice.mp4` (5:58)
 
+> **Short cut (2026-10-14):** `aura-health-short-3min-novoice.mp4`, exactly 3:00, built by `tools/assemble_short.py` from the same recordings (cover, problem, story highlights, agent with the rejected first draft and checked answer, flu, safety, architecture, agent loop, challenge fit, close). Not in git, like the full cut.
+>
 > **Alternative (user choice, 2026-10-14):** song for the opening and close, voice-over only for the middle — see [`SONG_CUT_PLAN.md`](SONG_CUT_PLAN.md).
 
 The app scenes are a real recording of the live **in-app guided story** ("Play the 3-minute story"),
