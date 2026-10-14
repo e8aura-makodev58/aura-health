@@ -305,6 +305,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-14 — Claude — CodeBuddy export masked and committed (user-directed)
+- Secret check (values compared inside the container, yes/no only): settings admin token, OpenAI key and DeepSeek key do not appear in the export; no key/token/cookie patterns. User chose to mask and publish: `192.168.80.193` → `192.168.x.x`, SSH key file names → `~/.ssh/<key>`, `/home/makodev58` → `~`. Unmasked backup kept outside the repo (job tmp). `development-history.pdf` regenerated (28 pages). The `codebuddy_*.json` ignore rule was removed; both files committed. The public repo owner name still appears (already public).
+
 ### 2026-10-14 — Claude — Usage demo video (song half, option B) and one-line-per-finding notes
 - New `video/tools/record_usage.cjs` + `assemble_usage.py`: a real usage session on the live site (no tour, no safety example), positive note "I enjoyed painting today for 3 hours"; waits trimmed to 3 s; re-asks a clinician question once if it falls back. Output `aura-health-usage-demo-novoice.mp4` 3:51 and `aura-health-combined-usage-draft-novoice.mp4` 7:18 (not in git). Details in `SONG_CUT_PLAN.md` option B.
 - `aura_ui/agent.js`: appointment notes show one plain line per finding (claims combining two findings no longer joined with ";"). agent/impression browser suites PASS. Deployed.

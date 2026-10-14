@@ -27,11 +27,12 @@
       "path": "assets/development-history.pdf",
       "max_bytes": 10000000,
       "status": "REVIEW_PENDING",
-      "bytes": 3630810,
+      "bytes": 3634622,
       "screenshot_count": 8,
       "chat_history_included": true,
-      "source_export": "codebuddy_20261014013250.json (not in Git)",
-      "builder": "tools/history_html.py + tools/history_pdf.cjs"
+      "source_export": "codebuddy_20261014013250.json (committed 2026-10-14, user-approved; LAN address, SSH key names and home paths masked)",
+      "builder": "tools/history_html.py + tools/history_pdf.cjs",
+      "pages": 28
     },
     "architecture_ppt": {
       "path": "assets/aura-health-deck.pptx",

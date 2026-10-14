@@ -11,5 +11,3 @@ aura-demo-workspaces/
 **/provider-credentials.json
 **/provider-settings.json
 
-# Raw development-tool chat exports stay out of Git (submission README rule 7)
-docs/submission/assets/codebuddy_*.json
