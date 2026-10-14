@@ -11,8 +11,11 @@ from .roles import ROLE_TOOLS
 
 
 class RecordTools:
-    def __init__(self, evidence, role, *, window_days=56, recent_readings_days=7, checkin_days=7):
+    def __init__(self, evidence, role, *, window_days=56, recent_readings_days=7, checkin_days=7, withheld=frozenset()):
+        """withheld: optional categories the patient has not shared with the clinician
+        ("notes", "readings", "checkin_history"); their facts are never created."""
         self.role = role
+        self.withheld = frozenset(withheld)
         self.facts = {}
         self.groups = {name: [] for name in ROLE_TOOLS[role]}
         self.required = set()
@@ -23,7 +26,9 @@ class RecordTools:
         self.keys = {f"k{index+1}": row for index, row in enumerate(evidence["signals"])}
         self.cutoff = cutoff = (datetime.fromisoformat(end) - timedelta(days=window_days-1)).date().isoformat() if end else ""
 
-        def add(tool, source, text, *, signal=None, required=False, finding=None, at=None):
+        def add(tool, source, text, *, signal=None, required=False, finding=None, at=None, category=None):
+            if category in self.withheld:
+                return
             fid = f"f{len(self.facts) + 1}"
             fact = {"fact_id": fid, "source_ref": source, "text": text, "signal": signal,
                     "finding": finding, "at": at, "key_id": active_key if signal else None}
@@ -67,8 +72,8 @@ class RecordTools:
             # window. No new statistics, drift computation or missing-value filling.
             rows = [row for row in signal["observations"] if row["day"] >= cutoff and not row["deferred"]]
             for row in rows[-8:]:
-                add("get_series", row["event_id"], f"{label} recorded {row['day']}: {row['value']} {signal['unit']}.", signal=key["signal"], at=row["day"])
-            if not enabled and signal.get('registry', {}).get('display', True) and end:
+                add("get_series", row["event_id"], f"{label} recorded {row['day']}: {row['value']} {signal['unit']}.", signal=key["signal"], at=row["day"], category="readings")
+            if not enabled and signal.get('registry', {}).get('display', True) and end and "readings" not in self.withheld:
                 start = (datetime.fromisoformat(end).date() - timedelta(days=recent_readings_days-1)).isoformat()
                 threshold = self.coverage_thresholds.get(key['signal'], {}).get('minimum_observation_coverage', .5)
                 recent = sorted((row for row in signal['observations'] if not row['deferred']
@@ -99,10 +104,10 @@ class RecordTools:
                 self.facts[f'f{len(self.facts)}']['context_span'] = {'start':start[:10], 'end':finish[:10] if finish else (end or '')[:10]}
                 if row["event_id"] in evidence.get("agent_assessed_context_ids", []) and row.get("explanation"):
                     note = str(row["explanation"])[:400]
-                    add("get_context", row["event_id"], f"{label}: patient-reported context: {json.dumps(note)}.", signal=key["signal"])
+                    add("get_context", row["event_id"], f"{label}: patient-reported context: {json.dumps(note)}.", signal=key["signal"], category="notes")
         for row in evidence["checkins"][-8:]:
             if not row["deferred"] and row["at"][:10] >= cutoff:
-                add("get_decisions", row["event_id"], f"Patient check-in {row['at'][:10]}: {row['state']}.")
+                add("get_decisions", row["event_id"], f"Patient check-in {row['at'][:10]}: {row['state']}.", category="checkin_history")
         # One answer per recorded calendar day; held answers and missing days
         # cannot extend a run. Latest committed answer wins within the day.
         days = {}
@@ -143,7 +148,12 @@ class RecordTools:
                 f"{row['signal']}: {row['status']}. Explanation retained for review; own reference unchanged.", signal=row["signal"], required=True)
         add("get_review_snapshot", "committed:review", "Review draft status: Not sent.")
         for row in evidence.get("assessed_notes", []):
-            add("get_context", row["event_id"], f"Patient note {row['at'][:10]}: {json.dumps(row['text'][:400])}.")
+            add("get_context", row["event_id"], f"Patient note {row['at'][:10]}: {json.dumps(row['text'][:400])}.", category="notes")
+        if self.withheld:
+            names = {"notes": "notes (their own words)", "readings": "detailed wearable readings", "checkin_history": "each day's check-in entries"}
+            listed = ", ".join(names[c] for c in ("notes", "readings", "checkin_history") if c in self.withheld)
+            if listed:
+                add("get_status", "sharing:withheld", f"Not shared with the clinician by the patient: {listed}. These are not available in this record; ask the patient directly if relevant.")
         if evidence.get("activity_summary"):
             add("get_context", evidence["activity_summary"]["ref"], evidence["activity_summary"]["text"])
         from .voice import prepare_fact

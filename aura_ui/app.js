@@ -184,6 +184,7 @@ function render() {
   setText("home-subtitle", communication?.pinned_resources ? "The policy message and separate resources remain above, on every page." : "You can check in whenever it feels useful.");
   $("talk").disabled = busy;
   window.auraLoadActivitySummary?.();
+  window.auraLoadSharing?.();
   setText("communication-eyebrow", communication?.mode === "NORMAL_SUPPORT" && communication?.generation_used ? "From AURA" : "A small question");
   setText("communication-message", communication?.message);
   setText("wording-origin",communication?.generation_used?"AI-written":"Fixed wording");

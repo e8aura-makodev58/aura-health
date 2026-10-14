@@ -516,3 +516,14 @@ body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:b
 .activity-summary {margin:18px 0}
 .activity-table {width:100%;border-collapse:collapse;margin:8px 0}
 .activity-table th,.activity-table td {text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:.92rem}
+
+/* Sharing with the clinician */
+.sharing-minimum {margin:6px 0 12px;padding-left:1.2rem}
+.sharing-options {display:flex;flex-direction:column;gap:10px;margin:8px 0}
+.sharing-option {display:flex;align-items:center;gap:10px;font-size:.95rem}
+.sharing-status {margin:0 0 14px;padding:10px 14px;border-radius:var(--radius-md);background:var(--surface-soft);font-size:.92rem}
+.demo-sharing button {margin:4px 6px 0 0}
+body[data-role="clinician"][data-share-readings="no"] #evidence-charts,
+body[data-role="clinician"][data-share-readings="no"] #record-comparison-toggle,
+body[data-role="clinician"][data-share-readings="no"] #record-comparison,
+body[data-role="clinician"][data-share-checkin-history="no"] .reports-card {display:none !important}

@@ -93,6 +93,13 @@ class MedicationAskIn(BaseModel):
     topic_id: str | None = None
     question: str | None = Field(default=None, min_length=1, max_length=500)
 
+class SharingIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    notes: bool | None = None
+    readings: bool | None = None
+    checkin_history: bool | None = None
+    activity_details: bool | None = None
+
 class SuggestionChoiceIn(BaseModel):
     model_config = {"extra": "forbid", "strict": True}
     option_id: str = Field(min_length=1, max_length=40, pattern=r"^[a-z_]+$")
@@ -207,7 +214,11 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
 
     @app.get("/patients/{patient_id}/activities/summary")
     def activities_summary(patient_id: str):
-        return activity_service.summary(patient_id)
+        summary = activity_service.summary(patient_id)
+        # Activity phrases reach the clinician only if the patient shares them.
+        if "activity_details" not in sharing_service.withheld(patient_id):
+            summary["details"] = activity_service.for_patient(patient_id)["items"]
+        return summary
 
     @app.post("/patients/{patient_id}/companion/suggestions/personalize")
     def companion_personalize(patient_id: str):
@@ -217,9 +228,21 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def companion_choose(patient_id: str, body: SuggestionChoiceIn):
         return companion_service.choose(patient_id, body.option_id)
 
+    from .sharing import SharingService, filter_evidence
+    sharing_service = SharingService(service, default_all=agent_service.sharing_default_all)
+
     @app.get("/patients/{patient_id}/evidence")
-    def evidence_view(patient_id: str):
-        return evidence_service.get(patient_id)
+    def evidence_view(patient_id: str, viewer: Literal["patient", "clinician"] = "patient"):
+        evidence = evidence_service.get(patient_id)
+        return filter_evidence(evidence, sharing_service.withheld(patient_id)) if viewer == "clinician" else evidence
+
+    @app.get("/patients/{patient_id}/sharing")
+    def sharing_get(patient_id: str):
+        return sharing_service.get(patient_id)
+
+    @app.post("/patients/{patient_id}/sharing")
+    def sharing_set(patient_id: str, body: SharingIn):
+        return sharing_service.set(patient_id, {key: value for key, value in body.model_dump().items() if value is not None})
 
     @app.post("/patients/{patient_id}/agent/{role}")
     def agent_run(patient_id: str, role: AgentRole, body: AgentIn):

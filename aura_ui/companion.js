@@ -403,6 +403,59 @@ window.auraLoadActivitySummary = async function () {
     }
     document.getElementById("activity-summary-window").textContent =
       `${companionDateLabel(data.recent.start)}–${companionDateLabel(data.recent.end)} vs ${companionDateLabel(data.earlier.start)}–${companionDateLabel(data.earlier.end)} · days on which an activity was mentioned`;
+    let list = document.getElementById("activity-summary-details");
+    if (!list) { list = document.createElement("ul"); list.id = "activity-summary-details"; list.className = "activity-list"; document.getElementById("activity-summary-rows").closest("table").after(list); }
+    list.replaceChildren(...(data.details || []).slice(0, 6).map(item => { const li = document.createElement("li"); li.textContent = `“${item.phrase}” · ${companionDateLabel(item.at)}`; return li; }));
+    list.hidden = !(data.details || []).length;
     card.hidden = !(data.categories || []).length;
   } catch { card.hidden = true; }
 };
+
+
+// Sharing with the clinician (patient consent). The server filters clinician data; the page
+// mirrors it: switches on the patient side, a status line and hidden charts on the clinician side.
+const SHARE_NAMES = {notes: "notes", readings: "detailed readings", checkin_history: "daily check-ins", activity_details: "activity details"};
+window.auraLoadSharing = async function () {
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) return;
+  let data;
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patient)}/sharing`, {cache:"no-store"});
+    if (!response.ok) return;
+    data = await response.json();
+  } catch { return; }
+  if (window.auraAgentContext?.()?.patientId !== patient) return;
+  window.auraSharing = data;
+  const shared = Object.fromEntries(data.optional.map(row => [row.id, row.shared]));
+  for (const [id, value] of Object.entries(shared)) document.body.dataset["share" + id.replace(/(^|_)(\w)/g, (_, __, c) => c.toUpperCase())] = value ? "yes" : "no";
+  const minimum = document.getElementById("sharing-minimum");
+  minimum.replaceChildren(...data.minimum.map(text => { const li = document.createElement("li"); li.textContent = text; return li; }));
+  const options = document.getElementById("sharing-options");
+  options.replaceChildren();
+  for (const row of data.optional) {
+    const label = document.createElement("label"); label.className = "sharing-option";
+    const box = document.createElement("input"); box.type = "checkbox"; box.checked = row.shared; box.dataset.share = row.id;
+    box.addEventListener("change", () => saveSharing({[row.id]: box.checked}));
+    label.append(box, document.createTextNode(" " + row.label)); options.append(label);
+  }
+  document.getElementById("sharing-source").textContent = data.source === "demo_default_all"
+    ? "Demo: everything is shared until you change it. Changes are recorded with the date."
+    : `Your choice${data.updated_at ? `, recorded ${companionDateLabel(data.updated_at)}` : ""}. You can change it any time.`;
+  const hidden = data.optional.filter(row => !row.shared).map(row => SHARE_NAMES[row.id]);
+  const status = document.getElementById("sharing-status");
+  status.textContent = hidden.length
+    ? `Shared by the patient: the agreed minimum. Not shared: ${hidden.join(", ")}. Ask the patient if it matters.`
+    : "The patient shares everything in this record, including notes and detailed readings.";
+  status.hidden = false;
+};
+async function saveSharing(choices) {
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) return;
+  try {
+    await fetch(`/patients/${encodeURIComponent(patient)}/sharing`, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(choices)});
+  } finally { await window.auraLoadSharing(); window.auraLoadActivitySummary?.(); }
+}
+window.auraSaveSharing = saveSharing;
+for (const [id, value] of [["share-all", true], ["share-minimum", false]]) {
+  document.getElementById(id)?.addEventListener("click", () => saveSharing({notes:value, readings:value, checkin_history:value, activity_details:value}));
+}
