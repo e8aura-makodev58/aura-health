@@ -1,5 +1,7 @@
 # Voice-over sheet — `aura-health-walkthrough-novoice.mp4` (5:58)
 
+> **Alternative (user choice, 2026-10-14):** song for the opening and close, voice-over only for the middle — see [`SONG_CUT_PLAN.md`](SONG_CUT_PLAN.md).
+
 The app scenes are a real recording of the live **in-app guided story** ("Play the 3-minute story"),
 so the video shows exactly what judges can click. Read the narration from
 [`../SCRIPT.md`](../SCRIPT.md) (v4) against these timestamps. The video has a silent audio track;
