@@ -8,6 +8,7 @@ from the curated pool and acknowledge a choice in one checked sentence (fixed wo
 from collections import Counter
 from hashlib import sha256
 import json
+import threading
 from contextlib import contextmanager
 from copy import copy
 from dataclasses import dataclass
@@ -80,6 +81,7 @@ class CompanionService:
         # and acknowledges a choice. Without it, the rule-based ideas and fixed wording stay.
         self.provider = provider
         self._picks = {}
+        self._pick_lock = threading.Lock()  # one model pick at a time; concurrent loads reuse it
         self.lookup = lookup or medication_lookup
         self.select = select or suggestion_selector
         self.config = config or CompanionConfig()
@@ -182,15 +184,16 @@ class CompanionService:
             return {"personalized": False}
         notes = self._recent_notes(patient_id)
         key = sha256(json.dumps([patient_id, suggestions, notes, self.provider.model_id], sort_keys=True).encode()).hexdigest()
-        if key not in self._picks:
-            try:
-                from aura_agent.suggestions import personalize
-                self._picks[key] = personalize(self.provider, suggestions, notes)
-            except Exception:
-                self._picks[key] = None
-            if len(self._picks) > 256:
-                self._picks.pop(next(iter(self._picks)))
-        pick = self._picks[key]
+        with self._pick_lock:
+            if key not in self._picks:
+                try:
+                    from aura_agent.suggestions import personalize
+                    self._picks[key] = personalize(self.provider, suggestions, notes)
+                except Exception:
+                    self._picks[key] = None
+                if len(self._picks) > 256:
+                    self._picks.pop(next(iter(self._picks)))
+            pick = self._picks[key]
         if pick is None:
             return {"personalized": False}
         return {"personalized": True, "because": suggestions["because"], "why": pick["why"], "options": pick["options"]}

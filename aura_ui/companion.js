@@ -5,6 +5,9 @@
 "use strict";
 
 const comingUpIcons = {MEDICATION_REVIEW:"▤", REFILL:"○", APPOINTMENT:"→"};
+// Ideas chosen today stay ticked across re-renders; only the newest agent pick is applied.
+const chosenIdeas = {patient: null, ids: new Set()};
+let ideaTicket = 0;
 
 function companionDateLabel(iso) {
   try {
@@ -94,19 +97,21 @@ function renderCompanion(data) {
   sugCard.hidden = !data.suggestions;
   if (data.suggestions) {
     document.getElementById("suggestion-reason").textContent = data.suggestions.because;
-    const chosen = new Set((data.chosen_today || []).map(row => row.option_id));
+    const patient = window.auraAgentContext?.()?.patientId || null;
+    if (chosenIdeas.patient !== patient) { chosenIdeas.patient = patient; chosenIdeas.ids = new Set(); document.getElementById("suggestion-ack").hidden = true; }
+    for (const row of data.chosen_today || []) chosenIdeas.ids.add(row.option_id);
     document.getElementById("suggestion-why").hidden = true;
     document.getElementById("suggestion-origin").hidden = true;
-    document.getElementById("suggestion-ack").hidden = true;
-    buildSuggestionChips(data.suggestions.options, chosen);
-    personalizeSuggestions(chosen);
+    buildSuggestionChips(data.suggestions.options);
+    personalizeSuggestions();
   }
 
   // Missed-dose items on the review page
   renderMissedDoses(data);
 }
 
-function buildSuggestionChips(options, chosen) {
+function buildSuggestionChips(options) {
+  const chosen = chosenIdeas.ids;
   const opts = document.getElementById("suggestion-options");
   opts.replaceChildren();
   for (const opt of options) {
@@ -127,17 +132,16 @@ function buildSuggestionChips(options, chosen) {
 
 // The agent may re-pick today's ideas from the curated pool for this person (server-checked);
 // the rule-based ideas stay on screen until then, and if it is unavailable.
-async function personalizeSuggestions(chosen) {
+async function personalizeSuggestions() {
   const ctx = window.auraAgentContext?.();
   if (!ctx?.patientId) return;
-  const patient = ctx.patientId;
+  const patient = ctx.patientId, ticket = ++ideaTicket;
   try {
     const response = await fetch(`/patients/${encodeURIComponent(patient)}/companion/suggestions/personalize`, {method:"POST"});
     if (!response.ok) return;
     const result = await response.json();
-    if (!result.personalized || window.auraAgentContext?.()?.patientId !== patient) return;
-    for (const row of window.auraCompanionData?.chosen_today || []) chosen.add(row.option_id);
-    buildSuggestionChips(result.options, chosen);
+    if (!result.personalized || ticket !== ideaTicket || window.auraAgentContext?.()?.patientId !== patient) return;
+    buildSuggestionChips(result.options);
     const why = document.getElementById("suggestion-why");
     why.textContent = result.why; why.hidden = false;
     document.getElementById("suggestion-origin").hidden = false;
@@ -155,7 +159,7 @@ async function chooseSuggestion(chip, opt) {
     if (!response.ok) throw new Error("Request failed");
     const result = await response.json();
     chip.setAttribute("aria-pressed", "true");
-    (window.auraCompanionData ||= {}).chosen_today = [...(window.auraCompanionData.chosen_today || []), {option_id: opt.id, label: opt.label}];
+    chosenIdeas.ids.add(opt.id);
     ack.textContent = result.message; ack.hidden = false;
   } catch {
     ack.textContent = "That couldn't be saved just now. Please try again."; ack.hidden = false;
