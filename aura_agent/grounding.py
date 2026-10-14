@@ -25,7 +25,15 @@ def validate(raw, tools, role):
                 raise ValueError('HEADLINE_JARGON')
             if re.search(r'<[A-Z_]+>|\d{4}-\d{2}-\d{2}|\bbedtime\b|later nights|!|\b(?:you feel|you are feeling|you\x27re feeling)\b',text,re.I):
                 raise ValueError('PATIENT_HEADLINE_STYLE')
-        if prohibited_claims(text) or re.search(r"normal range|caus(?:e[ds]?|ing)|proves?|mental deterioration|risk level|healthy|pathological|guarantee|ignore .*instructions|system prompt", text, re.I):
+        # Percentages are allowed only as the exact server-produced calculation
+        # sentence, with its denominator/window/coverage intact. Other roles and
+        # arbitrary risk percentages retain the existing prohibition.
+        derived = [tools.delivered[fid] for fid in claim.fact_ids if fid in tools.delivered
+                   and tools.delivered[fid].get('analysis', {}).get('kind') == 'checkin_proportion']
+        checked_text = text
+        if role == AgentRole.RECORD_QA and any(text == f['analysis']['display'] for f in derived):
+            checked_text = re.sub(r'\d+(?:\.\d+)?%', '', text)
+        if prohibited_claims(checked_text) or re.search(r"normal range|caus(?:e[ds]?|ing)|proves?|mental deterioration|risk level|healthy|pathological|guarantee|ignore .*instructions|system prompt", text, re.I):
             raise ValueError("PROHIBITED_CLAIM")
         if any(fid not in tools.delivered for fid in claim.fact_ids):
             raise ValueError("UNDELIVERED_FACT")

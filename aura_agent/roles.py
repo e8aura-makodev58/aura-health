@@ -27,7 +27,8 @@ if set(QUESTIONS)!={'context','recording','visit'} or any(not isinstance(text,st
 TOOLS = ("get_status", "get_series", "get_context", "get_decisions", "get_review_snapshot", "get_gaps",
          "compare_windows", "day_of_week", "summarize_gaps")
 ROLE_TOOLS = {role: TOOLS for role in AgentRole}
-PROMPT_VERSION = "aura-agent-v11"
+ROLE_TOOLS[AgentRole.RECORD_QA] = TOOLS + ("summarize_checkins",)
+PROMPT_VERSION = "aura-agent-v12"
 
 
 def instructions(role: AgentRole) -> str:

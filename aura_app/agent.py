@@ -54,7 +54,12 @@ def investigation_trail(trace, keys, generation_used):
         if row.get('step') != step:
             flush(); step = row.get('step')
         args, tool = row.get('arguments') or {}, row['tool']
-        if tool == 'compare_windows' and args.get('key_id'):
+        if tool == 'summarize_checkins' and row.get('fact_ids'):
+            flush()
+            window = (f"last {args['last_days']} days of the record" if args.get('last_days')
+                      else span(args.get('start'), args.get('end')))
+            steps.append(f"Calculated {args.get('state')} check-in proportion and missing-day coverage: {window}")
+        elif tool == 'compare_windows' and args.get('key_id'):
             flush(); steps.append(f"Compared {label(args['key_id'])}: {span(args.get('start'), args.get('end'))} with "
                                   f"{span(args.get('previous_start'), args.get('previous_end'))}")
         elif tool == 'day_of_week' and args.get('key_id'):
