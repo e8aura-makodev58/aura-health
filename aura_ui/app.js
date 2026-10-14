@@ -408,7 +408,12 @@ $("input-form").addEventListener("submit", async (event) => {
     if (!signals.length) { tell("Select an associated observation.", true); return; }
     await submitEvent("CONTEXT_EXPLANATION", {context_event_id:context.context_event_id, relevant_drift_ref:null, explanation:text, affected_signals:signals}, true);
   } else if (dialogKind === "question") await submitEvent("REVIEW_COMMAND", {action:"ADD_QUESTION", question:text});
-  else await submitEvent("PATIENT_FREE_TEXT", {text});
+  else {
+    await submitEvent("PATIENT_FREE_TEXT", {text});
+    // Show AURA's reply where the person is looking (not under the cards below the fold).
+    const reply = $("communication-card");
+    if (!reply.hidden && reply.offsetParent) reply.scrollIntoView({behavior:"smooth", block:"center"});
+  }
 });
 window.addEventListener("hashchange",()=>{goPage();window.scrollTo(0,0);});
 $("retry-connection").addEventListener("click", async () => {
