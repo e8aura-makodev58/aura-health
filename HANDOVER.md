@@ -295,6 +295,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-14 — Claude — Reviewed, merged and deployed Codex `ecfa8b8` (check-in calculations in record Q&A)
+- Review: bounded design confirmed (model picks category/window/denominator; Python calculates; exact server sentence with coverage; percentage exception only for that sentence in RECORD_QA; one repair then honest fallback; offline extraction never runs the calculation). Merge `cb1fcc8` (handover conflict only). 355 Python tests OK; hosted browser suites agent, qa_display, impression, dual_view, companion, tour, cards PASS.
+- Live rehearsal (gpt-6-luna, medium): "What percentage of the last 30 days were recorded as Rough check-ins?" → 66.7% (20 of 30), 10 Feb–11 Mar, full coverage, verifier 1/1, 17 s. Two-period comparison (first half Feb vs first half Mar) → 0.0% (0/15) vs 100.0% (11/11), 22 s; model first requested 1–15 Mar, tool rejected (WINDOW_BUDGET, record ends 11 Mar), model corrected to 1–11 Mar. Both shown in the "Also recorded" (routine) style.
+- DeepSeek `deepseek-v4-pro` (reasoning none) checked at user request: connection test PASS; guided-story agent 2/5 (draft-validation rejections ×2, malformed tool-call JSON ×1). User reverted to gpt-6-luna medium (cheaper).
+
 ### 2026-10-14 — Codex — Deterministic derived facts for clinician check-in Q&A
 - Fast-forwarded `improve/feature-codex` to main `eac0334` as requested. Added check-in aggregation tool, local-day/coverage/provenance rules, narrow grounded-percentage allowance, prompt v12, one bounded completion repair and a visible calculation trace. No engine changes, main merge, deployment, settings or paid model calls.
 - Verified: full355 tests PASS/492.432s; final focused10 PASS after tightening completion to require the calculation sentence, not merely its citation; final trace wording smoke and `git diff --check` PASS. Initial runner stopped for fallback integration fix; first completed run found two empty-tool-call compatibility errors and two old-version assertions, corrected before the passing rerun. Existing Starlette/httpx warning. Documentation: `docs/CLINICIAN_QA_CALCULATIONS.md`. Live provider reliability remains unmeasured; Claude/user owns merge and rehearsal.
