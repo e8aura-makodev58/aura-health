@@ -291,6 +291,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-14 — Claude — Validated and published Codex's architecture audit (`dd77940`)
+- Code spot-checks confirm Codex's corrections (see `docs/submission/ARCHITECTURE_REVIEW.md`, Claude section). Fixed: exporter no longer adds outlines to boxes (python-pptx `line.color` getter side effect); slide 11 companion text fits with a substitute font; "Observable events via app ingestion" label moved off the connector. Re-ran `reconcile_architecture.py` (deck, 6 PNGs, 5-page PDF); LibreOffice render checked; 18 glued connectors. Voice-over section E reworded. Full (5:58) and short (3:00) videos rebuilt with the corrected slides (not in git).
+- Canonical architecture export is now `docs/presentation/deck/reconcile_architecture.py` (keeps the audit speaker notes); `make_hybrid_pptx.py` rebuilds the whole deck but drops those notes — run reconcile after it.
+
 ### 2026-10-14 — Codex — Architecture PDF/code audit and reconciled exports
 - Audited supplied five-page PDF against main90e31ea; detailed findings/source map in `docs/submission/ARCHITECTURE_REVIEW.md`. Corrected native diagram source, deck slides11–13, diagram/frame PNGs and five-page reviewed PDF; original cover/close preserved. Updated architecture documentation/manifest/register; archived pre-review handover and compacted older logs, retaining all entries in the snapshot. Closed stale tour/retry-ID tasks from verified source; no runtime or settings changes.
 - Verified: artifact structure/text bounds,18 attached connectors, only11–13 slide XML changed,5 PDF pages/original bookends pixel-identical/six1920×1080 PNGs; mock clock confirms90-s check can return at119 s withMODEL_TIMEOUT. `.venv/bin/python -m unittest discover -s tests -q`:334 PASS/459.063s (existing Starlette/httpx warning); first restricted runner stalled and was stopped, unrestricted rerun completed. No paid calls/browser/live deployment recheck.

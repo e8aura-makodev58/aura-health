@@ -143,7 +143,7 @@ def system_overview(slide):
     web = node(slide, 80, 190, 360, 500, "Web experience", fill="white", dashed=True, title_size=28)
     app = node(slide, 520, 190, 600, 500, "Python app · owns the state", fill="white", dashed=True, title_size=28)
     ai = node(slide, 1200, 190, 640, 500, "Bounded AI · read-only", fill="white", dashed=True, title_size=28)
-    node(slide, 104, 256, 312, 200, "Patient companion", ["Breath + short recap", "Dose + reasons, medication", "Dates + optional suggestions"], fill="sand", title_size=25, body_size=20)
+    node(slide, 104, 256, 312, 200, "Patient companion", ["Recap, dose + reasons", "Medication, dates", "Optional small ideas"], fill="sand", title_size=25, body_size=20)
     node(slide, 104, 472, 312, 150, "Clinician view", ["Findings with sources", "Ask about the record"], fill="sand", title_size=25, body_size=20)
     text(slide, 104, 640, 312, 40, [("Presentation, not policy", 21, False, MUTED)])
     node(slide, 544, 256, 552, 112, "FastAPI application services", ["Atomic + idempotent events · SQLite + audit"], fill="blue", body_size=21)
@@ -163,7 +163,7 @@ def system_overview(slide):
     arrow(slide, sim, TOP, app, BOTTOM, bend=0.5)
     text(slide, 442, 390, 76, 58, [("inputs", 16, False, MUTED), ("views", 16, False, MUTED)], align=PP_ALIGN.CENTER)
     text(slide, 1122, 388, 76, 64, [("request", 16, False, MUTED), ("result", 16, False, MUTED)], align=PP_ALIGN.CENTER)
-    text(slide, 842, 692, 440, 36, [("Observable events via app ingestion", 19, False, MUTED)])
+    text(slide, 1124, 700, 230, 58, [("Observable events", 18, False, MUTED), ("via app ingestion", 18, False, MUTED)])
     text(slide, 80, 760, 380, 180, [("Signals propose. Rules decide. AI words it.", 30, True, INK)])
     text(slide, 1360, 760, 480, 250, [("One application · synthetic workspaces · development storage", 21, False, MUTED),
                                       ("Demo roles, no clinical authentication. Visit preview: Not sent.", 21, False, MUTED),

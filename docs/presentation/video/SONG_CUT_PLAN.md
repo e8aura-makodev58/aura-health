@@ -60,11 +60,11 @@ beat of silence before the final chorus. Captions already on screen stay as they
 > Our rule: signals propose, rules decide, AI words it. A Python application owns all the state.
 > Deterministic engines keep the personal baselines and the safety state; the AI never does.
 > Medication information is curated, and AI only matches a question to an approved topic. The
-> agent investigates with read-only, patient-scoped tools, within fixed limits: eight model
+> agent investigates with read-only, patient-scoped tools, within loop budgets: eight model
 > steps, twenty-four tool calls, ninety seconds. Every answer passes number, date and citation
 > checks, an independent verifier, and a final recheck of the safety state. Safety has the final
-> say: a detector can never lower the safety state, and pinned safety resources never wait for an
-> AI. The demo runs on synthetic data; a hospital would run the model on its own infrastructure.
+> say: a detector can never lower the safety state, and safety resources are shown
+> without any AI model. The demo runs on synthetic data; a hospital would run the model on its own infrastructure.
 
 **F · Fit with the challenge (4:57–5:22, ~25 s)**
 > Against the challenge: medication understanding, adherence with reasons, health tracking,

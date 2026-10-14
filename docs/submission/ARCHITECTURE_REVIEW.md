@@ -71,3 +71,19 @@ No runtime, domain configuration, clinical threshold, provider setting or quota
 was changed. No paid model calls, source-publication change, merge, deployment,
 video rebuild or submission was performed. The video owner should refresh any
 embedded architecture frames before publishing a final cut.
+
+## Claude validation and fixes — 2026-10-14
+
+Spot-checked the corrections against code (runtime between-call deadline checks, `LayeredSafetyGate`
+model call, `ResourceRegistry` built-in fallback, `output_plan` offline/degraded no-generation,
+separate `verify` task, settings revision in `provider.model_id`): all confirmed. Rendered the deck
+with LibreOffice and fixed three presentation issues, then re-ran `reconcile_architecture.py`:
+- `reconcile_architecture.py` read `shape.line.color`, which in python-pptx turns a no-outline box
+  into a solid outline in the saved deck; it now reads `shape.line.fill.type` instead (boxes are
+  outline-free again; only the dashed group frames have outlines).
+- Slide 11: "Patient companion" text shortened so it fits even with a wider substitute font
+  ("Recap, dose + reasons / Medication, dates / Optional small ideas").
+- Slide 11: "Observable events via app ingestion" moved off the connector, beside the arrow.
+Checked: 18 slides, 18 connectors glued to existing boxes, audit notes on slides 11–13, cover
+unchanged, 5-page PDF. Video voice-over section E reworded to "loop budgets" and "safety resources
+are shown without any AI model".

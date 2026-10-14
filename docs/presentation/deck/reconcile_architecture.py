@@ -96,7 +96,9 @@ def export_diagrams(slides, output):
                               (shape.left, shape.top, shape.width, shape.height))
                 if shape.fill.type == 1:
                     canvas.setFillColor(HexColor('#'+str(shape.fill.fore_color.rgb)))
-                    dashed = shape.line.color.type is not None
+                    # Read the outline without touching line.color: python-pptx's color getter turns
+                    # a no-outline box into a solid outline in the saved deck.
+                    dashed = shape.line.fill.type == 1
                     canvas.setStrokeColor(HexColor('#cfc8bd'))
                     canvas.setLineWidth(1)
                     canvas.setDash([6, 4] if dashed else [])
