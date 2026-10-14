@@ -2,12 +2,12 @@
 
 The song carries the self-explanatory opening and the close; a short voice-over carries the
 middle, where the agent, safety, architecture and build reflection need explaining.
-Song: [`../../submission/AURA_AD_SONG_v3.md`](../../submission/AURA_AD_SONG_v3.md) (sung version,
+Song: [`../../submission/AURA_AD_SONG_v4.md`](../../submission/AURA_AD_SONG_v4.md) (sung version,
 plus the instrumental version as a quiet bed under the voice). Video: the current silent cut,
 `aura-health-walkthrough-novoice.mp4` (5:58), with your 8-second Miora intro and outro added.
 
-Times below are **final-video times** (intro clip included). Song times assume the arrangement's
-96 BPM; the generated track will differ a little, so after generating, move each cut to the
+Times below are **final-video times** (intro clip included). Song times assume about 96 BPM, inside the
+prompt's 92–104 BPM; Suno picks the exact tempo, so after generating, move each cut to the
 nearest phrase end (never speed the vocal up). Keep the finished video **at least 5:00** (it is
 about 6:14).
 
