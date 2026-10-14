@@ -30,7 +30,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ---
 
-## Current state (as of 2026-10-13)
+## Current state (documentation updated 2026-10-14; implementation evidence dated below)
 
 - **Guided-story handoff (user,2026-10-13):** user is very satisfied with the application but cannot intuitively use the three-minute story. Claude proposed nine guided steps; Codex's review/recommendations are in the newest Log entry. Claude takes over the tour work; this handoff changes documentation only and does not claim the proposed tour is built.
 - **Codex companion docs/Q&A/X5 delivery:** merged requested main `f37af0c` into the
@@ -203,6 +203,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+- **Ad soundtrack:** user/editor can generate the original three-minute soft-rock song from `docs/submission/AURA_AD_SONG.md`; review the actual audio/duration before using it. Lyrics/prompt only are delivered; narration and video remain with their current owner.
 - **Claude — intuitive guided story:** read the newest Codex Log entry before implementing the user's supplied nine-step proposal. Prioritize one visible target, one Next action, a connected patient journey and honest completion/fallback states. Manual progression first; autoplay is secondary. Preserve the existing application and safety boundaries.
 0d. **Claude/release reviewer:** review68372f3's narrow clinician-verifier fix and
   re-render the deck's system-overview from the new companion PNG. Address the
@@ -294,6 +295,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-14 — Codex — Original AURA video-ad song and Suno prompt
+- Added `docs/submission/AURA_AD_SONG.md`: “Room for Your Day”, original lyrics, 1970s soft-rock direction, AURA chorus/brand outro, 88 BPM/66-bar approximate three-minute arrangement, picture cues and optional instrumental prompt. No audio generated or narration/runtime changed. Verified: duration arithmetic and documentation diff; runtime tests not rerun for creative copy. User/editor generates and selects the audio.
 
 ### 2026-10-13 — Codex — Review of Claude's proposed intuitive guided story; handoff to Claude
 - **User direction:** satisfied with the product; the story must be understandable without someone explaining how to operate it. Support Claude's one-card/one-target/Next design, automatic navigation, progress, Back/Exit and optional safety ending. These are recommendations for Claude's implementation, not claims of a completed redesign or new deployment authority.
