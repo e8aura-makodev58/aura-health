@@ -25,8 +25,8 @@
     return section;
   }
   let identity='',requestEpoch=0; const pending=new Map(), completed=new Map(), priorLines=new Map(),rendered=new WeakMap();
-  const prep=node('section',null,'card agent-card');prep.append(node('h2','Your visit note'),node('p','Choose what to bring. Not sent.','fine'));
-  const button=node('button','Help prepare my note');button.dataset.agentRole='visit_prep';
+  const prep=node('section',null,'card agent-card');prep.append(node('h2','Notes for your next appointment'),node('p','AURA drafts a few points from your record to help you remember what to raise. Remove anything you don\'t want. Nothing is sent.','fine'));
+  const button=node('button','Draft my appointment notes');button.dataset.agentRole='visit_prep';
   const output=node('div');output.id='agent-visit_prep';output.setAttribute('aria-live','polite');prep.append(button,output);document.getElementById('appointment-preview').before(prep);
   const icons={SLEEP_MIDPOINT:'☾',SLEEP_DURATION:'☾',ACTIVITY:'↟',RESTING_HEART_RATE:'♡',HRV:'↔',HEART_RATE_VARIABILITY:'↔',RESPIRATORY_RATE:'≋',SKIN_TEMPERATURE_DEVIATION:'°'};
   const titles={SLEEP_MIDPOINT:'Sleep timing',SLEEP_DURATION:'Sleep duration',ACTIVITY:'Activity',RESTING_HEART_RATE:'Resting heart rate',SKIN_TEMPERATURE_DEVIATION:'Skin temperature'};
@@ -87,6 +87,34 @@
     show.addEventListener('click',()=>{detail.hidden=!detail.hidden;show.setAttribute('aria-expanded',String(!detail.hidden));});card.append(detail);
     if(patient)card.addEventListener('click',event=>{if(!event.target.closest('button,a')&&!detail.contains(event.target))show.click();});
     return {card,link:{...finding,number,target_id:card.id,callout:display.line}};
+  }
+  // Visit note for the patient: one plain line per finding (what, which way, roughly since when);
+  // the agent's exact checked sentence and its sources sit behind "Details". Lines without an
+  // engine finding (readings, check-in runs) go into a folded "More from your record".
+  const plainChange={SLEEP_MIDPOINT:{LATER:'Going to sleep later',EARLIER:'Going to sleep earlier'},SLEEP_DURATION:{LOWER:'Sleeping less',HIGHER:'Sleeping more'},
+    ACTIVITY:{LOWER:'Moving less',HIGHER:'Moving more'},RESTING_HEART_RATE:{HIGHER:'Resting heart rate higher',LOWER:'Resting heart rate lower'},
+    RESPIRATORY_RATE:{HIGHER:'Breathing rate higher',LOWER:'Breathing rate lower'},SKIN_TEMPERATURE_DEVIATION:{HIGHER:'Skin temperature higher',LOWER:'Skin temperature lower'}};
+  const roughly=iso=>{const d=new Date(iso+'T00:00:00Z');if(isNaN(d))return '';const part=d.getUTCDate()<=10?'early':d.getUTCDate()<=20?'mid':'late';
+    return `${part} ${d.toLocaleString('en-GB',{month:'long',timeZone:'UTC'})}`;};
+  function plainVisitText(claim){
+    const bySignal=new Map();for(const f of claim.findings||[]){const prior=bySignal.get(f.signal);if(!prior||f.since<prior.since)bySignal.set(f.signal,f);}
+    return [...bySignal.values()].map(f=>{const what=plainChange[f.signal]?.[f.direction]||`${(titles[f.signal]||'A reading')} ${String(f.direction||'').toLowerCase()}`;
+      const when=roughly(String(f.since||'').slice(0,10));return when?`${what}, since ${when}`:what;}).join('; ');
+  }
+  function visitLine(claim,result,area,previous,key){
+    const plain=claim.findings?.length?plainVisitText(claim):'';
+    let parent=area;
+    if(!plain){parent=area.querySelector(':scope>details.visit-more');if(!parent){parent=node('details',null,'visit-more');parent.append(node('summary','More from your record'));area.append(parent);}}
+    const line=node('section',null,'agent-claim visit-line');if(previous.size&&!previous.has(key))line.classList.add('assessment-changed');
+    line.append(node('p',plain||displayText(claim.text),plain?'visit-plain':'fine'));
+    const actions=node('div',null,'visit-actions');
+    const details=node('div',null,'claim-sources');details.hidden=true;
+    if(plain)details.append(node('p',`What AURA found: ${displayText(claim.text)}`,'fine'));
+    details.append(factSources(claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)),true));
+    const show=node('button','Details','text-button');show.setAttribute('aria-expanded','false');
+    show.addEventListener('click',()=>{details.hidden=!details.hidden;show.setAttribute('aria-expanded',String(!details.hidden));});
+    const remove=node('button','✕ Remove','text-button');remove.setAttribute('aria-label','Remove this line from your note');remove.addEventListener('click',()=>line.remove());
+    actions.append(show,remove);line.append(actions,details);parent.append(line);
   }
   const displayText=text=>text.replace(/\b\d{4}-\d{2}-\d{2}\b/g,at=>everydayDate(at))
     .replace(/\b\d+\.\d+\b/g,value=>new Intl.NumberFormat('en-GB',{maximumFractionDigits:1}).format(Number(value)));
@@ -160,6 +188,7 @@
       const key=JSON.stringify([claim.text,claim.findings,claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)?.source_ref)]);now.add(key);
       const shaped=['clinician_brief','patient_insight'].includes(role)&&findingCard(claim,result,role,number+1);
       if(shaped){number++;if(previous.size&&!previous.has(key))shaped.card.classList.add('assessment-changed');(extraGrid&&number>cap?extraGrid:grid).append(shaped.card);if(role==='clinician_brief')linkage.push(shaped.link);continue;}
+      if(role==='visit_prep'){visitLine(claim,result,area,previous,key);continue;}
       const line=node('section',null,'agent-claim');if(!claim.findings?.length){line.classList.add('also-recorded','fine');line.append(node('span','Also recorded','fine'));}if(previous.size&&!previous.has(key))line.classList.add('assessment-changed');
       if(role==='clinician_brief'&&claim.findings?.length){number++;line.id=`story-finding-${number}`;line.tabIndex=-1;line.append(node('span',String(number),'finding-number'));for(const finding of claim.findings)linkage.push({...finding,number,target_id:line.id});}
       line.append(node('p',['patient_insight','visit_prep'].includes(role)&&!claim.findings?.length?displayText(claim.text):claim.text));
@@ -211,6 +240,7 @@
     }
     // Worth asking belongs to clinician preparation, not a new patient prompt.
     // Patient interaction remains owned by the separate communication result.
+    if(role==='visit_prep'&&result.draft.question_ids?.some(id=>result.question_options[id]))area.append(node('h4','Things you might want to think about','visit-questions-heading'));
     for(const id of role==='patient_insight'?[]:(result.draft.question_ids||[])){const text=result.question_options[id];if(!text)continue;const copy=node('button',text,'agent-question question-copy');copy.type='button';copy.title='Copy this approved question';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(text);copy.setAttribute('aria-label',`${text} — copied`);}catch{const input=document.getElementById('agent-question-text');input.value=text;input.focus();}});area.append(copy);}
     if(!allClaims.length&&!result.draft.question_ids?.length&&!(role==='patient_insight'&&summary?.checkins))area.append(node('p','Nothing additional to highlight from these records.'));
     const trace=node('section',null,'agent-trace');trace.hidden=true;

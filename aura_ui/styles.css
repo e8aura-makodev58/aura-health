@@ -500,3 +500,10 @@ body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:b
 .tour-intro .tour-title {font-size:1.3rem}
 @media (min-width:900px) {.tour-card {left:auto;right:28px;bottom:110px;width:420px}}
 @media (prefers-reduced-motion:reduce) {.tour-hole {transition:none}}
+
+/* Patient visit note: plain lines first, exact sentence + sources behind Details */
+.visit-line .visit-plain {font-size:1.05rem;color:var(--ink);margin:0 0 4px}
+.visit-actions {display:flex;gap:18px}
+.visit-more {margin-top:10px}
+.visit-more>summary {cursor:pointer;color:var(--ink-soft, #6b6258);font-size:.9rem}
+.visit-questions-heading {margin:16px 0 6px;font-size:.95rem}

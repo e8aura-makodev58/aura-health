@@ -43,7 +43,8 @@ if(!["localhost", "127.0.0.1"].includes(new URL(base).hostname)) throw Error("Lo
     await page.locator('[data-agent-role="visit_prep"]').click();
     await page.waitForSelector("#agent-visit_prep .agent-disclosure");
     const count = await page.locator("#agent-visit_prep .agent-claim").count();
-    await page.getByRole("button",{name:"Remove from this preview"}).first().click();
+    await page.evaluate(()=>{for(const d of document.querySelectorAll("#agent-visit_prep details.visit-more"))d.open=true;});
+    await page.getByRole("button",{name:"Remove this line from your note"}).first().click();
     assert.equal(await page.locator("#agent-visit_prep .agent-claim").count(),count-1);
     assert.match(await page.locator("#review-view").innerText(),/Nothing is.*sent|not sent/i);
     console.log("AG_UI4_REMOVABLE_NOT_SENT_PREVIEW PASS");
