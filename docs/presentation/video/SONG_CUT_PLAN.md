@@ -19,7 +19,7 @@ landscape take comes from `tools/record_tour.cjs <url> <dir> deskfull`.
 |---|---|---|
 | 0:00–0:08 | Miora intro | Soft instrumental (optional), or silence |
 | 0:08–3:34 | First half (part 1; file 0:00–3:26) | **Your voice-over 1–10** below; optional instrumental bed very low |
-| 3:34–6:15 | Landscape live demo (file 0:00–2:40) | **Song (v6)** from the start; the guided story's own cards explain each step |
+| 3:34–6:15 | Landscape live demo (file 0:00–2:40) | **Song (v7)** from the start; the guided story's own cards explain each step |
 | 6:15–6:23 | Miora outro | Song outro ("…Aura Health, room for your day"); hold or fade to fit |
 
 The song runs about 2:37–2:57 (92–104 BPM); the landscape demo plus the outro clip is 2:48. If the
