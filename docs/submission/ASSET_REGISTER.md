@@ -10,8 +10,9 @@ Owners below are proposed responsibilities, not evidence that work was completed
 | Cover image | `assets/aura-cover.png` | AWAITING_USER | User generates with Miora; reference screenshots in `docs/presentation/screenshots/v2/`; review at thumbnail size |
 | Demo video | Actual URL in `manifest.json` | MISSING | User/presenter records 7-minute script; confirm signed-out access |
 | Development history bundle | `assets/development-history.pdf` | MISSING | User supplies genuine logs plus≥3 screenshots; agent sanitizes/packs only with authority |
-| Architecture PPTX | `assets/aura-health-deck.pptx` | REVIEW_PENDING | Claude export exists:18 slides/2,757,539 bytes; re-render companion overview and inspect/approve |
-| Architecture slide diagrams | `../presentation/diagrams/` | REVIEW_PENDING | Codex: three editable SVGs +1920×1080 PNGs,2026-10-13; see diagram README; Claude inserts into deck and reviews |
+| Architecture PPTX | `assets/aura-health-deck.pptx` | REVIEW_PENDING | Architecture audit at `90e31ea`,2026-10-14;18 slides/688,475 bytes; only slides11–13 changed; user/PowerPoint review pending |
+| Architecture slide diagrams | `../presentation/diagrams/` | REVIEW_PENDING | Current native shapes +1920×1080 PNGs refreshed2026-10-14; older SVGs historical; video owner refreshes embedded frames |
+| Reviewed architecture PDF | `assets/aura-health-architecture-reviewed.pdf` | REVIEW_PENDING | Five pages/148,451 bytes,2026-10-14; original cover/close preserved; reference copy, required upload remains the existing PPTX |
 | Live demo URL | `manifest.json` | PARTIALLY_CHECKED | Health/status and fresh signed-out browser session/Q&A checked2026-10-13; final A–F walkthrough pending |
 | GitHub URL | `manifest.json` | ACCESS_BLOCKED | Anonymous URL returned HTTP404 on2026-10-13; user/reviewer to arrange judge access or correct link |
 | Optional social post | Actual URL in `manifest.json` | NOT_STARTED | User decides platform/publication; all 4 hashtags |
@@ -53,3 +54,11 @@ to its assigned owner. No narration, screenshots or runtime files changed here.
 Full candidate suite327 PASS/469.072s; a changed-question/reused-run-ID safety-
 assessment gap was separately reproduced and remains open. Readiness blockers
 and newer-main version limits are in `EVIDENCE_LEDGER.md`.
+
+Architecture audit2026-10-14: implementation `90e31ea`; source evidence and precise
+corrections in [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md). Codex rebuilt only
+native diagram slides11–13 and their images, preserving other slide XML. ReportLab
+vector PDF and PNGs share the native shape source; embedded Nunito, text bounds,
+attached connectors and pixel-identical original PDF bookends verified. No new
+PowerPoint/LibreOffice render, runtime/model call, video rebuild or user approval.
+Older release/model measurements above retain their original scope/date.

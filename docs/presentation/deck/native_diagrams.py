@@ -143,40 +143,43 @@ def system_overview(slide):
     web = node(slide, 80, 190, 360, 500, "Web experience", fill="white", dashed=True, title_size=28)
     app = node(slide, 520, 190, 600, 500, "Python app · owns the state", fill="white", dashed=True, title_size=28)
     ai = node(slide, 1200, 190, 640, 500, "Bounded AI · read-only", fill="white", dashed=True, title_size=28)
-    node(slide, 104, 256, 312, 200, "Patient companion", ["Breath + short recap", "Today's dose + reasons", "Medication, Coming up"], fill="sand", title_size=25, body_size=20)
+    node(slide, 104, 256, 312, 200, "Patient companion", ["Breath + short recap", "Dose + reasons, medication", "Dates + optional suggestions"], fill="sand", title_size=25, body_size=20)
     node(slide, 104, 472, 312, 150, "Clinician view", ["Findings with sources", "Ask about the record"], fill="sand", title_size=25, body_size=20)
     text(slide, 104, 640, 312, 40, [("Presentation, not policy", 21, False, MUTED)])
-    node(slide, 544, 256, 552, 112, "FastAPI application services", ["Consent, atomic events · SQLite repository"], fill="blue", body_size=21)
+    node(slide, 544, 256, 552, 112, "FastAPI application services", ["Atomic + idempotent events · SQLite + audit"], fill="blue", body_size=21)
     node(slide, 544, 384, 552, 112, "Curated medication content", ["Typed questions: safety first, fixed answers"], fill="blue", body_size=21)
     safety = node(slide, 544, 512, 268, 150, "Safety engine", ["T0–T4, fails closed"], fill="rose", body_size=21)
     node(slide, 828, 512, 268, 150, "Longitudinal", ["Personal + recent baselines"], fill="blue", body_size=21)
     agent = node(slide, 1224, 256, 592, 130, "Aura-Agent + patient-scoped tools", ["The model chooses tools, dates and comparisons"], fill="lilac", body_size=21)
-    verify = node(slide, 1224, 446, 592, 130, "Ground → verify → recheck", ["Cited answer, or a labelled fallback + trace"], fill="lilac", body_size=21)
+    verify = node(slide, 1224, 446, 592, 130, "Ground · verify · recheck", ["Cited answer, or a labelled fallback + trace"], fill="lilac", body_size=21)
     text(slide, 1224, 590, 592, 100, [("Model gateway: provider configurable", 22, True, INK),
                                       ("Operator picks model + reasoning level", 21, False, MUTED), ("Synthetic data only", 21, False, MUTED)])
     display = node(slide, 498, 760, 360, 200, "Independent safety display", ["Pinned resources + fallback", "Never AI-written"], fill="rose", title_size=25, body_size=20)
-    sim = node(slide, 900, 760, 420, 200, "Separate simulation plane", ["Plans → seeded synthetic data", "Only observable events enter"], fill="sun", title_size=25, body_size=20)
+    sim = node(slide, 900, 760, 420, 200, "Separate simulation plane", ["Plans + seeded synthetic data", "Only observable events enter"], fill="sun", title_size=25, body_size=20)
     arrow(slide, web, RIGHT, app, LEFT, both=True)
-    arrow(slide, app, RIGHT, ai, LEFT)
+    arrow(slide, app, RIGHT, ai, LEFT, both=True)
     arrow(slide, agent, BOTTOM, verify, TOP)
     arrow(slide, safety, BOTTOM, display, TOP)
     arrow(slide, sim, TOP, app, BOTTOM, bend=0.5)
-    text(slide, 444, 400, 72, 30, [("inputs", 18, False, MUTED)], align=PP_ALIGN.CENTER)
-    text(slide, 1122, 400, 76, 30, [("reads", 18, False, MUTED)], align=PP_ALIGN.CENTER)
+    text(slide, 442, 390, 76, 58, [("inputs", 16, False, MUTED), ("views", 16, False, MUTED)], align=PP_ALIGN.CENTER)
+    text(slide, 1122, 388, 76, 64, [("request", 16, False, MUTED), ("result", 16, False, MUTED)], align=PP_ALIGN.CENTER)
+    text(slide, 842, 692, 440, 36, [("Observable events via app ingestion", 19, False, MUTED)])
     text(slide, 80, 760, 380, 180, [("Signals propose. Rules decide. AI words it.", 30, True, INK)])
-    text(slide, 1360, 760, 480, 180, [("Implemented demo · one application deployment · development storage · institutional hosting is future work", 21, False, MUTED)])
+    text(slide, 1360, 760, 480, 250, [("One application · synthetic workspaces · development storage", 21, False, MUTED),
+                                      ("Demo roles, no clinical authentication. Visit preview: Not sent.", 21, False, MUTED),
+                                      ("Institutional hosting is future work", 21, False, MUTED)])
 
 
 def agent_investigation(slide):
     heading(slide, "Aura-Agent · investigate, cite, check")
     c1, c2, c3, w = 80, 720, 1360, 480
-    step1 = node(slide, c1, 200, w, 190, "1 · Approve the request", ["Skill, selected patient, current safety", "Read-only record + permitted window"], fill="blue")
+    step1 = node(slide, c1, 200, w, 190, "1 · Guard the request", ["Skill, selected patient, current safety", "Read-only record + permitted window"], fill="blue")
     step2 = node(slide, c2, 200, w, 190, "2 · Model chooses a step", ["Which tool? Which dates? Which signal?", "Read more, or draft a cited answer"], fill="lilac")
     step3 = node(slide, c3, 200, w, 190, "3 · Execute scoped tools", ["Series, context, gaps, routine records", "Return facts, sources and calculations"], fill="blue")
     question = node(slide, c1, 470, w, 190, "“When did sleep timing change, and was anything reported around then?”",
                     ["A clinician's question. Patient-typed text is safety-checked first."], fill="sand", title_size=24, body_size=20)
-    step4 = node(slide, c2, 470, w, 190, "4 · Ground and verify", ["Exact facts, citations, allowed claims", "A separate model call checks each statement"], fill="lilac")
-    step5 = node(slide, c3, 470, w, 190, "5 · Recheck current state", ["Has the record or safety state changed?", "Unsafe or stale results are withheld"], fill="blue")
+    step4 = node(slide, c2, 470, w, 190, "4 · Ground and verify", ["Exact facts, citations, allowed claims", "Live drafts: separate verification call"], fill="lilac")
+    step5 = node(slide, c3, 470, w, 190, "5 · Recheck current state", ["Record, safety + provider revision", "Unsafe or stale results are withheld"], fill="blue")
     step6 = node(slide, c3, 740, w, 190, "6 · Persist and display", ["Answer, sources, How AURA looked", "No care-action or treatment-write tools"], fill="sand")
     arrow(slide, question, TOP, step1, BOTTOM)
     arrow(slide, step1, RIGHT, step2, LEFT)
@@ -186,22 +189,23 @@ def agent_investigation(slide):
     arrow(slide, step5, BOTTOM, step6, TOP)
     text(slide, 1200, 196, 160, 60, [("tool calls,", 18, False, MUTED), ("facts back", 18, False, MUTED)], align=PP_ALIGN.CENTER)
     text(slide, 966, 400, 260, 60, [("cited draft", 18, False, MUTED), ("when ready", 18, False, MUTED)])
-    text(slide, 80, 750, 1180, 60, [("Limits per answer: 8 model steps · 24 tool calls · 90 seconds", 28, True, INK)])
-    text(slide, 80, 812, 1180, 120, [("Failure shows source-based related facts and says so. The trail shows actions, not hidden reasoning.", 22, False, MUTED),
-                                      ("Verification is not clinical validation.", 22, False, MUTED)])
+    text(slide, 80, 750, 1180, 60, [("Loop budgets: 8 model steps · 24 tool calls · 90 seconds", 28, True, INK)])
+    text(slide, 80, 812, 1180, 200, [("Time checked between calls; provider timeout 30 s. Verifier is separate.", 22, False, MUTED),
+                                      ("Failed drafts use related facts when available; blocked/stale requests show no answer.", 22, False, MUTED),
+                                      ("The trail shows actions, not hidden reasoning. Verification is not clinical validation.", 22, False, MUTED)])
 
 
 def safety_precedence(slide):
     heading(slide, "Safety policy has the final say")
     c, w = [80, 527, 974, 1421], 419
     inp = node(slide, c[0], 200, w, 200, "Patient input", ["Typed notes and medication questions", "Safety-relevant path first"], fill="sand")
-    gate = node(slide, c[1], 200, w, 200, "Safety gate + proposals", ["Rules / demo classifier → signals", "A detector cannot lower safety state"], fill="lilac")
-    ctrl = node(slide, c[2], 200, w, 200, "Deterministic safety controller", ["T0–T4 transitions → actions", "Fail closed when degraded"], fill="rose")
-    reg = node(slide, c[3], 200, w, 200, "Registry + built-in bundle", ["Lookup failure → fallback", "Old bundle stays visible + notice"], fill="rose")
+    gate = node(slide, c[1], 200, w, 200, "Safety gate + proposals", ["Demo fixtures or rules + model", "Raise-only detector proposals"], fill="lilac")
+    ctrl = node(slide, c[2], 200, w, 200, "Deterministic safety controller", ["T0–T4 transitions and actions", "Fail closed when degraded"], fill="rose")
+    reg = node(slide, c[3], 200, w, 200, "Registry + built-in bundle", ["Lookup failure: built-in fallback", "Stale/unverified: visible + notice"], fill="rose")
     longi = node(slide, c[1], 480, w, 200, "Longitudinal communication", ["Stay quiet / check in / clarify", "Describes personal changes"], fill="blue")
     override = node(slide, c[2], 480, w, 200, "Safety overrides ordinary messages", ["Applies the authoritative state", "The app does not assign tiers"], fill="rose", title_size=25)
-    pinned = node(slide, c[3], 480, w, 200, "Pinned safety resources", ["Shown outside generated text", "Never waits for an AI model"], fill="rose")
-    render = node(slide, c[2], 760, w, 210, "Render the allowed interaction", ["Approved wording + checks", "T4 / offline: fixed text, no AI"], fill="sand", body_size=21)
+    pinned = node(slide, c[3], 480, w, 200, "Pinned safety resources", ["Shown outside generated text", "Resource rendering uses no model"], fill="rose")
+    render = node(slide, c[2], 760, w, 210, "Render the allowed interaction", ["Approved wording + checks", "T4 / offline / degraded:", "fixed wording"], fill="sand", body_size=21)
     arrow(slide, inp, RIGHT, gate, LEFT)
     arrow(slide, gate, RIGHT, ctrl, LEFT)
     arrow(slide, ctrl, RIGHT, reg, LEFT)
@@ -210,7 +214,8 @@ def safety_precedence(slide):
     arrow(slide, reg, BOTTOM, pinned, TOP)
     arrow(slide, override, BOTTOM, render, TOP)
     text(slide, 80, 760, 840, 190, [("The patient can't dismiss safety content. The clinician sees the same state when they open the record. No alerts are sent in this prototype.", 24, False, INK),
-                                     ("Engineering demonstration · resource content still needs review · no emergency monitoring or suicide-risk determination", 21, False, MUTED)])
+                                     ("Assessment may call a model; failure holds input and restricts ordinary output.", 21, False, MUTED),
+                                     ("Resources need review · no emergency monitoring or suicide-risk determination", 21, False, MUTED)])
 
 
 DIAGRAMS = {"architecture": system_overview, "agent-loop": agent_investigation, "safety-precedence": safety_precedence}

@@ -18,6 +18,7 @@ organizer's exact closing time/timezone before relying on a last-day upload.
 | [ASSET_REGISTER.md](ASSET_REGISTER.md) | Ownership/status of required deliverables |
 | [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md) | Seven-minute recording plan, including substantive agent use |
 | [ARCHITECTURE_DECK.md](ARCHITECTURE_DECK.md) | Content/notes for a single architecture PPTX |
+| [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md) | Attached PDF audited against `90e31ea`, corrections and implementation evidence |
 | [architecture.mmd](architecture.mmd) | Editable trust-boundary diagram source |
 | [COVER_BRIEF.md](COVER_BRIEF.md) | Miora design brief and image export requirements |
 | [EVIDENCE_GUIDE.md](EVIDENCE_GUIDE.md) | Genuine conversation history plus at least 3 screenshots in one file |

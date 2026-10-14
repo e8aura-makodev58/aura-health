@@ -12,6 +12,12 @@ do not produce a competing upload deck. Three slide-image pairs are available in
 Use 16:9 slides, large text, dark ink on warm off-white and the AURA accent palette.
 Export and inspect every slide; verify shapes/arrows/fonts remain readable.
 
+2026-10-14 audit against `90e31ea`: [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md).
+Current diagrams are native editable shapes from
+`../presentation/deck/native_diagrams.py`, on slides 11–13 of the actual deck.
+The user's five-page architecture PDF has a corrected reference export at
+`assets/aura-health-architecture-reviewed.pdf`; it is not a second required upload.
+
 ## Slide 1 — AURA: context between appointments
 
 Subtitle: “Bounded record investigation; deterministic product policy.”
@@ -50,7 +56,9 @@ Question → choose read/analysis tools and windows → receive exact facts →
 choose next tools or finish → draft cited claims → structural/numeric checks →
 independent verifier → fresh-state guard → displayed answer/labelled fallback.
 
-Default 8 model-loop steps/24 tool calls; verifier separate. Show native scoped
+Default 8 model-loop steps/24 model-selected tool calls; verifier separate. The
+90-second loop budget is checked between calls, with a 30-second provider timeout;
+do not promise every HTTP answer finishes within 90 seconds. Show native scoped
 tools: series, context, gaps, check-ins/routine, review items, window comparison,
 weekday patterns. Stats are deterministic; the model chooses the investigation.
 The visible trail reports actions/outcomes, not hidden chain-of-thought.
@@ -82,7 +90,7 @@ time savings, accuracy/suicide-risk claims, real patient data or provider creden
 
 The companion is integrated in `f37af0c`: routine/review projection, curated
 medication lookup/topic selection and optional curated suggestions. Re-render the
-deck's system-overview slide using the updated `system-overview.png`. Counts and
+deck's system-overview slide from the shared native diagram source. Counts and
 curated lookup are not autonomous agent actions. Content needs pharmacist review;
 displayed dates do not imply push notifications or a booked appointment. Keep the
 agentic Q&A loop distinct from these features.

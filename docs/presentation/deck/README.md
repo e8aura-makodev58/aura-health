@@ -15,11 +15,11 @@ The submission deck `docs/submission/assets/aura-health-deck.pptx` (also the req
   that opens the deck; PowerPoint substitutes a similar font otherwise.
 - `preview_pptx.py` redraws the saved PPTX as HTML for a visual check (approximation, not PowerPoint).
 - `make_pptx.py` is the older all-image variant (each slide one picture); kept for the video frames.
-- Slides 11–13 are Codex's diagrams as whole images (their titles are inside the diagram); edit the
-  SVGs in `../diagrams/` to change their wording.
+- Slides 11–13 are native editable diagrams from `native_diagrams.py`, with attached
+  connector arrows. The SVGs in `../diagrams/` are historical, not current sources.
 
 Inputs: live, unedited screenshots in `../screenshots/v2/`, Codex's diagrams in `../diagrams/`,
-and the app's own art and Nunito font in `aura_ui/media/`. Slide 15 has a marked slot for the
+and the app's own art and Nunito font in `aura_ui/media/`. Slide 16 has a marked slot for the
 genuine CodeBuddy and Miora session screenshots, to be added by the user.
 
 ## Rebuild
@@ -37,3 +37,18 @@ node docs/presentation/deck/hybrid.cjs
 
 Change wording in `build.py` (slide text) or `../SCRIPT.md` (notes), then rerun all three steps
 and look at every PNG before committing.
+
+For architecture-only changes, edit `native_diagrams.py`, then use a tooling venv
+containing `python-pptx`, `reportlab`, `fonttools`, `brotli` and `pymupdf`:
+
+```sh
+python docs/presentation/deck/reconcile_architecture.py
+# First export: --bookends /absolute/path/to/the/original/architecture.pdf
+```
+
+This updates only slides 11–13 in the existing PPTX, their PNGs and the reviewed
+five-page architecture PDF. The original first/last PDF pages are preserved.
+The PDF/PNGs are ReportLab drawings of the shared native shapes, with embedded
+Nunito; this is not a PowerPoint/LibreOffice render. Text bounds are checked.
+Review in PowerPoint before final upload; rebuild videos separately if they embed
+these frames. See `../../submission/ARCHITECTURE_REVIEW.md` for the source audit.

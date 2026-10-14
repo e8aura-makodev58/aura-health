@@ -1,6 +1,14 @@
 # Submission evidence ledger
 
-Latest candidate: `68372f3` (2026-10-13), merged main `f37af0c` plus the narrow
+Architecture audit2026-10-14 against main `90e31ea`: **334 Python tests PASS
+/459.063s**, no runtime changes/live model calls. Corrected PDF/native diagrams
+and exact artifact checks in [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md).
+This verifies code/documentation correspondence, not final submission approval or
+a fresh deployment/model-quality gate. The earlier medication retry-ID finding
+is fixed in this revision and covered by MED4b; retain its historical reproduction
+below with its original candidate.
+
+Earlier Codex candidate: `68372f3` (2026-10-13), merged main `f37af0c` plus the narrow
 clinician-verifier fix and companion documentation. X5 results are recorded below;
 this branch is not the user-approved final merged/deployed release.
 Earlier consolidated candidate verification: `495087d` (2026-10-13), detailed below.

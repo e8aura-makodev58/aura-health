@@ -37,10 +37,16 @@
       "path": "assets/aura-health-deck.pptx",
       "max_bytes": 10000000,
       "status": "REVIEW_PENDING",
-      "bytes": 687993,
+      "bytes": 688475,
       "slide_count": 18,
       "companion_overview_rerender_required": false,
-      "native_diagrams": "slides 11-13: editable shapes with glued connectors (deck/native_diagrams.py)"
+      "native_diagrams": "slides 11-13: editable shapes with glued connectors (deck/native_diagrams.py)",
+      "implementation_audited_commit": "90e31ea6d7b797264bfc31fa0ae16229b76e164c",
+      "audit_date": "2026-10-14",
+      "audit": "ARCHITECTURE_REVIEW.md",
+      "reviewed_pdf": "assets/aura-health-architecture-reviewed.pdf",
+      "reviewed_pdf_bytes": 148451,
+      "note": "Diagrams 11\u201313 reconciled; other slide XML preserved. PDF/PNGs rendered with ReportLab from native shapes; PowerPoint/LibreOffice render not reverified. User approval remains pending."
     }
   },
   "supporting_diagrams": {
@@ -58,7 +64,15 @@
       1920,
       1080
     ],
-    "status": "REVIEW_PENDING"
+    "status": "REVIEW_PENDING",
+    "current_source": "../presentation/deck/native_diagrams.py",
+    "current_formats": [
+      "native PowerPoint shapes",
+      "png"
+    ],
+    "historical_formats": [
+      "svg"
+    ]
   },
   "preliminary_checks": {
     "date": "2026-10-13",
@@ -141,5 +155,16 @@
     "raw_readme": 200,
     "tracked_sensitive_files": "none found",
     "note": "author emails remain in commit metadata only"
+  },
+  "architecture_audit_checks": {
+    "date": "2026-10-14",
+    "implementation_commit": "90e31ea6d7b797264bfc31fa0ae16229b76e164c",
+    "python_tests_passed": 334,
+    "python_seconds": 459.063,
+    "artifact_structure": "PASS:18 slides/only11\u201313 changed/18 attached connectors/5 PDF pages/six1920\u00d71080 PNGs",
+    "mock_clock_budget": "PASS:late call rejected after return, not hard response deadline",
+    "live_model_calls": 0,
+    "deployed_state_reverified": false,
+    "evidence": "ARCHITECTURE_REVIEW.md"
   }
 }

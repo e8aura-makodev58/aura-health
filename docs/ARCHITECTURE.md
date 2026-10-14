@@ -1,6 +1,8 @@
 # AURA — implementation and trust boundaries
 
 M7 synthetic engineering prototype. Diagram reflects the code, not clinical validation.
+The attached PDF was audited against `90e31ea` on2026-10-14; see
+[the review and corrected exports](submission/ARCHITECTURE_REVIEW.md).
 
 ```mermaid
 flowchart TD
