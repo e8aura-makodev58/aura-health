@@ -99,17 +99,18 @@
   function plainVisitText(claim){
     const bySignal=new Map();for(const f of claim.findings||[]){const prior=bySignal.get(f.signal);if(!prior||f.since<prior.since)bySignal.set(f.signal,f);}
     return [...bySignal.values()].map(f=>{const what=plainChange[f.signal]?.[f.direction]||`${(titles[f.signal]||'A reading')} ${String(f.direction||'').toLowerCase()}`;
-      const when=roughly(String(f.since||'').slice(0,10));return when?`${what}, since ${when}`:what;}).join('; ');
+      const when=roughly(String(f.since||'').slice(0,10));return when?`${what}, since ${when}`:what;});
   }
   function visitLine(claim,result,area,previous,key){
-    const plain=claim.findings?.length?plainVisitText(claim):'';
+    const plain=claim.findings?.length?plainVisitText(claim):[];
     let parent=area;
-    if(!plain){parent=area.querySelector(':scope>details.visit-more');if(!parent){parent=node('details',null,'visit-more');parent.append(node('summary','More from your record'));area.append(parent);}}
+    if(!plain.length){parent=area.querySelector(':scope>details.visit-more');if(!parent){parent=node('details',null,'visit-more');parent.append(node('summary','More from your record'));area.append(parent);}}
     const line=node('section',null,'agent-claim visit-line');if(previous.size&&!previous.has(key))line.classList.add('assessment-changed');
-    line.append(node('p',plain||displayText(claim.text),plain?'visit-plain':'fine'));
+    // One plain line per finding (a claim can combine several), else the record sentence.
+    if(plain.length)for(const text of plain)line.append(node('p',text,'visit-plain'));else line.append(node('p',displayText(claim.text),'fine'));
     const actions=node('div',null,'visit-actions');
     const details=node('div',null,'claim-sources');details.hidden=true;
-    if(plain)details.append(node('p',`What AURA found: ${displayText(claim.text)}`,'fine'));
+    if(plain.length)details.append(node('p',`What AURA found: ${displayText(claim.text)}`,'fine'));
     details.append(factSources(claim.fact_ids.map(id=>result.sources.find(f=>f.fact_id===id)),true));
     const show=node('button','Details','text-button');show.setAttribute('aria-expanded','false');
     show.addEventListener('click',()=>{details.hidden=!details.hidden;show.setAttribute('aria-expanded',String(!details.hidden));});
