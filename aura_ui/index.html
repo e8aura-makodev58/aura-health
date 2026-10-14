@@ -117,6 +117,12 @@
           <h2 id="coming-up-heading">Coming up</h2>
           <ul class="coming-up-list" id="coming-up-list"></ul>
         </section>
+        <section id="activities-card" class="card companion-card activities-card" hidden aria-labelledby="activities-heading">
+          <h2 id="activities-heading">Things you've mentioned</h2>
+          <p class="companion-detail">From your notes in the last two weeks. Only you see these words.</p>
+          <ul class="activity-list" id="activity-list"></ul>
+          <p class="fine">Picked out by AURA (AI) from what you wrote; durations only when you gave one.</p>
+        </section>
         <section id="suggestion-card" class="card companion-card suggestion-card" hidden aria-labelledby="suggestion-heading">
           <h2 id="suggestion-heading">A small idea for today</h2>
           <p class="companion-detail" id="suggestion-reason"></p>
@@ -144,6 +150,13 @@
       <section class="findings-overview"><p class="eyebrow">What changed · when</p><div id="changes-overview"></div><p id="workspace-decision" class="fine"></p></section>
       <section id="agent-workspace" class="card agent-card"><p class="eyebrow">Read-only record assistant</p><h2>A short brief, with the evidence behind it</h2><p>Investigate these synthetic records across signals and context. Drafts do not change policy or send information.</p><button data-agent-role="clinician_brief">Draft a brief</button><div id="agent-clinician_brief" aria-live="polite"></div><details><summary>Ask about this record</summary><div class="details-body"><label for="agent-query">Record question</label><select id="agent-query"><option value="sleep_change">When did sleep timing change?</option><option value="recorded_context">What context was recorded?</option><option value="wearable_gaps">Where are the wearable gaps?</option><option value="routine">What was recorded about check-ins and routine?</option></select><button data-agent-role="record_qa">Investigate the record</button><div id="agent-record_qa" aria-live="polite"></div><p class="fine">Selected record questions only. Arbitrary notes still need safety evaluation.</p></div></details><details><summary>Suggested questions from the approved set</summary><button data-agent-role="question_ranker">Suggest an order</button><div id="agent-question_ranker" aria-live="polite"></div></details></section>
       <div class="chart-legend"><span class="observed-key">● Readings</span><span class="rolling-key">━ Recent average</span><span class="anchor-key">┄ <span id="baseline-legend">Baseline</span></span><span>No connecting line across missing days</span></div>
+      <section id="activity-summary" class="card activity-summary" hidden aria-labelledby="activity-summary-heading">
+        <p class="eyebrow">Patient-reported · from notes</p>
+        <h2 id="activity-summary-heading">Everyday activity the patient mentioned</h2>
+        <p class="fine" id="activity-summary-window"></p>
+        <table class="activity-table"><thead><tr><th>Type</th><th>Last 2 weeks</th><th>2 weeks before</th></tr></thead><tbody id="activity-summary-rows"></tbody></table>
+        <p class="fine">Totals only; the patient's own words stay on their side. Counts what the patient chose to write, not everything they did. A conversation starter, not a measure of wellbeing.</p>
+      </section>
       <div id="evidence-charts" class="evidence-charts" aria-label="Recorded signals and personal references"></div>
       <details class="card reports-card"><summary><h2>What was reported</h2></summary><div id="evidence-strip"></div></details>
       <details id="workspace-review" class="card"><summary>Questions &amp; review preparation <span class="summary-caption">Prepared information — not sent</span></summary><div id="evidence-review" class="details-body"></div></details>

@@ -108,6 +108,7 @@ function renderCompanion(data) {
 
   // Missed-dose items on the review page
   renderMissedDoses(data);
+  loadActivities();
 }
 
 function buildSuggestionChips(options) {
@@ -347,3 +348,61 @@ window.addEventListener("aura-record-view", () => {
   }
   loadCompanion(ctx.patientId);
 });
+
+
+// Patient side: what the person mentioned (their own words). Hidden when empty or unavailable.
+async function loadActivities() {
+  const card = document.getElementById("activities-card");
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) { card.hidden = true; return; }
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patient)}/activities`, {cache:"no-store"});
+    if (!response.ok) throw new Error("unavailable");
+    const data = await response.json();
+    if (window.auraAgentContext?.()?.patientId !== patient) return;
+    const list = document.getElementById("activity-list");
+    list.replaceChildren();
+    for (const item of (data.items || []).slice(0, 8)) {
+      const li = document.createElement("li");
+      const what = document.createElement("span"); what.className = "activity-phrase"; what.textContent = `“${item.phrase}”`;
+      const meta = document.createElement("span"); meta.className = "activity-meta";
+      meta.textContent = [companionDateLabel(item.at), ...item.labels, item.minutes ? (item.minutes % 60 === 0 || item.minutes >= 60 ? `${item.minutes / 60} h` : `${item.minutes} min`) : null].filter(Boolean).join(" · ");
+      li.append(what, meta); list.append(li);
+    }
+    card.hidden = !data.available || !(data.items || []).length;
+  } catch { card.hidden = true; }
+}
+window.auraLoadActivities = loadActivities;
+
+// Called after a note is sent: tag activities, then refresh the patient card.
+window.auraExtractActivities = async function () {
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) return;
+  try { await fetch(`/patients/${encodeURIComponent(patient)}/activities/extract`, {method:"POST"}); } catch { return; }
+  await loadActivities();
+};
+
+// Clinician side: totals only, no phrases.
+window.auraLoadActivitySummary = async function () {
+  const card = document.getElementById("activity-summary");
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!card || !patient) return;
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patient)}/activities/summary`, {cache:"no-store"});
+    if (!response.ok) throw new Error("unavailable");
+    const data = await response.json();
+    if (window.auraAgentContext?.()?.patientId !== patient) return;
+    const rows = document.getElementById("activity-summary-rows");
+    rows.replaceChildren();
+    const cell = (text) => { const td = document.createElement("td"); td.textContent = text; return td; };
+    const span = (row) => `${row.days === 1 ? "1 day" : row.days + " days"}${row.minutes ? ` · ${row.minutes % 60 === 0 || row.minutes >= 60 ? row.minutes / 60 + " h" : row.minutes + " min"} stated` : ""}`;
+    for (const row of data.categories || []) {
+      const tr = document.createElement("tr");
+      tr.append(cell(row.label), cell(span(row.recent)), cell(span(row.earlier)));
+      rows.append(tr);
+    }
+    document.getElementById("activity-summary-window").textContent =
+      `${companionDateLabel(data.recent.start)}–${companionDateLabel(data.recent.end)} vs ${companionDateLabel(data.earlier.start)}–${companionDateLabel(data.earlier.end)} · days on which an activity was mentioned`;
+    card.hidden = !(data.categories || []).length;
+  } catch { card.hidden = true; }
+};

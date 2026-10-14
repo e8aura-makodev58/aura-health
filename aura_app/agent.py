@@ -145,6 +145,16 @@ class AgentService:
             evidence['assessed_notes'] = [{'event_id': row['event_id'], 'at': row['occurred_at'], 'text': row['payload']['text']}
                 for row in repo.events(patient_id) if row['event_type'] == 'PATIENT_FREE_TEXT'
                 and row['event_id'] in assessed and not row['longitudinal_deferred']]
+            # Patient-reported activities reach the agent as aggregates only (no phrases).
+            notes = {row['event_id'] for row in evidence['assessed_notes']}
+            activity_rows = [{'at': row['occurred_at'], 'items': row['detail']['items']} for row in repo.timeline(patient_id)
+                             if row['record_type'] == 'PATIENT_ACTIVITY' and row['detail'].get('note_event_id') in notes]
+            if activity_rows and evidence.get('period', {}).get('end'):
+                from datetime import datetime as _dt
+                from aura_agent.activities import summarize, summary_text
+                summary = summarize(activity_rows, _dt.fromisoformat(evidence['period']['end']).date())
+                evidence['activity_summary'] = {'text': summary_text(summary), 'summary': summary,
+                                                'ref': 'activity-summary:' + summary['recent']['end']}
         return RecordTools(evidence, role, window_days=window_days, recent_readings_days=self.config.recent_readings_days,
                            checkin_days=self.config.checkin_days), evidence
 

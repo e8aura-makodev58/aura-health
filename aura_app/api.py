@@ -194,6 +194,21 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def companion(patient_id: str):
         return companion_service.get(patient_id)
 
+    from .activities import ActivityService
+    activity_service = ActivityService(service, agent_service.provider)
+
+    @app.post("/patients/{patient_id}/activities/extract")
+    def activities_extract(patient_id: str):
+        return activity_service.extract_pending(patient_id)
+
+    @app.get("/patients/{patient_id}/activities")
+    def activities_patient(patient_id: str):
+        return activity_service.for_patient(patient_id)
+
+    @app.get("/patients/{patient_id}/activities/summary")
+    def activities_summary(patient_id: str):
+        return activity_service.summary(patient_id)
+
     @app.post("/patients/{patient_id}/companion/suggestions/personalize")
     def companion_personalize(patient_id: str):
         return companion_service.personalize(patient_id)

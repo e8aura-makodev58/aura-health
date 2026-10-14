@@ -183,6 +183,7 @@ function render() {
   setText("quiet-heading",communication?.pinned_resources ? "The safety pathway is active." : "No question from AURA right now.");
   setText("home-subtitle", communication?.pinned_resources ? "The policy message and separate resources remain above, on every page." : "You can check in whenever it feels useful.");
   $("talk").disabled = busy;
+  window.auraLoadActivitySummary?.();
   setText("communication-eyebrow", communication?.mode === "NORMAL_SUPPORT" && communication?.generation_used ? "From AURA" : "A small question");
   setText("communication-message", communication?.message);
   setText("wording-origin",communication?.generation_used?"AI-written":"Fixed wording");
@@ -410,6 +411,7 @@ $("input-form").addEventListener("submit", async (event) => {
   } else if (dialogKind === "question") await submitEvent("REVIEW_COMMAND", {action:"ADD_QUESTION", question:text});
   else {
     await submitEvent("PATIENT_FREE_TEXT", {text});
+    window.auraExtractActivities?.();
     // Show AURA's reply where the person is looking (not under the cards below the fold).
     const reply = $("communication-card");
     if (!reply.hidden && reply.offsetParent) reply.scrollIntoView({behavior:"smooth", block:"center"});

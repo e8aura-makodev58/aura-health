@@ -144,6 +144,8 @@ class RecordTools:
         add("get_review_snapshot", "committed:review", "Review draft status: Not sent.")
         for row in evidence.get("assessed_notes", []):
             add("get_context", row["event_id"], f"Patient note {row['at'][:10]}: {json.dumps(row['text'][:400])}.")
+        if evidence.get("activity_summary"):
+            add("get_context", evidence["activity_summary"]["ref"], evidence["activity_summary"]["text"])
         from .voice import prepare_fact
         from .roles import AgentRole
         for fact in self.facts.values():
