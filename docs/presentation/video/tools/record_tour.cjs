@@ -1,4 +1,5 @@
-// Records the live in-app guided story. Usage: node record_tour.cjs <base> <outdir> <phone|desk>
+// Records the live in-app guided story. Usage: node record_tour.cjs <base> <outdir> <phone|desk|deskfull>
+// deskfull: the whole story in 1920×1080 landscape, through the safety example (for the song half).
 const {chromium}=require('playwright');const fs=require('fs');
 const [base,out,mode]=process.argv.slice(2);fs.mkdirSync(out,{recursive:true});
 const cursor=()=>{const add=()=>{if(document.getElementById('rec-cursor'))return;const d=document.createElement('div');d.id='rec-cursor';
@@ -7,7 +8,7 @@ const cursor=()=>{const add=()=>{if(document.getElementById('rec-cursor'))return
   addEventListener('mousedown',()=>{d.style.width='14px';d.style.height='14px';},true);addEventListener('mouseup',()=>{d.style.width='22px';d.style.height='22px';},true);};
   if(document.readyState==='loading')addEventListener('DOMContentLoaded',add);else add();};
 (async()=>{
- const [w,h]=mode==='desk'?[1600,900]:[390,844];
+ const [w,h]=mode==='deskfull'?[1920,1080]:mode==='desk'?[1600,900]:[390,844];
  const b=await chromium.launch();const c=await b.newContext({viewport:{width:w,height:h},recordVideo:{dir:out,size:{width:w,height:h}}});
  await c.addInitScript(cursor);await c.addInitScript(()=>{window.auraLandingInAutomation=true;window.auraWelcomeInAutomation=true;});
  const p=await c.newPage();const t0=Date.now();const marks=[];const errors=[];p.on('pageerror',e=>errors.push(e.message));
@@ -19,10 +20,10 @@ const cursor=()=>{const add=()=>{if(document.getElementById('rec-cursor'))return
  await p.goto(base,{waitUntil:'networkidle'});await pause(1500);mark('start');await pause(3000);
  await click('#start-demo',300);await p.waitForSelector('.tour-card');await pause(5500);mark('intro_read');
  await click('.tour-next',300);
- const read={phone:[6000,8000,8500,9000,9500,9000,7000,11000,11000],desk:[2500,2500,2500,2500,2500,2500,11000,15000,1000]}[mode];
+ const read={phone:[6000,8000,8500,9000,9500,9000,7000,11000,11000],desk:[2500,2500,2500,2500,2500,2500,11000,15000,1000],deskfull:[5000,6500,7000,7500,7500,7000,8000,14000,9000]}[mode];
  for(let i=0;i<9;i++){
   await ready(i);mark('step_'+i);
-  if(mode==='desk'&&i===7){
+  if((mode==='desk'||mode==='deskfull')&&i===7){
    for(let attempt=0;attempt<5&&/couldn't complete/.test(await status());attempt++){mark('fallback_'+attempt);await pause(3500);await click('.tour-retry',300);await ready('retry'+attempt);}
    mark('agent_result');await pause(4000);await p.mouse.move(w*0.35,h*0.4,{steps:15});await p.mouse.wheel(0,380);await pause(read[i]-4000);
   }else await pause(read[i]);
@@ -30,7 +31,7 @@ const cursor=()=>{const add=()=>{if(document.getElementById('rec-cursor'))return
   if(mode==='desk'&&i===7)break;
   await click('.tour-next',300);
  }
- if(mode==='phone'){await pause(1500);mark('finish');await pause(4500);await click('text=Show the safety example',300);mark('wait_safety');
+ if(mode==='phone'||mode==='deskfull'){await pause(1500);mark('finish');await pause(4500);await click('text=Show the safety example',300);mark('wait_safety');
   await p.waitForFunction(()=>document.getElementById('input-dialog').open,null,{timeout:20000}).catch(()=>errors.push('note box'));mark('note_open');
   await p.waitForSelector('#safety-panel:not([hidden])',{timeout:60000}).catch(()=>errors.push('safety'));mark('safety_shown');
   await p.waitForFunction(()=>/Safety takes priority/.test(document.querySelector('.tour-title')?.textContent||''),null,{timeout:60000}).catch(()=>errors.push('safety card'));mark('safety_card');await pause(10000);mark('end');}

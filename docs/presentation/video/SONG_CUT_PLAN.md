@@ -1,88 +1,84 @@
-# Song + voice-over cut plan (video with the ad song)
+# Song + voice-over cut plan (v2: voice-over first, song over the landscape demo)
 
-The song carries the self-explanatory opening and the close; a short voice-over carries the
-middle, where the agent, safety, architecture and build reflection need explaining.
-Song: [`../../submission/AURA_AD_SONG_v5.md`](../../submission/AURA_AD_SONG_v5.md) (sung version,
-plus the instrumental version as a quiet bed under the voice). Video: the current silent cut,
-`aura-health-walkthrough-novoice.mp4` (5:58), with your 8-second Miora intro and outro added.
+User direction 2026-10-14: the **first half** is the 3-minute walkthrough with **voice-over**; the
+**second half** is a **full live demo of the app on a PC in landscape**, carried by the song.
+This replaces the earlier plan (song–voice–song); the total stays inside the form's 5–8 minutes.
 
-Times below are **final-video times** (intro clip included). Song times assume about 96 BPM, inside the
-prompt's 92–104 BPM; Suno picks the exact tempo, so after generating, move each cut to the
-nearest phrase end (never speed the vocal up). Keep the finished video **at least 5:00** (it is
-about 6:14).
+| File (in `docs/presentation/video/`, not in git) | Length | What it is |
+|---|---|---|
+| `aura-health-part1-voiceover-novoice.mp4` | 3:00 | First half: slides + phone story highlights + agent + flu + safety + architecture + challenge fit + **How we built it** |
+| `aura-health-landscape-demo-novoice.mp4` | 2:40 | Second half: one continuous, uncut live take of the guided story at 1920×1080, through the safety example (the agent's answer passed its checks first time in this take) |
+| `aura-health-combined-draft-novoice.mp4` | 5:40 | The two halves joined, silent; add the 8-s Miora intro and outro → **about 5:56** |
 
-## Cue sheet
+Built by `tools/assemble_short.py` (with `FIRST_HALF=1`) and `tools/assemble_landscape.py`; the
+landscape take comes from `tools/record_tour.cjs <url> <dir> deskfull`.
+
+## Cue sheet (final-video times, intro clip included)
 
 | Final video | On screen | Audio |
 |---|---|---|
-| 0:00–0:08 | Miora intro | **Song 0:00–** (instrumental intro) |
-| 0:08–1:07 | Slides 1–4: cover, challenge, problem, what AURA does | Song: Verse 1 → Pre-chorus → **Chorus** |
-| 1:07–2:15 | Calm start, today's dose, medication answers | Song: Verse 2 → Pre-chorus → Chorus → guitar → **Bridge, ends ~2:15** ("…and where the story turns") |
-| 2:15–2:33 | Appointment | **Voice A**, instrumental bed low (about −18 dB under voice) |
-| 2:33–3:13 | Clinician + agent (first draft rejected → Ask again → checked answer) | **Voice B** |
-| 3:13–3:36 | Simulated flu | **Voice C** |
-| 3:36–4:03 | Safety example (masked) → safety panel → explanation card | **Voice D** |
-| 4:03–4:57 | Slides 11–14: architecture, agent loop, safety precedence, trade-offs | **Voice E** |
-| 4:57–5:22 | Slide 15: fit with the challenge | **Voice F** |
-| 5:22–5:42 | Slide 16: how we built it | **Voice G** |
-| 5:42–6:14 | Slides 17–18: impact, close; Miora outro | **Song: Final chorus → Outro** ("…room for your day"); hold the last frame or fade if the song runs ~3 s longer |
+| 0:00–0:08 | Miora intro | Soft instrumental (optional), or silence |
+| 0:08–3:08 | First half (part 1) | **Your voice-over 1–10** below; optional instrumental bed very low |
+| 3:08–5:48 | Landscape live demo | **Song (v5)** from the start; the guided story's own cards explain each step |
+| 5:48–5:56 | Miora outro | Song outro ("…Aura Health, room for your day"); hold or fade to fit |
 
-Mixing notes: fade the song down over ~1 s into Voice A and up over ~1 s after Voice G; leave a
-beat of silence before the final chorus. Captions already on screen stay as they are.
+The song runs about 2:37–2:57 (92–104 BPM); the landscape demo plus the outro clip is 2:48. If the
+song is longer, hold the outro image; if shorter, let the last demo frame hold. Never speed the
+vocal up. Keep the finished video between 5:00 and 8:00.
 
-## Voice-over script (about 450 words, ~150 words a minute)
+## Voice-over script for the first half (about 400 words)
 
-**A · Appointment (2:15–2:33, ~18 s)**
-> Before a visit, everything is in one place: what changed and when, and the skipped dose with
-> its reason, ready to discuss with the doctor or pharmacist. Nothing is sent automatically. It
-> stays *Not sent* until the patient decides.
+**1 · Cover, problem, what AURA does (0:08–0:32, ~24 s)**
+> This is AURA Health, for the Healthcare track. Staying well on an antidepressant happens mostly
+> between appointments: a missed dose, sleep drifting later, a flu. Most apps ask you to log your
+> mood every evening. AURA quietly reads everyday wearable data and compares it with this
+> person's own usual.
 
-**B · Clinician and agent (2:33–3:13, ~40 s)**
-> If the patient shares, their clinician sees what changed and when, with exact values and
-> sources, and can ask. Here AURA works as an agent: it decides which signals, tools and dates to
-> read, then drafts an answer where every statement cites its source. A separate check reviews
-> each statement. This time the first draft didn't pass, and AURA said so. Asked again, the
-> answer passed, and *How AURA looked* shows exactly what it read. It can only read; it never
-> changes the record or the treatment.
+**2 · A calm start (0:32–0:59, ~27 s)**
+> It starts with a breath, not a dashboard. Then one short summary, written by AI from facts the
+> system has checked: sleep later than usual since late February, and how the person has been
+> checking in.
 
-**C · Something changes (3:13–3:36, ~23 s)**
-> Now a flu, simulated over three days. AURA notices resting heart rate is higher than in the
-> person's recent records, and says exactly that: a recent change, not a change from their usual.
-> It also offers a small, optional idea for today, never about medication.
+**3 · Medication (0:59–1:18, ~19 s)**
+> One tap a day for the dose. If it's skipped, AURA asks what got in the way. Medication answers
+> come from approved information, and when AURA can't answer, it says so and points to the
+> pharmacist.
 
-**D · Safety first (3:36–4:03, ~27 s)**
-> Anything a patient types is safety-checked first. Here the example message is masked. When
-> there's a concern, fixed safety resources take over the screen and the AI steps back. The
-> patient can't dismiss them, and the clinician sees the same state when they open the record.
-> This prototype doesn't send alerts; who is told, and how fast, is for the care team to decide.
+**4 · Appointment (1:18–1:27, ~9 s)**
+> Before the visit, the skipped dose and its reason are ready to discuss. Nothing is sent until
+> the patient decides.
 
-**E · How it's built (4:03–4:57, ~54 s)**
-> Our rule: signals propose, rules decide, AI words it. A Python application owns all the state.
-> Deterministic engines keep the personal baselines and the safety state; the AI never does.
-> Medication information is curated, and AI only matches a question to an approved topic. The
-> agent investigates with read-only, patient-scoped tools, within loop budgets: eight model
-> steps, twenty-four tool calls, ninety seconds. Every answer passes number, date and citation
-> checks, an independent verifier, and a final recheck of the safety state. Safety has the final
-> say: a detector can never lower the safety state, and safety resources are shown
-> without any AI model. The demo runs on synthetic data; a hospital would run the model on its own infrastructure.
+**5 · The agent (1:27–1:53, ~26 s)**
+> The clinician can ask. AURA's agent decides which records and dates to read, and drafts an
+> answer where every statement cites its source. A separate check reviews each statement. Here
+> the first draft failed, AURA said so, and the next one passed. It can only read.
 
-**F · Fit with the challenge (4:57–5:22, ~25 s)**
-> Against the challenge: medication understanding, adherence with reasons, health tracking,
-> refill and review dates, and appointment preparation are in the demo. Push reminders,
-> screenings and pharmacist-reviewed content come next. One choice is deliberate: AURA describes
-> changes; it doesn't predict relapse or give medication advice.
+**6 · Something changes (1:53–2:06, ~13 s)**
+> A simulated flu: AURA describes what changed in this person's recent records, and offers a
+> small, optional idea for today.
 
-**G · How we built it (5:22–5:42, ~20 s)**
-> We built the safety and baseline core first, then the agent, then the experience, using AI
-> development tools including Tencent's CodeBuddy and Miora, from written specs, with every change
-> reviewed and tested. Our tip: write down what must never change before asking an AI to build
-> anything.
+**7 · Safety first (2:06–2:23, ~17 s)**
+> Anything a patient types is safety-checked first. If there's a concern, fixed safety resources
+> take over and the AI steps back. The patient can't dismiss them. This prototype sends no alerts.
 
-Then the song takes over for the final chorus and the sung close: *"Room for your day, room
-for your own way, Aura Health, room for your day."*
+**8 · Architecture and agent loop (2:23–2:45, ~22 s)**
+> Our rule: signals propose, rules decide, AI words it. Deterministic engines own the baselines
+> and the safety state. The agent uses read-only tools within loop budgets, and every draft is
+> grounded, verified and rechecked before it's shown.
+
+**9 · Fit with the challenge (2:45–2:57, ~12 s)**
+> Medication understanding, adherence, health tracking, follow-up dates and appointment
+> preparation are in the demo. AURA describes changes; it doesn't predict relapse or give
+> medication advice.
+
+**10 · How we built it (2:57–3:08, ~11 s)**
+> We built the core first, then the agent, then the experience, using CodeBuddy and Miora. Our
+> tip: write down what must never change first.
+
+Then the song starts with the landscape demo.
 
 ## What Claude can do once the audio exists
 
-Given the Suno sung track, the instrumental track and your voice recording (one file, or one per
-section A–G): place the cuts on phrase ends, mix the instrumental bed under the voice, add the
-intro/outro clips, and export the final MP4, checking that it stays between 5 and 8 minutes.
+Given your voice recording (one file, or one per section 1–10) and the Suno sung track: place the
+voice on the first half, start the song on the landscape demo, add the intro/outro clips, balance
+levels, and export the final MP4, checking it stays between 5 and 8 minutes.

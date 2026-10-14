@@ -35,9 +35,11 @@ phone("t5", 71.5, 80.0)                                 # appointment: missed do
 desk(44.0, 52.0); desk(68.6, 72.0); desk(88.4, 100.0, hold=3)  # clinician view; first draft rejected; checked answer
 phone("t7", 114.8, 117.6); phone("t7", 123.9, 134.0)    # simulated flu, new summary, small idea
 phone("t8", 143.5, 161.0)                               # safety example (masked), safety panel, explanation card
-slide(11, 12); slide(12, 10); slide(15, 12); slide(18, 10.8)   # architecture, agent loop, challenge fit, close
+import os
+FIRST_HALF = os.environ.get("FIRST_HALF") == "1"  # voice-over half of the combined video: "how we built it" instead of the close
+slide(11, 12); slide(12, 10); slide(15, 12); slide(16 if FIRST_HALF else 18, 10.8)   # architecture, agent loop, challenge fit, close
 (OUT / "parts.txt").write_text("".join(f"file '{p.name}'\n" for p, _, _ in parts))
-final = OUT / "aura-health-short-3min-novoice.mp4"
+final = OUT / ("aura-health-part1-voiceover-novoice.mp4" if FIRST_HALF else "aura-health-short-3min-novoice.mp4")
 run(["-f", "concat", "-safe", "0", "-i", str(OUT / "parts.txt"), "-c", "copy", "-movflags", "+faststart", str(final)])
 t, lines = 0.0, []
 for p, label, seconds in parts:
