@@ -5,41 +5,41 @@ voice-over; second half `aura-health-landscape-demo-novoice.mp4` (2:40), a conti
 PC landscape, under the song. Joined draft: `aura-health-combined-draft-novoice.mp4`. The voice-over
 text, timed to the second, is in [`SONG_CUT_PLAN.md`](SONG_CUT_PLAN.md) (sections 1–10).
 
-Times below are final-video times (8-s Miora intro first).
+Each table gives the time inside the file and the time in the finished video (after the 8-s Miora intro). Section starts were checked against frames of the actual files.
 
-### First half · your voice
+### First half · your voice (record against `aura-health-part1-voiceover-novoice.mp4`)
 
-| Video time | On screen | Say (SONG_CUT_PLAN section) |
+| Part-1 file | Final video | On screen | Say (section) |
+|---|---|---|---|
+| — | 0:00–0:08 | Miora intro | — |
+| 0:00–0:27 | 0:08–0:35 | Cover, the problem, what AURA does | 1 |
+| 0:27–0:54 | 0:35–1:02 | Guided story starts: breath, short summary | 2 |
+| 0:54–1:16 | 1:02–1:24 | Skipped dose + reason; leaflet answer; "Can I take ibuprofen?" → honest reply | 3 |
+| 1:16–1:29 | 1:24–1:37 | Appointment note, Not sent | 4 |
+| 1:29–1:58 | 1:37–2:06 | Clinician view → agent: first draft rejected → checked answer | 5 |
+| 1:58–2:12 | 2:06–2:20 | Simulated flu, small idea for today | 6 |
+| 2:12–2:31 | 2:20–2:39 | Safety example (masked) → safety panel → explanation card | 7 |
+| 2:31–2:55 | 2:39–3:03 | Architecture, agent loop | 8 |
+| 2:55–3:11 | 3:03–3:19 | Fit with the challenge | 9 |
+| 3:11–3:26 | 3:19–3:34 | How we built it | 10 |
+
+### Second half · the song (no voice; `aura-health-landscape-demo-novoice.mp4`)
+
+| Landscape file | Final video | On screen (landscape live take) |
 |---|---|---|
-| 0:00–0:08 | Miora intro | — |
-| 0:08–0:35 | Cover, the problem, what AURA does | 1 |
-| 0:35–1:02 | Guided story starts: breath, short summary | 2 |
-| 1:02–1:24 | Skipped dose + reason; "Can I take ibuprofen?" → honest reply | 3 |
-| 1:24–1:37 | Appointment note, Not sent | 4 |
-| 1:37–2:06 | Clinician view → agent: first draft rejected → checked answer | 5 |
-| 2:06–2:20 | Simulated flu, small idea for today | 6 |
-| 2:20–2:39 | Safety example (masked) → safety panel → explanation card | 7 |
-| 2:39–3:03 | Architecture, agent loop | 8 |
-| 3:03–3:19 | Fit with the challenge | 9 |
-| 3:19–3:34 | How we built it | 10 |
-
-### Second half · the song (no voice)
-
-| Video time | On screen (landscape live take) |
-|---|---|
-| 3:35 | Landing → Play the 3-minute story → intro card |
-| 3:48 | Breath, then the short summary |
-| 4:03 | Today's dose: Skipped → side effects |
-| 4:11 | Medication: leaflet answer |
-| 4:25 | "Can I take ibuprofen with it?" → honest reply |
-| 4:34 | Appointment note, Not sent |
-| 4:43 | Clinician view |
-| 4:52 | Agent asked; answer with sources and How AURA looked |
-| 5:25 | Simulated flu → new summary, small idea |
-| 5:47 | Finish card → Show the safety example (masked) |
-| 6:01 | Safety panel + explanation card |
-| 6:12–6:15 | Last frame held |
-| 6:15–6:23 | Miora outro (song outro "…room for your day") |
+| 0:00 | 3:35 | Landing → Play the 3-minute story → intro card |
+| 0:13 | 3:48 | Breath, then the short summary |
+| 0:28 | 4:03 | Today's dose: Skipped → side effects |
+| 0:37 | 4:11 | Medication: leaflet answer |
+| 0:51 | 4:25 | "Can I take ibuprofen with it?" → honest reply |
+| 1:00 | 4:34 | Appointment note, Not sent |
+| 1:08 | 4:43 | Clinician view |
+| 1:18 | 4:52 | Agent asked; answer with sources and How AURA looked |
+| 1:51 | 5:25 | Simulated flu → new summary, small idea |
+| 2:13 | 5:47 | Finish card → Show the safety example (masked) |
+| 2:27 | 6:01 | Safety panel + explanation card |
+| 2:37–2:40 | 6:12–6:15 | Last frame held |
+| — | 6:15–6:23 | Miora outro (song outro "…room for your day") |
 
 Honesty notes: synthetic data; real live runs; AI text not edited. The first half's agent scene shows
 the first draft rejected and a visible *Ask again* that then passed (say so, section 5). In the

@@ -35,7 +35,7 @@ if os.environ.get("FIRST_HALF") == "1":
     slide(1, 6); slide(3, 14); slide(4, 7)                  # 1 · cover, problem, what AURA does   27 s
     phone("t3", 5.0, 32.0)                                  # 2 · calm start                       27 s
     phone("t4", 33.0, 44.0); phone("t4", 60.5, 70.8, hold=1)  # 3 · dose + honest reply           22.3 s
-    phone("t5", 70.8, 82.7, hold=1.5)                       # 4 · appointment                      13.4 s
+    phone("t5", 72.3, 81.4, hold=4.3)                       # 4 · appointment (ends before the story moves on) 13.4 s
     desk(43.3, 52.0); desk(68.6, 74.2); desk(88.4, 100.0, hold=3)  # 5 · clinician + agent        28.9 s
     phone("t7", 114.8, 117.6); phone("t7", 123.9, 135.0)    # 6 · flu                              13.9 s
     phone("t8", 143.0, 162.0)                               # 7 · safety                           19 s

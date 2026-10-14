@@ -18,8 +18,8 @@ landscape take comes from `tools/record_tour.cjs <url> <dir> deskfull`.
 | Final video | On screen | Audio |
 |---|---|---|
 | 0:00–0:08 | Miora intro | Soft instrumental (optional), or silence |
-| 0:08–3:34 | First half (part 1) | **Your voice-over 1–10** below; optional instrumental bed very low |
-| 3:34–6:15 | Landscape live demo | **Song (v5)** from the start; the guided story's own cards explain each step |
+| 0:08–3:34 | First half (part 1; file 0:00–3:26) | **Your voice-over 1–10** below; optional instrumental bed very low |
+| 3:34–6:15 | Landscape live demo (file 0:00–2:40) | **Song (v5)** from the start; the guided story's own cards explain each step |
 | 6:15–6:23 | Miora outro | Song outro ("…Aura Health, room for your day"); hold or fade to fit |
 
 The song runs about 2:37–2:57 (92–104 BPM); the landscape demo plus the outro clip is 2:48. If the
@@ -31,49 +31,53 @@ vocal up. Keep the finished video between 5:00 and 8:00.
 Paced for a relaxed read: about 110 words a minute, with a breath at each cut. Start each section
 about a second after its picture appears; it's fine to finish a little early.
 
-**1 · Cover, problem, what AURA does (0:08–0:35, ~27 s)**
+**Two clocks.** "file" is the time inside `aura-health-part1-voiceover-novoice.mp4`, the file you
+record against (it starts at 0:00 on the cover). "final" adds the 8-second Miora intro. Section
+starts were checked against frames of the actual file.
+
+**1 · Cover, problem, what AURA does (file 0:00–0:27 · final 0:08–0:35, ~27 s)**
 > This is AURA Health, for the Healthcare track. Staying well on an antidepressant happens
 > between appointments: a missed dose, later sleep, a flu. Most apps ask you to log your mood
 > every evening. AURA quietly reads wearable data and compares it with your own usual.
 
-**2 · A calm start (0:35–1:02, ~27 s)**
+**2 · A calm start (file 0:27–0:54 · final 0:35–1:02, ~27 s)**
 > It starts with a breath, not a dashboard. Then one short summary, written by AI from facts the
 > system has checked: sleep later than usual since late February, and how the person has been
 > checking in.
 
-**3 · Medication (1:02–1:24, ~22 s)**
+**3 · Medication (file 0:54–1:16 · final 1:02–1:24, ~22 s)**
 > One tap a day for the dose. If it's skipped, AURA asks what got in the way. Medication answers
 > come from approved information, and when AURA can't answer, it says so and points to the
 > pharmacist.
 
-**4 · Appointment (1:24–1:37, ~13 s)**
+**4 · Appointment (file 1:16–1:29 · final 1:24–1:37, ~13 s)**
 > Before the visit, the skipped dose and its reason are ready to discuss. Nothing is sent until
 > the patient decides.
 
-**5 · The agent (1:37–2:06, ~29 s)**
+**5 · The agent (file 1:29–1:58 · final 1:37–2:06, ~29 s)**
 > The clinician can ask. AURA's agent decides which records and dates to read, and drafts an
 > answer where every statement cites its source. A separate check reviews each statement. Here
 > the first draft failed, AURA said so, and the next one passed. It can only read.
 
-**6 · Something changes (2:06–2:20, ~14 s)**
+**6 · Something changes (file 1:58–2:12 · final 2:06–2:20, ~14 s)**
 > A simulated flu: AURA describes what changed in this person's recent records, and offers a
 > small, optional idea for today.
 
-**7 · Safety first (2:20–2:39, ~19 s)**
+**7 · Safety first (file 2:12–2:31 · final 2:20–2:39, ~19 s)**
 > Anything a patient types is safety-checked first. If there's a concern, fixed safety resources
 > take over and the AI steps back. The patient can't dismiss them. This prototype sends no alerts.
 
-**8 · Architecture and agent loop (2:39–3:03, ~24 s)**
+**8 · Architecture and agent loop (file 2:31–2:55 · final 2:39–3:03, ~24 s)**
 > Our rule: signals propose, rules decide, AI words it. Deterministic engines own the baselines
 > and the safety state. The agent uses read-only tools within loop budgets, and every draft is
 > grounded, verified and rechecked before it's shown.
 
-**9 · Fit with the challenge (3:03–3:19, ~16 s)**
+**9 · Fit with the challenge (file 2:55–3:11 · final 3:03–3:19, ~16 s)**
 > Medication understanding, adherence, health tracking, follow-up dates and appointment
 > preparation are in the demo. AURA describes changes; it doesn't predict relapse or give
 > medication advice.
 
-**10 · How we built it (3:19–3:34, ~15 s)**
+**10 · How we built it (file 3:11–3:26 · final 3:19–3:34, ~15 s)**
 > We built the core first, then the agent, then the experience, using CodeBuddy and Miora. Our
 > tip: write down what must never change first.
 
