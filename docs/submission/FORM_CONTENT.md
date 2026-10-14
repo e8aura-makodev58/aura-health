@@ -17,126 +17,37 @@ Word count: **7** (do not paste this count into the form).
 
 ### Project Overview: Target Scenarios, Users, and Value Proposition
 
-**Healthcare track (NTU Lee Kong Chian School of Medicine), Challenge Statement 2
-"AI Healthier Every Day", Scenario 1: Mental Health Maintenance for Working Adults
-on Antidepressants.**
+Healthcare track (NTU Lee Kong Chian School of Medicine), Challenge Statement 2 "AI Healthier Every Day", Scenario 1: Mental Health Maintenance for Working Adults on Antidepressants.
 
-AURA Health is a calm, wearable-first companion that keeps the context between
-clinician appointments. Our scenario is adults aged 25–60 on stable,
-clinician-managed antidepressant maintenance treatment. Patients receive a simple, calm view of their recent
-records, medication information, today's dose and upcoming review/refill dates;
-clinicians can inspect personal patterns, context and source-linked
-answers without starting from an undifferentiated dashboard.
+AURA Health is a calm, wearable-first companion that keeps the context between doctor visits for adults aged 25–60 on stable, clinician-managed antidepressant maintenance. The patient sees a calm home: a breath, one short AI-written summary from checked facts, today's dose in one tap (with "what got in the way?" when a dose is skipped), plain answers about their own medication, upcoming review and refill dates, and an optional small idea for the day. The clinician they choose to share with sees what changed and when, with exact values and sources.
 
-The differentiator is a bounded record-investigation agent, not an unrestricted
-chatbot. A clinician can ask whether activity changed before sleep timing,
-compare recent periods, or examine weekday patterns. AURA-Agent chooses tools
-and date windows, reads the results and drafts cited answers. Its investigation
-trail makes those actions inspectable. A short patient recap offers everyday
-wording, with measurements and sources available on demand.
+The differentiator is a bounded record-investigation agent, not an open chatbot. A clinician asks, for example, "When did sleep timing change, and was anything reported around then?" AURA-Agent decides which tools, signals and date windows to read, drafts an answer in which every statement cites its source, and a separate verification step checks each statement before it is shown. "How AURA looked" shows exactly what it read. The agent can only read; it never changes the record or the treatment.
 
 ### Real World Scenario Insights: Pain Points, Audience, and Core Problem
 
-The design starts from a practical workflow problem: how can patients and
-clinicians reconstruct what changed between visits, without making patients
-continually assess themselves? Raw wearable readings, check-ins, medication
-routine records and explanations can be difficult to relate chronologically.
-A temporary illness may explain some physiological changes, while a gradually
-adapting baseline may obscure a longer-running shift.
+Staying well on an antidepressant happens mostly between appointments. A dose gets missed, sleep drifts later, a flu knocks someone out for a few days. Most apps ask people to log their mood every evening, which is hard when they are tired or low, and at the appointment the weeks in between are pieced together from memory. Raw wearable readings, check-ins and medication records are hard to relate in time; a short illness can explain some changes, while a slowly adapting baseline can hide a longer shift.
 
-These pain points informed our product framework and synthetic scenarios; they
-are design hypotheses, not claims from a completed patient study.
+These pain points shaped our design and synthetic scenarios; they are design hypotheses, not findings from a patient study.
 
-Against the challenge, AURA's strongest fit is health tracking over time, healthcare
-preparation and being strictly bounded: it describes what changed and when against
-the person's own baseline, helps the patient prepare for an appointment, and its
-checks reject generated medication advice. The patient companion now provides curated
-medication explanations, dose records with optional missed-dose reasons, stored
-review/refill dates and optional everyday suggestions. Displayed dates are not push
-reminders, and the prototype does not book appointments or order refills.
-The scenario mentions flagging early signs of relapse. AURA deliberately stops at
-describing changes the patient can choose to bring to their clinician, because
-relapse prediction and treatment prescriptions require validation and sponsor
-governance. Curated lifestyle choices remain optional, not prescribed care. AURA combines
-wearable-style information with what the patient reports, treats missing data
-as missing, and keeps a governed personal reference alongside a recent rolling
-reference. An explanation can reduce repeated interruption without erasing
-the observation or rewriting the reference.
+Against the challenge, AURA covers medication understanding (curated information about the person's own prescription, with honest "please check with your pharmacist" when it cannot answer), medication management and adherence support (one tap a day, reasons for missed doses carried to the visit), health tracking against the person's own baseline and recent pattern, preventive dates (medication review and refill), and appointment preparation (a visit note that is not sent until the patient decides). Push reminders, screenings and vaccinations are not built yet. The scenario mentions flagging early signs of relapse; AURA deliberately stops at describing changes the patient can choose to bring to their clinician, because relapse prediction and treatment advice need clinical validation and sponsor governance.
 
 ### Comprehensive Solution Design: Business, Architecture, and Prompts
 
-The patient experience is deliberately lightweight. The clinician experience
-offers deeper analytics and question-directed investigation. Review information
-can be prepared and inspected; it is not automatically transmitted.
+Our rule is: signals propose, rules decide, AI words it. A Python/FastAPI application owns all state. Two deterministic engines sit at its core: a longitudinal engine with a governed personal baseline and a recent rolling reference, and a safety engine with explicit states that fails closed. Anything a patient types is safety-checked first; if there is a concern, fixed safety resources take over the screen, the AI steps back, and those messages are never AI-written. The patient cannot dismiss them, and the clinician sees the same safety state when they open the record. This prototype does not send alerts; who is told, and how fast, is for the care team to decide. Events, decisions and audits are stored through repository interfaces (SQLite for the demo).
 
-Four patient-home cards connect daily self-care to that record: My medication,
-Today's dose, Coming up, and A small idea for today. A read-only companion service
-projects the prescribed schedule, latest dose report and seven-day routine counts,
-estimated refill and configured medication-review dates, and optional curated
-suggestions. Missing or unknown dose reports never become missed doses. Skipped-dose
-reasons remain visible in appointment preparation. Medication answers come from a
-small curated catalogue explicitly awaiting pharmacist review; unknown medicines
-or topics abstain. Typed medication questions enter the safety boundary first;
-an optional model may classify the question to a topic ID, but never generate
-medication instructions. Safety blocks suppress ordinary companion content.
+Prompts drive generation through five versioned AURA-Agent skills: clinician briefing, record Q&A, patient recap, visit preparation and question ranking. Each prompt defines the goal, the permitted evidence, the read-only tools, a strict output schema and plain-language rules. In Q&A the model chooses retrieval and descriptive-analysis tools and their windows, then composes claims from the returned facts. Deterministic checks enforce source references, numbers, dates and allowed claims; a separate verifier call checks support; the current safety state is rechecked before anything is shown. If a draft fails, AURA shows related facts from the record and says so. Medication answers come from a curated catalogue awaiting pharmacist review; the model may only match a typed question to an approved topic, never write medication instructions.
 
-Python/FastAPI application services orchestrate two independent deterministic
-engines: longitudinal baselines/context/communication and safety policy. They
-persist events, decisions and audit records through repository interfaces using
-SQLite for development/demo storage. The responsive web interface displays the
-committed results rather than calculating policy itself.
-
-Five versioned AURA-Agent skills support clinician briefing, record Q&A, patient
-recap, visit preparation and approved-question ranking. Prompts define each
-skill's goal, permitted evidence, read-only tools, output schema and language
-constraints. For Q&A, the model chooses retrieval and descriptive-analysis tools
-and their windows, then uses returned facts to compose cited claims. Deterministic
-checks enforce source references, numbers, dates and structured findings; a
-separate verifier model call checks support. Rejected or unavailable drafts use
-labelled related facts instead. The model cannot change anchors, treatment or
-safety state, and generation remains subject to current safety/online guards.
-
-A separate demo life director translates requests such as a three-day flu into
-structured synthetic plans. A seeded generator produces numerical observations;
-hidden scenario truth is kept outside product decision inputs. The live model
-is used only with synthetic data in this demonstration. Institutional on-premises
-or private-cloud model hosting is an intended future deployment direction.
+The model gateway is provider-configurable (OpenAI, DeepSeek, OpenRouter, Tencent); an operator chooses the model and reasoning level and can list each provider's available models. The demo runs on synthetic data only. A separate simulation plane turns requests such as "a three-day flu" into seeded synthetic observations; only observable events enter the application, and hidden scenario truth stays outside product decisions. A guided three-minute story in the app walks a visitor through one person's day, the clinician's view, a flu and the safety path. Institution-hosted, on-premises or private-cloud models are an intended future deployment, not validated today.
 
 ### Business Value: Engineering Evidence and Intended Impact
 
-The intended value is less patient reporting burden and a clearer, evidence-linked
-starting point for clinician conversations. We have not measured consultation
-time savings, patient outcomes or financial return, and do not claim them.
+The intended value is less reporting burden for patients and a clearer, evidence-linked starting point for each appointment. We have not measured clinical outcomes, consultation time savings or financial return, and do not claim them.
 
-Defined impact for a pilot (metrics we would measure with the sponsor; targets to be
-agreed, not results): (1) patient effort — reporting actions per week and share of
-weeks with no prompt at all; (2) clinician preparation — minutes to answer "what
-changed and when" before a visit, against usual chart review; (3) appointment
-readiness — share of visits with a patient-prepared note; (4) answer quality — share
-of AI answers passing source checks, and clinician-rated usefulness; (5) safety —
-every safety-relevant input reaches the deterministic safety path first.
+Defined impact for a pilot (metrics to measure with the sponsor; targets to be agreed, not results): (1) missed doses with a recorded reason; (2) clinician preparation time to answer "what changed and when" before a visit; (3) share of appointments that start with a patient-prepared note; (4) share of AI answers passing source checks, and clinician-rated usefulness; (5) every safety-relevant input reaching the deterministic safety path first.
 
-The current Codex candidate passed **330 Python tests** on 13 October 2026
-(`68372f3`; branch regression evidence, not final release certification).
-Engineering evaluation covers six synthetic scenarios: physical illness, slow
-drift, illness plus independent change, an explained persistent shift, a wearable
-gap/return, and safety handoff. Automated regression tests cover deterministic
-policy, longitudinal invariants, application transactions, source grounding,
-tool isolation and patient/clinician presentation.
+Engineering evidence: the current build passes 334 automated Python tests (14 October 2026, commit 4cf8c40) covering safety policy, longitudinal invariants, application transactions, source grounding, tool isolation and patient/clinician presentation, plus browser tests of the patient companion, guided story, settings and safety display. Six synthetic scenarios cover physical illness, slow drift, illness plus an independent change, an explained persistent shift, a wearable gap and return, and a safety handoff. In a small live check on 13 October 2026, the guided story's clinician question produced a checked, cited answer in 5 of 5 runs on the configured model (OpenAI gpt-6-luna, medium reasoning); answers can still fall back, and the demo shows that honestly.
 
-In a historical live DeepSeek headline trial on synthetic Case B, 19 of 20 clinician
-headlines and 19 of 20 patient headlines passed the configured checks; two used
-fallback. This measures that prompt version and fixture, not current Q&A reliability
-or clinical effectiveness. The recorded HTTP preview p95 was 332–496 ms and generated
-headline response p95 was 4.24–4.46 seconds, not screen-paint measurements.
-
-Future product work includes consented real wearables, institutional identity and
-privacy controls, durable patient-approved sharing, and governed follow-up
-workflows. Clinical suitability and parameter/content review belong with the
-sponsor. AURA does not diagnose depression, predict relapse, determine suicide
-risk, prescribe or change treatment, provide psychotherapy, or operate as an
-emergency monitoring service. The demo uses synthetic data and engineering
-parameters and does not claim clinical validation.
+AURA does not diagnose depression, predict relapse, determine suicide risk, prescribe or change treatment, provide psychotherapy, or operate as an emergency monitoring service. The demo uses synthetic data and engineering parameters and does not claim clinical validation. Next: consented real wearables, push reminders and screenings, pharmacist-reviewed content, institutional identity and privacy controls, and private hosting.
 
 ## Project Web Link
 

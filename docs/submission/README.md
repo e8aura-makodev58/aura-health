@@ -9,6 +9,7 @@ organizer's exact closing time/timezone before relying on a last-day upload.
 
 | File | Purpose |
 |---|---|
+| [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) | **One-page checklist + copy-paste form text (start here to submit)** |
 | [REQUIREMENTS.md](REQUIREMENTS.md) | Current form requirements, sizes and account instructions |
 | [WORKPLAN.md](WORKPLAN.md) | Who does what by when (13–15 Oct) |
 | [CHALLENGE_MAPPING.md](CHALLENGE_MAPPING.md) | Chosen challenge and feature-by-feature fit |
