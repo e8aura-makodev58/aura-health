@@ -60,7 +60,7 @@ class SharingTests(unittest.TestCase):
         self.sharing.set(self.pid, {"notes": False})
         clinician = self.texts("record_qa", asker="clinician")
         self.assertFalse(any(NOTE in text for text in clinician))
-        self.assertTrue(any("Not shared with the clinician by the patient: notes" in text for text in clinician))
+        self.assertTrue(any("Not shared with the clinician by the patient: the patient's notes" in text for text in clinician))
         self.assertTrue(any(NOTE in text for text in self.texts("record_qa", asker="patient")))
         self.assertTrue(any(NOTE in text for text in self.texts("visit_prep")))
 

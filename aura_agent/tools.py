@@ -150,10 +150,13 @@ class RecordTools:
         for row in evidence.get("assessed_notes", []):
             add("get_context", row["event_id"], f"Patient note {row['at'][:10]}: {json.dumps(row['text'][:400])}.", category="notes")
         if self.withheld:
-            names = {"notes": "notes (their own words)", "readings": "detailed wearable readings", "checkin_history": "each day's check-in entries"}
-            listed = ", ".join(names[c] for c in ("notes", "readings", "checkin_history") if c in self.withheld)
-            if listed:
-                add("get_status", "sharing:withheld", f"Not shared with the clinician by the patient: {listed}. These are not available in this record; ask the patient directly if relevant.")
+            # Say so where the data would be, so an agent looking for it can cite the reason.
+            names = {"notes": ("get_context", "the patient's notes (their own words)"),
+                     "readings": ("get_series", "detailed wearable readings (daily values)"),
+                     "checkin_history": ("get_decisions", "each day's check-in entry (summaries remain)")}
+            for category, (tool, label) in names.items():
+                if category in self.withheld:
+                    add(tool, f"sharing:withheld:{category}", f"Not shared with the clinician by the patient: {label}. Not available in this record; ask the patient directly if relevant.")
         if evidence.get("activity_summary"):
             add("get_context", evidence["activity_summary"]["ref"], evidence["activity_summary"]["text"])
         from .voice import prepare_fact
