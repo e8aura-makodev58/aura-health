@@ -12,15 +12,52 @@
   "source_code_link": "https://github.com/e8aura-makodev58/aura-health",
   "social_media_post_link": null,
   "assets": {
-    "cover": {"path": "assets/aura-cover.png", "max_bytes": 1000000, "status": "MISSING"},
-    "conversation_history": {"path": "assets/development-history.pdf", "max_bytes": 10000000, "status": "MISSING", "screenshot_count": 8, "chat_history_included": false},
-    "architecture_ppt": {"path": "assets/aura-health-deck.pptx", "max_bytes": 10000000, "status": "REVIEW_PENDING", "bytes": 2757539, "slide_count": 18, "companion_overview_rerender_required": true}
+    "cover": {
+      "path": "assets/aura-cover.jpg",
+      "max_bytes": 1000000,
+      "status": "REVIEW_PENDING",
+      "bytes": 418864,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "note": "User's Miora cover; aura-cover.png original is 1,795,624 bytes (over the 1 MB form limit), the JPEG is the same resolution"
+    },
+    "conversation_history": {
+      "path": "assets/development-history.pdf",
+      "max_bytes": 10000000,
+      "status": "REVIEW_PENDING",
+      "bytes": 3630810,
+      "screenshot_count": 8,
+      "chat_history_included": true,
+      "source_export": "codebuddy_20261014013250.json (not in Git)",
+      "builder": "tools/history_html.py + tools/history_pdf.cjs"
+    },
+    "architecture_ppt": {
+      "path": "assets/aura-health-deck.pptx",
+      "max_bytes": 10000000,
+      "status": "REVIEW_PENDING",
+      "bytes": 687993,
+      "slide_count": 18,
+      "companion_overview_rerender_required": false,
+      "native_diagrams": "slides 11-13: editable shapes with glued connectors (deck/native_diagrams.py)"
+    }
   },
   "supporting_diagrams": {
     "directory": "../presentation/diagrams/",
-    "names": ["system-overview", "agent-investigation", "safety-precedence"],
-    "formats": ["svg", "png"],
-    "png_dimensions": [1920, 1080],
+    "names": [
+      "system-overview",
+      "agent-investigation",
+      "safety-precedence"
+    ],
+    "formats": [
+      "svg",
+      "png"
+    ],
+    "png_dimensions": [
+      1920,
+      1080
+    ],
     "status": "REVIEW_PENDING"
   },
   "preliminary_checks": {
@@ -29,7 +66,10 @@
     "tested_commit": "f5f06d1",
     "python_tests_passed": 303,
     "python_seconds": 357.647,
-    "browser_suites": ["qa_display.cjs", "agent.cjs"],
+    "browser_suites": [
+      "qa_display.cjs",
+      "agent.cjs"
+    ],
     "browser_assertions_passed": 7,
     "browser_port": 8036,
     "live_qa_attempts": 3,
@@ -43,14 +83,20 @@
     "tested_commit": "495087d6bf58f495a91de75baa340f155b061a89",
     "python_tests_passed": 327,
     "python_seconds": 469.072,
-    "browser_suites": ["companion.cjs", "qa_display.cjs", "milestone7.cjs"],
+    "browser_suites": [
+      "companion.cjs",
+      "qa_display.cjs",
+      "milestone7.cjs"
+    ],
     "browser_assertions_passed": 18,
     "browser_port": 8036,
     "missed_days_contract": "PASS",
     "live_signed_out_companion_reads": "PASS",
     "llm_generation_requested_for_live_checks": false,
     "github_anonymous_http_status": 404,
-    "open_findings": ["Changed medication question under reused run_id skips fresh safety assessment"],
+    "open_findings": [
+      "Changed medication question under reused run_id skips fresh safety assessment"
+    ],
     "newer_main_not_covered": "37a2f32",
     "final_release_approved": false,
     "evidence": "EVIDENCE_LEDGER.md"
@@ -78,6 +124,15 @@
     "final_release_approved": false,
     "evidence": "EVIDENCE_LEDGER.md"
   },
-  "release": {"tested_commit": null, "signed_out_links_verified": false, "claims_reviewed": false, "user_approved": false},
-  "submission": {"submitted": false, "submitted_at": null, "confirmation_reference": null}
+  "release": {
+    "tested_commit": null,
+    "signed_out_links_verified": false,
+    "claims_reviewed": false,
+    "user_approved": false
+  },
+  "submission": {
+    "submitted": false,
+    "submitted_at": null,
+    "confirmation_reference": null
+  }
 }

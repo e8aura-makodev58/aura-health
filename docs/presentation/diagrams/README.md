@@ -1,29 +1,18 @@
 # Architecture slide images
 
 Healthcare Challenge Statement 2, Scenario 1: Mental Health Maintenance for
-Working Adults on Antidepressants. Created 2026-10-13 by Codex for submission
-work-plan task #8 / X1. Ready for deck-author review; not a PPTX upload by itself.
+Working Adults on Antidepressants.
 
-| Diagram | Editable source | Slide image | PNG bytes |
-|---|---|---|---:|
-| System overview and trust boundaries | [system-overview.svg](system-overview.svg) | [system-overview.png](system-overview.png) | 297460 |
-| Aura-Agent investigation loop | [agent-investigation.svg](agent-investigation.svg) | [agent-investigation.png](agent-investigation.png) | 235065 |
-| Safety precedence and pinned resources | [safety-precedence.svg](safety-precedence.svg) | [safety-precedence.png](safety-precedence.png) | 210503 |
+**Current (2026-10-14, Claude): the deck's slides 11–13 are native PowerPoint diagrams**
+built by [`../deck/native_diagrams.py`](../deck/native_diagrams.py): editable boxes and
+connector arrows glued to the boxes' connection points, so moving a box in PowerPoint
+keeps its arrows attached. The PNGs here are LibreOffice renders of those slides (used by
+the video and the HTML slides). Content updated to the current build: provider-configurable
+model gateway with an operator-chosen model and reasoning level, 90-second agent run
+budget, curated medication content, and "no alerts are sent" on the safety slide.
 
-Every image is **1920 × 1080, exact 16:9**. Use the PNG at full slide width or the
-SVG for scalable text and shapes. The background and palette follow `aura_ui/styles.css`.
-Original vector shapes and typography were drawn from the repository architecture;
-no external artwork or generative-image provenance is claimed. No scripts, remote
-fonts, external images or embedded application screenshots are in these SVGs.
-
-Source: [ARCHITECTURE_DOCUMENT.md](../../submission/ARCHITECTURE_DOCUMENT.md),
-inspected implementation `3d95a66`; current Codex branch `f5f06d1` has the same
-domain/agent behavior. **Overview updated against integrated `f37af0c`:** patient
-medication/dose/reasons/dates/suggestions, read-only `/companion`, curated medication
-information and safety-first `/medication/ask`. The other two images are unchanged.
-The deck author must re-render the system-overview slide; the existing PPTX still
-contains the earlier image. The current configured model was independently checked as
-DeepSeek / deepseek-flash on 2026-10-13. Do not relabel that as Tencent hosting.
+The original SVGs (Codex, 2026-10-13) are kept as history; their wording is older
+(for example "DeepSeek active", 50-second budget) and they no longer match the PNGs.
 
 ## How to explain the diagrams
 

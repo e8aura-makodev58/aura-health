@@ -1,0 +1,3 @@
+const {chromium}=require('playwright');(async()=>{const b=await chromium.launch();const p=await b.newPage();
+await p.goto('file://'+process.argv[2]);await p.addStyleTag({content:"@font-face{font-family:'Nunito';src:url('file:///home/makodev58/aura-health/aura_ui/media/nunito.woff2') format('woff2');font-weight:200 1000}"});await p.waitForTimeout(800);
+await p.pdf({path:process.argv[3],preferCSSPageSize:true,format:'A4',margin:{top:'16mm',bottom:'16mm',left:'14mm',right:'14mm'},printBackground:true,displayHeaderFooter:true,headerTemplate:'<span></span>',footerTemplate:'<div style="font-size:8px;width:100%;text-align:center;color:#888">AURA Health · CodeBuddy history · page <span class="pageNumber"></span> / <span class="totalPages"></span></div>'});await b.close();})();

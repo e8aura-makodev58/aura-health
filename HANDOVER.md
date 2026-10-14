@@ -296,6 +296,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-14 — Claude — Native diagram slides, cover copy, history PDF
+- Deck slides 11–13 are now native PowerPoint diagrams (`deck/native_diagrams.py`, called from `make_hybrid_pptx.py`): editable boxes and connectors glued to connection sites (18 arrows, all glued; verified in the XML and via a LibreOffice render). Content refreshed (configurable provider + operator model/reasoning, 90-s budget, no alerts). `diagrams/*.png` are now LibreOffice renders of those slides; Codex's SVGs kept as history. Video re-assembled (5:58) with the new slides.
+- User placed `assets/aura-cover.png` (1672×941, 1.8 MB — over the form's stated 1 MB) → `aura-cover.jpg` same resolution, 0.42 MB. User placed the CodeBuddy export (`codebuddy_20261014013250.json`, now git-ignored) → `assets/development-history.pdf` (27 pages: transcript + 8 screenshots; builder in `docs/submission/tools/`). Manifest/FORM_CONTENT upload mapping updated; all three uploads REVIEW_PENDING. Assets other than the PPTX are not committed (await user approval).
+- Portable LibreOffice for render checks: job tmp `lo/` (not in repo).
+
 ### 2026-10-13 — Claude — Script v4, deck and video refreshed to the latest build (user asleep; requested)
 - `7d3616f`: SCRIPT v4 (scene 8: paced masked example, clinician sees the safety state on opening the record, no alerts; live model note). Deck rebuilt in story order (6 medication, 7 appointment, 8 clinician + agent, 9 flu, 10 safety) — this also does the user's planned "move slide 7 after 9", and fixes speaker notes that had been one scene off for slides 7–9. Fresh live screenshots (`screenshots/v2/`, new `s08a-note-masked-phone`); safety slide shows the masked note box + panel; agent callout now quotes the captured run ("A second check reviewed 3 statements; all supported", first attempt). PPTX 18 slides, 1.38 MB.
 - Video re-recorded from the live tour (phone + desk), assembled 5:58; `VOICEOVER.md`/`timeline.txt` updated. Desk take: first agent draft failed a fact check (shown honestly), Ask again gave a checked answer. MP4 is not in git: `docs/presentation/video/aura-health-walkthrough-novoice.mp4` in the main folder.

@@ -17,6 +17,8 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
+from native_diagrams import DIAGRAMS
+
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[2] / "docs" / "submission" / "assets" / "aura-health-deck.pptx"
 PX = 6350  # EMU per CSS pixel on a 1920-px-wide slide
@@ -81,14 +83,21 @@ def text_box(slide, block):
 def main():
     slides = json.loads((HERE / "hybrid" / "text.json").read_text())
     notes = {row["slide"]: row["notes"] for row in json.loads((HERE / "slides.json").read_text())}
+    files = {row["slide"]: row["file"] for row in json.loads((HERE / "slides.json").read_text())}
     deck = Presentation()
     deck.slide_width, deck.slide_height = Emu(1920 * PX), Emu(1080 * PX)
     blank = deck.slide_layouts[6]
     for item in slides:
         slide = deck.slides.add_slide(blank)
-        background(slide, HERE / "hybrid" / f"bg-{item['slide']:02d}.png")
-        for block in item["blocks"]:
-            text_box(slide, block)
+        kind = files[item["slide"]].split("-", 1)[1].rsplit(".", 1)[0]
+        if kind in DIAGRAMS:
+            # Native diagram: editable boxes, arrows glued to them (native_diagrams.py).
+            slide.background.fill.solid(); slide.background.fill.fore_color.rgb = RGBColor(0xfb, 0xfa, 0xf7)
+            DIAGRAMS[kind](slide)
+        else:
+            background(slide, HERE / "hybrid" / f"bg-{item['slide']:02d}.png")
+            for block in item["blocks"]:
+                text_box(slide, block)
         slide.notes_slide.notes_text_frame.text = notes.get(item["slide"], "")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     deck.save(OUT)

@@ -157,6 +157,6 @@ Leave blank unless the user authorizes and publishes a post. Required hashtags:
 
 ## File upload mapping — not form prose
 
-- Cover Image: `assets/aura-cover.png` — pending.
-- Conversation History: `assets/development-history.pdf` — pending genuine logs/screenshots.
-- Architecture Diagram PPT: `assets/aura-health-deck.pptx` — exported; companion architecture update and final review pending.
+- Cover Image: `assets/aura-cover.jpg` (1672×941, ~0.42 MB; the PNG original is 1.8 MB, over the stated 1 MB limit) — awaiting approval.
+- Conversation History: `assets/development-history.pdf` — CodeBuddy transcript from the user's export plus 8 genuine screenshots; awaiting review.
+- Architecture Diagram PPT: `assets/aura-health-deck.pptx` — 18 slides; slides 11–13 native diagrams with glued connectors; awaiting approval.
