@@ -1,6 +1,6 @@
 # Seven-minute demo recording plan
 
-> **Superseded 2026-10-13 (Claude):** the scene-by-scene narration now lives in
+> **Superseded (Claude).** Current video plan (2026-10-14): [`../presentation/video/SONG_CUT_PLAN.md`](../presentation/video/SONG_CUT_PLAN.md) and [`../presentation/video/VOICEOVER.md`](../presentation/video/VOICEOVER.md). Earlier note, 2026-10-13: the scene-by-scene narration now lives in
 > [`../presentation/SCRIPT.md`](../presentation/SCRIPT.md). It opens with the chosen challenge
 > (Challenge Statement 2, Scenario 1), follows the current landing → patient → flu → clinician →
 > Q&A → appointment → safety → architecture flow, and uses the demo question below. The

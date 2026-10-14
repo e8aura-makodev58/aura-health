@@ -12,7 +12,7 @@ Prepared 2026-10-14 against `main` (see the last section for the build and check
 ### Before you open the form
 - [ ] Signed in with the team's Google account (its name, email and photo are recorded with uploads).
 - [ ] Video recorded with voice-over and intro/outro, uploaded, link opens in a signed-out browser.
-- [ ] Video length is **5–8 minutes** (silent cut is 5:58; with intro/outro about 6:15).
+- [ ] Video length is **5–8 minutes** (combined draft is 6:07: 3:26 voice-over half + 2:40 landscape demo with the song; with intro/outro about 6:23).
 - [ ] You have looked through the three upload files below and are happy with them.
 
 ### Fields

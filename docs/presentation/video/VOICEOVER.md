@@ -1,13 +1,54 @@
-# Voice-over sheet — `aura-health-walkthrough-novoice.mp4` (5:58)
+# Voice-over sheet — combined video (draft 6:07; about 6:23 with intro and outro)
 
-> **Short cut (2026-10-14):** `aura-health-short-3min-novoice.mp4`, exactly 3:00, built by `tools/assemble_short.py` from the same recordings (cover, problem, story highlights, agent with the rejected first draft and checked answer, flu, safety, architecture, agent loop, challenge fit, close). Not in git, like the full cut.
->
-> **Alternative (user choice, 2026-10-14):** song for the opening and close, voice-over only for the middle — see [`SONG_CUT_PLAN.md`](SONG_CUT_PLAN.md).
+**Current plan (2026-10-14):** first half `aura-health-part1-voiceover-novoice.mp4` (3:26) with your
+voice-over; second half `aura-health-landscape-demo-novoice.mp4` (2:40), a continuous live take in
+PC landscape, under the song. Joined draft: `aura-health-combined-draft-novoice.mp4`. The voice-over
+text, timed to the second, is in [`SONG_CUT_PLAN.md`](SONG_CUT_PLAN.md) (sections 1–10).
 
-The app scenes are a real recording of the live **in-app guided story** ("Play the 3-minute story"),
-so the video shows exactly what judges can click. Read the narration from
-[`../SCRIPT.md`](../SCRIPT.md) (v4) against these timestamps. The video has a silent audio track;
-record your voice and lay it over, then add your Miora intro/outro clips. Pace: calm, ~150 words/min.
+Times below are final-video times (8-s Miora intro first).
+
+### First half · your voice
+
+| Video time | On screen | Say (SONG_CUT_PLAN section) |
+|---|---|---|
+| 0:00–0:08 | Miora intro | — |
+| 0:08–0:35 | Cover, the problem, what AURA does | 1 |
+| 0:35–1:02 | Guided story starts: breath, short summary | 2 |
+| 1:02–1:24 | Skipped dose + reason; "Can I take ibuprofen?" → honest reply | 3 |
+| 1:24–1:37 | Appointment note, Not sent | 4 |
+| 1:37–2:06 | Clinician view → agent: first draft rejected → checked answer | 5 |
+| 2:06–2:20 | Simulated flu, small idea for today | 6 |
+| 2:20–2:39 | Safety example (masked) → safety panel → explanation card | 7 |
+| 2:39–3:03 | Architecture, agent loop | 8 |
+| 3:03–3:19 | Fit with the challenge | 9 |
+| 3:19–3:34 | How we built it | 10 |
+
+### Second half · the song (no voice)
+
+| Video time | On screen (landscape live take) |
+|---|---|
+| 3:35 | Landing → Play the 3-minute story → intro card |
+| 3:48 | Breath, then the short summary |
+| 4:03 | Today's dose: Skipped → side effects |
+| 4:11 | Medication: leaflet answer |
+| 4:25 | "Can I take ibuprofen with it?" → honest reply |
+| 4:34 | Appointment note, Not sent |
+| 4:43 | Clinician view |
+| 4:52 | Agent asked; answer with sources and How AURA looked |
+| 5:25 | Simulated flu → new summary, small idea |
+| 5:47 | Finish card → Show the safety example (masked) |
+| 6:01 | Safety panel + explanation card |
+| 6:12–6:15 | Last frame held |
+| 6:15–6:23 | Miora outro (song outro "…room for your day") |
+
+Honesty notes: synthetic data; real live runs; AI text not edited. The first half's agent scene shows
+the first draft rejected and a visible *Ask again* that then passed (say so, section 5). In the
+landscape take the agent passed first time. Waits are trimmed in the first half only; the landscape
+take is one continuous recording.
+
+---
+
+## Alternative: full walkthrough with voice-over throughout (`aura-health-walkthrough-novoice.mp4`, 5:58)
 
 | Video time | On screen | Say (script scene) |
 |---|---|---|

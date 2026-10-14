@@ -1,13 +1,20 @@
 # AURA Health — presentation and video script (v4, patient-first)
 
-Status: v4 (2026-10-13, Claude): v3 order (matches the in-app guided story); scene 8 updated for the paced, masked safety example and what the clinician sees. v3 reordered v2 to put the flu after the clinician scene. Replaces v1 (clinician-first,
+Status: v4 (2026-10-13, Claude); video note updated 2026-10-14: v3 order (matches the in-app guided story); scene 8 updated for the paced, masked safety example and what the clinician sees. v3 reordered v2 to put the flu after the clinician scene. Replaces v1 (clinician-first,
 written before the patient companion existed). Target **7:00** (allowed 5–8 min), about 950
-spoken words. This script drives the demo video, the deck (also the required architecture
-PPT), the live pitch, and the in-app "Play the 3-minute story" tour (same scene order).
+spoken words. This script drives the deck (also the required architecture PPT) and its speaker
+notes, the live pitch, and the in-app "Play the 3-minute story" tour (same scene order).
 
 Demo record: synthetic patient B (slow sleep drift, lower activity, Rough check-ins), patient
 view unless stated. Rules for every take: synthetic data only; AI text is whatever the live run
 produces, never edited; if the AI falls back, say so; no clinical-effectiveness claims.
+
+
+> **Submission video (2026-10-14):** the video no longer uses this full script. It is a 3-minute
+> first half with a shorter voice-over, then a live landscape demo under the song; text and
+> timings in [`video/SONG_CUT_PLAN.md`](video/SONG_CUT_PLAN.md), on-screen times in
+> [`video/VOICEOVER.md`](video/VOICEOVER.md). This script remains the live pitch and the source of
+> the deck's speaker notes.
 
 ---
 
@@ -114,6 +121,6 @@ Then *My medication* → *What if I miss a dose?*
 - **AI allowance:** 30 calls/minute, 300/hour, shared. One take ≈ 25–45 calls.
 - **Live model:** OpenAI gpt-6-luna, reasoning medium (operator setting). An agent answer takes
   about a minute; the video trims the wait.
-- **Video:** Claude records the screen walkthrough per scene; the user records the voice-over.
+- **Video:** see the note at the top: first half with voice-over (`video/SONG_CUT_PLAN.md`), second half a live landscape take under the song. The user records the voice-over; Claude records and assembles the picture.
 - **Tour:** the in-app "Play the 3-minute story" follows scenes 3–8 in the same order; the video
   records that guided story itself.
