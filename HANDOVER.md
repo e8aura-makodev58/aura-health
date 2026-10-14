@@ -30,7 +30,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ---
 
-## Current state (as of 2026-10-13)
+## Current state (documentation updated 2026-10-14; implementation evidence dated below)
 
 - **Live model (2026-10-13):** OpenAI `gpt-6-luna`, reasoning **medium**, set via settings. Settings now list the provider's models automatically (plus a free-text ID) and have a reasoning level (None/Low/Medium/High, default Medium) stored per provider. OpenAI agent calls with reasoning on use the Responses API (chat completions rejects tools + reasoning); its replies may be up to 256 KB. Guided-tour agent step, 5 live tries each, medium: gpt-6-sol 3/5, gpt-5.6-terra 5/5, gpt-6.1-sol 5/5 (71–112 s), gpt-6-luna 5/5 (47–60 s). "gpt-6-terra" does not exist for this key. User rejected recording PROHIBITED_CLAIM rule details in `grounding.py`; don't reapply.
 - **Guided-story handoff (user,2026-10-13):** user is very satisfied with the application but cannot intuitively use the three-minute story. Claude proposed nine guided steps; Codex's review/recommendations are in the newest Log entry. Claude takes over the tour work; this handoff changes documentation only and does not claim the proposed tour is built.
@@ -204,6 +204,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+- **Ad soundtrack:** generate from `docs/submission/AURA_AD_SONG_v5.md` (current; the original `AURA_AD_SONG.md` is Codex's first draft). Review the actual audio/duration before using it; cut per `docs/presentation/video/SONG_CUT_PLAN.md`. Lyrics/prompt only are delivered; narration and video remain with their current owner.
 - **Claude — intuitive guided story:** read the newest Codex Log entry before implementing the user's supplied nine-step proposal. Prioritize one visible target, one Next action, a connected patient journey and honest completion/fallback states. Manual progression first; autoplay is secondary. Preserve the existing application and safety boundaries.
 0d. **Claude/release reviewer:** review68372f3's narrow clinician-verifier fix and
   re-render the deck's system-overview from the new companion PNG. Address the
@@ -295,6 +296,14 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-14 — Claude — Merged Codex `7ab3502` (ad song draft); song v2–v5; short video; cover pill
+- Merged `improve/feature-codex` (original `AURA_AD_SONG.md`, kept unchanged as history). User-directed revisions by Claude: `AURA_AD_SONG_v2.md`…`v5.md`; **v5 is current** (user's LOCI-style prompt adapted to Aura, 92–104 BPM; 7-syllable on-beat lines with true rhymes; chorus "Aura, room for your day (room for your day)"; outro fades on the hook; tagline stays on screen, not sung). `docs/presentation/video/SONG_CUT_PLAN.md`: song for the opening/close, voice-over A–G for the middle.
+- Cover slide pill now "Healthcare track" only (footers/diagram subtitles unchanged). New `video/tools/assemble_short.py` → `aura-health-short-3min-novoice.mp4` (3:00, not in git; too short for the 5–8-min form field). Full cut rebuilt with the new cover (5:58).
+- `docs/submission/SUBMISSION_CHECKLIST.md`: one-page checklist + copy-paste form text (334 tests at `4cf8c40`). GitHub repo is now public (checked signed-out 2026-10-14). CodeBuddy branch had no new commits.
+
+### 2026-10-14 — Codex — Original AURA video-ad song and Suno prompt
+- Added `docs/submission/AURA_AD_SONG.md`: “Room for Your Day”, original lyrics, 1970s soft-rock direction, AURA chorus/brand outro, 88 BPM/66-bar approximate three-minute arrangement, picture cues and optional instrumental prompt. No audio generated or narration/runtime changed. Verified: duration arithmetic and documentation diff; runtime tests not rerun for creative copy. User/editor generates and selects the audio.
 
 ### 2026-10-14 — Claude — Native diagram slides, cover copy, history PDF
 - Deck slides 11–13 are now native PowerPoint diagrams (`deck/native_diagrams.py`, called from `make_hybrid_pptx.py`): editable boxes and connectors glued to connection sites (18 arrows, all glued; verified in the XML and via a LibreOffice render). Content refreshed (configurable provider + operator model/reasoning, 90-s budget, no alerts). `diagrams/*.png` are now LibreOffice renders of those slides; Codex's SVGs kept as history. Video re-assembled (5:58) with the new slides.
