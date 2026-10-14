@@ -182,7 +182,7 @@ class HostedDemo:
         factory.initialize()  # Additive agent trace table for pre-agent baselines.
         service = SyntheticOnlyService(factory, self.seed, settings=self.settings)
         from .sponsor import policy_question
-        app = create_app(service=service, communication_service=PatientCommunicationService(service, provider=SyntheticSettingsProvider(self.settings),policy_question=policy_question()),
+        app = create_app(service=service, communication_service=PatientCommunicationService(service, provider=SyntheticSettingsProvider(self.settings),policy_question=policy_question(),reply_provider=SyntheticAgentProvider(self.settings)),
                          agent_service=AgentService(service, provider=SyntheticAgentProvider(self.settings), synthetic_only=True),
                          synthetic_only=True)
 

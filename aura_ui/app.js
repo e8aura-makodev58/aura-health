@@ -4,7 +4,7 @@ const $ = (id) => document.getElementById(id);
 const labels = {SLEEP_MIDPOINT: "Sleep time", SLEEP_DURATION: "Sleep duration", ACTIVITY: "Activity", RESTING_HEART_RATE: "Resting heart rate"};
 const trustLabels = {PROVISIONAL: "Usual still being learned", TRUSTED: "Usual established", REESTABLISHING: "Usual being learned again"};
 const sensingLabels = {OBSERVED: "Data available", UNOBSERVED: "Data unavailable"};
-const recordLabels = {PATIENT_CHECKIN: "Check-in", MEDICATION_EVENT: "Medication routine", CONTEXT_EVENT: "Context added", CONTEXT_EXPLANATION: "Explanation added", HELD_FOR_REVIEW: "Held for review", SENSING_GAP: "Wearable data unavailable", SENSING_RETURN: "Wearable data returned", SAFETY_BOUNDARY: "Safety boundary", CLINICIAN_REVIEW_ITEM: "Review item prepared", INPUT_HELD_FOR_SAFETY: "Input held for safety evaluation", ANCHOR_COMMAND: "Governed reference event", PATIENT_FREE_TEXT: "Patient note", REVIEW_COMMAND: "Review preparation"};
+const recordLabels = {SUGGESTION_CHOSEN: "Idea chosen", PATIENT_CHECKIN: "Check-in", MEDICATION_EVENT: "Medication routine", CONTEXT_EVENT: "Context added", CONTEXT_EXPLANATION: "Explanation added", HELD_FOR_REVIEW: "Held for review", SENSING_GAP: "Wearable data unavailable", SENSING_RETURN: "Wearable data returned", SAFETY_BOUNDARY: "Safety boundary", CLINICIAN_REVIEW_ITEM: "Review item prepared", INPUT_HELD_FOR_SAFETY: "Input held for safety evaluation", ANCHOR_COMMAND: "Governed reference event", PATIENT_FREE_TEXT: "Patient note", REVIEW_COMMAND: "Review preparation"};
 // Built-in last-known-good development resource, matching aura_safety/resources.py.
 // It remains visible even if every network request fails. No contact is invented.
 const offlineBundle = {version: "fixture-unverified-v1", stale: true, notice: "Development fixture: verified Singapore safety contacts pending", resources: [{label: "Development fixture: verified Singapore safety contacts pending", contact_method: null}]};
@@ -183,6 +183,7 @@ function render() {
   setText("quiet-heading",communication?.pinned_resources ? "The safety pathway is active." : "No question from AURA right now.");
   setText("home-subtitle", communication?.pinned_resources ? "The policy message and separate resources remain above, on every page." : "You can check in whenever it feels useful.");
   $("talk").disabled = busy;
+  setText("communication-eyebrow", communication?.mode === "NORMAL_SUPPORT" && communication?.generation_used ? "From AURA" : "A small question");
   setText("communication-message", communication?.message);
   setText("wording-origin",communication?.generation_used?"AI-written":"Fixed wording");
   $("communication-card").hidden = !communication?.message || Boolean(communication.pinned_resources);

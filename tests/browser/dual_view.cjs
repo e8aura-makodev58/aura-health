@@ -12,7 +12,7 @@ async function main(){
   const context=await browser.newContext({viewport:{width:1280,height:900},reducedMotion:"reduce"});
   const page=await context.newPage(),errors=[],results=[],writes=[];
   page.on("pageerror",error=>errors.push(error.message));
-  page.on("request",request=>{if(request.method()==="POST")writes.push(request.url());});
+  page.on("request",request=>{if(request.method()==="POST"&&!request.url().includes("/suggestions/personalize"))writes.push(request.url());}); // personalize reads the record and asks the model; it writes nothing
   async function check(name,work){await work();results.push({name,result:"PASS"});console.log(name+" PASS");}
   try{
     await page.goto(base);await page.waitForSelector("#patterns-view:not([hidden])");

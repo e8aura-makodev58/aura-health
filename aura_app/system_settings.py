@@ -210,7 +210,8 @@ class SyntheticAgentProvider(SyntheticSettingsProvider):
         from aura_agent.runtime import load_config as agent_config
         self.agent_config = config or agent_config()
 
-    def step(self, messages, tools):
+    def step(self, messages, tools, reasoning=None):
+        """reasoning overrides the saved level for one call (short patient-facing tasks use "low")."""
         with self.settings.lock:
             if not self.settings.state["enabled"]:
                 raise ProviderUnavailable("Live synthetic assistant disabled", kind="disabled")
@@ -220,7 +221,7 @@ class SyntheticAgentProvider(SyntheticSettingsProvider):
         self.settings.reserve()
         from dataclasses import replace
         config = replace(self.settings.config, provider_timeout_seconds=self.agent_config.provider_timeout_seconds)
-        return VendorProvider(*options[:3], variant=options[3], config=config, reasoning=options[5],
+        return VendorProvider(*options[:3], variant=options[3], config=config, reasoning=reasoning or options[5],
                               transport=self.settings.transport).agent_step(messages, tools)
 
 

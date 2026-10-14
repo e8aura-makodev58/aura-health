@@ -93,6 +93,10 @@ class MedicationAskIn(BaseModel):
     topic_id: str | None = None
     question: str | None = Field(default=None, min_length=1, max_length=500)
 
+class SuggestionChoiceIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    option_id: str = Field(min_length=1, max_length=40, pattern=r"^[a-z_]+$")
+
 class WorkflowIn(BaseModel):
     model_config = {'extra':'forbid'}
     run_id: str = Field(pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
@@ -112,8 +116,8 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     view_service = PatientViewService(service, wording_provider_id=communication_service.provider.model_id,
                                      wording_provider=communication_service.provider, synthetic_only=synthetic_only)
     evidence_service = EvidenceViewService(service)
-    companion_service = CompanionService(service)
     agent_service = agent_service or AgentService(service, synthetic_only=synthetic_only)
+    companion_service = CompanionService(service, provider=agent_service.provider)
     # CDN-backed Swagger conflicts with the patient UI's strict same-origin CSP.
     app = FastAPI(title="AURA prototype application API", version="milestone-7",
                   docs_url=None, redoc_url=None, openapi_url="/openapi.json" if docs_enabled else None)
@@ -189,6 +193,14 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     @app.get("/patients/{patient_id}/companion")
     def companion(patient_id: str):
         return companion_service.get(patient_id)
+
+    @app.post("/patients/{patient_id}/companion/suggestions/personalize")
+    def companion_personalize(patient_id: str):
+        return companion_service.personalize(patient_id)
+
+    @app.post("/patients/{patient_id}/companion/suggestions/choose")
+    def companion_choose(patient_id: str, body: SuggestionChoiceIn):
+        return companion_service.choose(patient_id, body.option_id)
 
     @app.get("/patients/{patient_id}/evidence")
     def evidence_view(patient_id: str):

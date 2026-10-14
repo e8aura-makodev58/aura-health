@@ -94,28 +94,72 @@ function renderCompanion(data) {
   sugCard.hidden = !data.suggestions;
   if (data.suggestions) {
     document.getElementById("suggestion-reason").textContent = data.suggestions.because;
-    const opts = document.getElementById("suggestion-options");
-    opts.replaceChildren();
-    for (const opt of data.suggestions.options) {
-      const chip = document.createElement("button");
-      chip.className = "suggestion-chip";
-      chip.dataset.suggestionId = opt.id;
-      chip.textContent = opt.label;
-      const check = document.createElement("span");
-      check.className = "suggestion-check";
-      check.setAttribute("aria-hidden", "true");
-      check.textContent = "✓";
-      chip.append(check);
-      chip.addEventListener("click", () => {
-        chip.setAttribute("aria-pressed",
-          String(chip.getAttribute("aria-pressed") !== "true"));
-      });
-      opts.append(chip);
-    }
+    const chosen = new Set((data.chosen_today || []).map(row => row.option_id));
+    document.getElementById("suggestion-why").hidden = true;
+    document.getElementById("suggestion-origin").hidden = true;
+    document.getElementById("suggestion-ack").hidden = true;
+    buildSuggestionChips(data.suggestions.options, chosen);
+    personalizeSuggestions(chosen);
   }
 
   // Missed-dose items on the review page
   renderMissedDoses(data);
+}
+
+function buildSuggestionChips(options, chosen) {
+  const opts = document.getElementById("suggestion-options");
+  opts.replaceChildren();
+  for (const opt of options) {
+    const chip = document.createElement("button");
+    chip.className = "suggestion-chip";
+    chip.dataset.suggestionId = opt.id;
+    chip.textContent = opt.label;
+    chip.setAttribute("aria-pressed", String(chosen.has(opt.id)));
+    const check = document.createElement("span");
+    check.className = "suggestion-check";
+    check.setAttribute("aria-hidden", "true");
+    check.textContent = "✓";
+    chip.append(check);
+    chip.addEventListener("click", () => chooseSuggestion(chip, opt));
+    opts.append(chip);
+  }
+}
+
+// The agent may re-pick today's ideas from the curated pool for this person (server-checked);
+// the rule-based ideas stay on screen until then, and if it is unavailable.
+async function personalizeSuggestions(chosen) {
+  const ctx = window.auraAgentContext?.();
+  if (!ctx?.patientId) return;
+  const patient = ctx.patientId;
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patient)}/companion/suggestions/personalize`, {method:"POST"});
+    if (!response.ok) return;
+    const result = await response.json();
+    if (!result.personalized || window.auraAgentContext?.()?.patientId !== patient) return;
+    for (const row of window.auraCompanionData?.chosen_today || []) chosen.add(row.option_id);
+    buildSuggestionChips(result.options, chosen);
+    const why = document.getElementById("suggestion-why");
+    why.textContent = result.why; why.hidden = false;
+    document.getElementById("suggestion-origin").hidden = false;
+  } catch { /* keep the rule-based ideas */ }
+}
+
+async function chooseSuggestion(chip, opt) {
+  const ctx = window.auraAgentContext?.();
+  if (!ctx?.patientId || chip.getAttribute("aria-pressed") === "true") return;
+  const ack = document.getElementById("suggestion-ack");
+  chip.disabled = true;
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(ctx.patientId)}/companion/suggestions/choose`, {
+      method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({option_id: opt.id})});
+    if (!response.ok) throw new Error("Request failed");
+    const result = await response.json();
+    chip.setAttribute("aria-pressed", "true");
+    (window.auraCompanionData ||= {}).chosen_today = [...(window.auraCompanionData.chosen_today || []), {option_id: opt.id, label: opt.label}];
+    ack.textContent = result.message; ack.hidden = false;
+  } catch {
+    ack.textContent = "That couldn't be saved just now. Please try again."; ack.hidden = false;
+  } finally { chip.disabled = false; }
 }
 
 function renderMissedDoses(data) {

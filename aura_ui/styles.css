@@ -466,6 +466,8 @@ body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:b
 .suggestion-chip {display:flex;align-items:center;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white);font-size:.88rem;cursor:pointer;min-height:48px;box-shadow:var(--shadow-sm)}
 .suggestion-chip:hover {background:var(--surface-soft);box-shadow:var(--shadow-md)}
 .suggestion-chip[aria-pressed="true"] {background:var(--accent-lilac);border-color:var(--accent-lilac)}
+.suggestion-why {font-style:italic}
+.suggestion-ack {margin:4px 0 6px;padding:10px 14px;border-radius:var(--radius-md);background:var(--surface-soft);font-size:.9rem}
 .suggestion-chip .suggestion-check {margin-left:auto;font-size:1.1rem;color:var(--accent-leaf)}
 .suggestion-chip[aria-pressed="true"] .suggestion-check {display:inline}
 .suggestion-chip:not([aria-pressed="true"]) .suggestion-check {display:none}

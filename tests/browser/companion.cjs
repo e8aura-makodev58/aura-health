@@ -94,7 +94,7 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
     else console.log('COMPANION5_COMING_UP_EMPTY PASS');
 
     // 7. Suggestion card footer text
-    const footer=await page.locator('#suggestion-card .fine').innerText();
+    const footer=await page.locator('#suggestion-card .fine:not(#suggestion-origin)').innerText();
     assert.match(footer,/Only if it feels right today/i,'suggestion footer text');
     console.log('COMPANION6_SUGGESTION_FOOTER PASS');
 

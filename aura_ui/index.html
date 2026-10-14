@@ -120,12 +120,15 @@
         <section id="suggestion-card" class="card companion-card suggestion-card" hidden aria-labelledby="suggestion-heading">
           <h2 id="suggestion-heading">A small idea for today</h2>
           <p class="companion-detail" id="suggestion-reason"></p>
+          <p class="companion-detail suggestion-why" id="suggestion-why" hidden></p>
           <div class="suggestion-options" role="group" aria-label="Choose a suggestion" id="suggestion-options"></div>
+          <p class="suggestion-ack" id="suggestion-ack" role="status" hidden></p>
+          <p class="fine" id="suggestion-origin" hidden>Picked for you by AURA (AI) from reviewed ideas.</p>
           <p class="fine">Only if it feels right today.</p>
         </section>
       </section>
       <section id="quiet-card" class="quiet-card" aria-label="Current interaction"><span class="quiet-symbol" aria-hidden="true">◌</span><div><h2 id="quiet-heading">No question from AURA right now.</h2><p id="home-subtitle">You can check in whenever it feels useful.</p></div></section>
-      <div id="communication-card" class="card communication-card" hidden><p class="eyebrow">A small question</p><p id="communication-message"></p><p id="wording-origin" class="fine"></p><button id="clarify" class="text-button">Add context</button><button id="why-home" class="text-button">Why AURA asked</button></div>
+      <div id="communication-card" class="card communication-card" hidden><p class="eyebrow" id="communication-eyebrow">A small question</p><p id="communication-message"></p><p id="wording-origin" class="fine"></p><button id="clarify" class="text-button">Add context</button><button id="why-home" class="text-button">Why AURA asked</button></div>
       <div class="patient-links">
         <a id="appointment-card" class="appointment-link card" href="#review" data-page="review"><span aria-hidden="true">▤</span><span class="appointment-link-copy"><strong>Prepare for my appointment</strong><span id="appointment-ready" class="fine">0 items ready · Not sent</span></span><span aria-hidden="true">→</span></a>
         <a href="#patterns" data-page="patterns" class="patient-link-tile"><span aria-hidden="true">≋</span><span>See my full data</span><span aria-hidden="true">→</span></a>

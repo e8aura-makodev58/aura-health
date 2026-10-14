@@ -18,7 +18,7 @@ from aura_communication.domain import (
 )
 from aura_communication.prompts import prompt_contract
 from aura_communication.provider import GenerationProvider, provider_from_environment
-from aura_communication.validation import validate_output
+from aura_communication.validation import patient_text_problems, validate_output
 from aura_safety.codec import state_from_dict
 from aura_safety.domain import Mode, Status, state_valid
 from aura_safety.engine import POLICY_VERSION
@@ -61,8 +61,10 @@ class PatientCommunicationService:
 
     def __init__(self, events: PatientEventService, *, provider: GenerationProvider | None = None,
                  config: CommunicationConfig | None = None,
-                 policy_question: ApprovedPolicyQuestion | None = None, clock=None):
+                 policy_question: ApprovedPolicyQuestion | None = None, clock=None, reply_provider=None):
         self.events = events
+        # Optional live agent provider for replies to safety-cleared notes (synthetic hosted demo only).
+        self.reply_provider = reply_provider
         self.repositories = events.repositories
         self.config = config or load_config()
         self.provider = provider if provider is not None else provider_from_environment(self.config)
@@ -92,7 +94,26 @@ class PatientCommunicationService:
         started = perf_counter()
         reason, validation, model_id = "STATIC_POLICY", "NOT_RUN", None
         selected = None
-        if approval.request is not None:
+        if approval.request is not None and approval.request.mode == GenerationMode.NORMAL_SUPPORT and self._replies_live():
+            # A safety-cleared note in the normal state: the agent may reply in its own words.
+            # Strict patient-text checks; any failure keeps the approved fixed sentence.
+            model_id = self.reply_provider.model_id
+            try:
+                from aura_agent.tasks import structured_task
+                reply = structured_task(self.reply_provider, "note_reply", {"note": approval.request.patient_context}, reasoning="low")
+                message = reply.get("message") if isinstance(reply, dict) and set(reply) == {"message"} else None
+                problems = patient_text_problems(message, self.config.max_response_length)
+                if problems:
+                    reason, validation = "INVALID_GENERATION", list(problems)
+                else:
+                    selected = {"candidate_id": "agent-note-reply", "message": message.strip(), "acknowledged_facts": [],
+                                "question_intent": None, "cta_type": None}
+                    reason, validation = "GENERATED_VALIDATED", "PASS"
+            except TimeoutError:
+                reason, validation = "MODEL_TIMEOUT", "NOT_RUN"
+            except Exception:
+                reason, validation = "MODEL_UNAVAILABLE", "NOT_RUN"
+        elif approval.request is not None:
             model_id = self.provider.model_id
             try:
                 raw = self.provider.generate(prompt_contract(approval.request))
@@ -131,6 +152,9 @@ class PatientCommunicationService:
                                              "fallback_reason": result["fallback_reason"],
                                              "template_id": result["static_template_id"]}})
             return result
+
+    def _replies_live(self):
+        return bool(self.reply_provider is not None and getattr(self.reply_provider, "live", False))
 
     def _approve(self, repo, patient_id, event_id, purpose, offline) -> Approval:
         self.events._patient(repo, patient_id)
@@ -227,6 +251,7 @@ class PatientCommunicationService:
                      "offline": offline, "config": self.config.fingerprint,
                      "policy_config": self.events.safety_engine.config.version,
                      "model": self.provider.model_id, "request": request.public() if request else None,
+                     "reply_model": self.reply_provider.model_id if self._replies_live() and mode == GenerationMode.NORMAL_SUPPORT else None,
                      "template": template, "resources": _resources(plan)}
         return Approval(_hash(signature), event_id, patient_id, event["correlation_id"],
                         state.sequence if state else None, state.episode_id if state else None,

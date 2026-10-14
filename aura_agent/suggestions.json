@@ -1,17 +1,120 @@
 {
-  "version": "suggestions-dev-v1",
+  "version": "suggestions-dev-v2",
   "recent_days": 7,
   "general": [
-    {"id": "message_someone", "label": "Message someone you trust"},
-    {"id": "plan_session", "label": "Plan a session with your therapist or counsellor, if you have one"},
-    {"id": "note_for_visit", "label": "Note something to mention at your next appointment"}
+    {
+      "id": "message_someone",
+      "label": "Message someone you trust"
+    },
+    {
+      "id": "plan_session",
+      "label": "Plan a session with your therapist or counsellor, if you have one"
+    },
+    {
+      "id": "note_for_visit",
+      "label": "Note something to mention at your next appointment"
+    }
   ],
   "by_change": {
-    "ACTIVITY:LOWER": {"subject": "You've been moving less", "option": {"id": "short_walk", "label": "A short walk outside, at your own pace"}},
-    "SLEEP_MIDPOINT:LATER": {"subject": "Your sleep time has shifted later", "option": {"id": "wind_down", "label": "A calm wind-down in the evening, away from screens"}},
-    "SLEEP_MIDPOINT:EARLIER": {"subject": "Your sleep time has shifted earlier", "option": {"id": "wind_down", "label": "A calm wind-down in the evening, away from screens"}},
-    "SLEEP_DURATION:LOWER": {"subject": "You've been sleeping less", "option": {"id": "wind_down", "label": "A calm wind-down in the evening, away from screens"}},
-    "RESTING_HEART_RATE:HIGHER": {"subject": "Your resting heart rate has been higher", "option": {"id": "slower_day", "label": "A slower day, with time to rest"}}
+    "ACTIVITY:LOWER": {
+      "subject": "You've been moving less",
+      "option": {
+        "id": "short_walk",
+        "label": "A short walk outside, at your own pace"
+      }
+    },
+    "SLEEP_MIDPOINT:LATER": {
+      "subject": "Your sleep time has shifted later",
+      "option": {
+        "id": "wind_down",
+        "label": "A calm wind-down in the evening, away from screens"
+      }
+    },
+    "SLEEP_MIDPOINT:EARLIER": {
+      "subject": "Your sleep time has shifted earlier",
+      "option": {
+        "id": "wind_down",
+        "label": "A calm wind-down in the evening, away from screens"
+      }
+    },
+    "SLEEP_DURATION:LOWER": {
+      "subject": "You've been sleeping less",
+      "option": {
+        "id": "wind_down",
+        "label": "A calm wind-down in the evening, away from screens"
+      }
+    },
+    "RESTING_HEART_RATE:HIGHER": {
+      "subject": "Your resting heart rate has been higher",
+      "option": {
+        "id": "slower_day",
+        "label": "A slower day, with time to rest"
+      }
+    }
   },
-  "priority": ["ACTIVITY:LOWER", "SLEEP_MIDPOINT:LATER", "SLEEP_MIDPOINT:EARLIER", "SLEEP_DURATION:LOWER", "RESTING_HEART_RATE:HIGHER"]
+  "priority": [
+    "ACTIVITY:LOWER",
+    "SLEEP_MIDPOINT:LATER",
+    "SLEEP_MIDPOINT:EARLIER",
+    "SLEEP_DURATION:LOWER",
+    "RESTING_HEART_RATE:HIGHER"
+  ],
+  "pool": [
+    {
+      "id": "short_walk",
+      "label": "A short walk outside, at your own pace"
+    },
+    {
+      "id": "wind_down",
+      "label": "A calm wind-down in the evening, away from screens"
+    },
+    {
+      "id": "slower_day",
+      "label": "A slower day, with time to rest"
+    },
+    {
+      "id": "message_someone",
+      "label": "Message someone you trust"
+    },
+    {
+      "id": "plan_session",
+      "label": "Plan a session with your therapist or counsellor, if you have one"
+    },
+    {
+      "id": "note_for_visit",
+      "label": "Note something to mention at your next appointment"
+    },
+    {
+      "id": "time_with_friend",
+      "label": "Time with a friend, doing something you both enjoy"
+    },
+    {
+      "id": "enjoyable_activity",
+      "label": "Make a little time for a game or hobby you like"
+    },
+    {
+      "id": "daylight",
+      "label": "A few minutes outside in daylight"
+    },
+    {
+      "id": "gentle_stretch",
+      "label": "A few gentle stretches"
+    },
+    {
+      "id": "regular_meal",
+      "label": "A regular meal at your usual time"
+    },
+    {
+      "id": "usual_wake",
+      "label": "Getting up at your usual time tomorrow"
+    },
+    {
+      "id": "music",
+      "label": "Some music you like"
+    },
+    {
+      "id": "small_task",
+      "label": "One small, easy task you've been putting off"
+    }
+  ]
 }
