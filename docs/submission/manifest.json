@@ -37,7 +37,7 @@
       "path": "assets/aura-health-deck.pptx",
       "max_bytes": 10000000,
       "status": "REVIEW_PENDING",
-      "bytes": 688475,
+      "bytes": 689180,
       "slide_count": 18,
       "companion_overview_rerender_required": false,
       "native_diagrams": "slides 11-13: editable shapes with glued connectors (deck/native_diagrams.py)",
@@ -46,7 +46,7 @@
       "audit": "ARCHITECTURE_REVIEW.md",
       "reviewed_pdf": "assets/aura-health-architecture-reviewed.pdf",
       "reviewed_pdf_bytes": 148451,
-      "note": "Diagrams 11\u201313 reconciled; other slide XML preserved. PDF/PNGs rendered with ReportLab from native shapes; PowerPoint/LibreOffice render not reverified. User approval remains pending."
+      "note": "2026-10-14: slide 11 shows patient-controlled sharing; slide 14 sharing trade-off; audit notes on 11–13"
     }
   },
   "supporting_diagrams": {
@@ -161,7 +161,7 @@
     "implementation_commit": "90e31ea6d7b797264bfc31fa0ae16229b76e164c",
     "python_tests_passed": 334,
     "python_seconds": 459.063,
-    "artifact_structure": "PASS:18 slides/only11\u201313 changed/18 attached connectors/5 PDF pages/six1920\u00d71080 PNGs",
+    "artifact_structure": "PASS:18 slides/only11–13 changed/18 attached connectors/5 PDF pages/six1920×1080 PNGs",
     "mock_clock_budget": "PASS:late call rejected after return, not hard response deadline",
     "live_model_calls": 0,
     "deployed_state_reverified": false,

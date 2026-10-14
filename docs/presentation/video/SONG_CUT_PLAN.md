@@ -69,8 +69,8 @@ starts were checked against frames of the actual file.
 
 **8 · Architecture and agent loop (file 2:31–2:55 · final 2:39–3:03, ~24 s)**
 > Our rule: signals propose, rules decide, AI words it. Deterministic engines own the baselines
-> and the safety state. The agent uses read-only tools within loop budgets, and every draft is
-> grounded, verified and rechecked before it's shown.
+> and the safety state. The patient decides what their clinician sees, and the agent reads only
+> what's shared, then grounds, verifies and rechecks every draft.
 
 **9 · Fit with the challenge (file 2:55–3:11 · final 3:03–3:19, ~16 s)**
 > Medication understanding, adherence, health tracking, follow-up dates and appointment

@@ -257,7 +257,7 @@ def slides():
         <h2>Signals propose, rules decide, AI words it</h2>
         <div class='points' style='margin-top:40px;max-width:1500px'>
           {point('blue', '<b>Deterministic state, flexible language</b> — engines own personal baselines and safety; AI writes words and investigates.')}
-          {point('sunny', '<b>Quiet patient surface, deep clinician inspection</b> — one record, two views.')}
+          {point('sunny', '<b>Quiet patient surface, deep clinician inspection</b> — one record, two views; the patient decides what the clinician sees.')}
           {point('lilac', '<b>Strict checks, honest fallback</b> — numbers, dates and citations are checked plus an independent verifier; failures show related facts and say why.')}
           {point('leaf', '<b>Curated medication information</b> — AI only matches a question to an approved topic.')}
           {point('coral', '<b>Synthetic data now, private hosting later</b> — a hospital would run the model on its own infrastructure.')}

@@ -89,7 +89,9 @@ Then *My medication* → *What if I miss a dose?*
 > baselines and the safety state. Medication information is curated; AI only matches a question
 > to an approved topic. The clinician agent investigates with read-only tools, and every answer
 > passes number, date and citation checks plus an independent verifier. In this demo the model
-> runs on synthetic data only; a hospital would run it on its own private infrastructure."
+> runs on synthetic data only; a hospital would run it on its own private infrastructure. And the
+> patient decides what their clinician sees: an agreed minimum, plus anything they choose to share,
+> enforced on the server, so the agent says 'not shared, ask the patient' instead of guessing."
 
 ### 10 · Fit with the challenge — 6:00–6:25 (live pitch)
 **Slide:** six features: built / partial / next (from `../submission/CHALLENGE_MAPPING.md`).
