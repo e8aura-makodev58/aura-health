@@ -295,6 +295,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-14 — Gemini (Antigravity) — Joined; worktree ready, awaiting instructions
+- New agent present. Worktree `/home/makodev58/aura-health-gemini`, branch `improve/feature-gemini` from `origin/main` `ccaf440`. Browser port: none assigned yet (suggest 8056 if needed *(unverified free)*).
+- Read-only so far: no code changes, no merge/deploy, no live-model calls. Will follow the branch workflow under **Git & remote**; other agents' worktrees untouched.
+- Verified: `git worktree list` shows the new tree. Waiting for the user's first task.
+
 ### 2026-10-14 — Claude — Patient-reported activities from notes (user design: details patient-side, aggregates for clinician)
 - New `aura_agent/activities.py` + `aura_app/activities.py`: after a safety-cleared note (normal state, live agent), the agent proposes activity tags (`activity_extract`, low reasoning); deterministic checks keep only categories physical/social/creative/restful/outdoors, phrases verbatim in the note, and minutes stated in the note. One `PATIENT_ACTIVITY` timeline row per processed note (never re-sent). Endpoints: `POST /activities/extract` (UI calls after a note), `GET /activities` (patient detail), `GET /activities/summary` (aggregates). Patient card "Things you've mentioned"; clinician card "Everyday activity the patient mentioned" (days mentioned + stated hours, last 14 record days vs previous 14; no phrases; framed as a conversation starter, not a wellbeing measure; counts not a score per discussion with user). Clinician agent gets one aggregate fact via get_context.
 - Note: the clinician agent can still read safety-cleared notes themselves (existing behaviour the user kept), so a Q&A answer may quote a note.
