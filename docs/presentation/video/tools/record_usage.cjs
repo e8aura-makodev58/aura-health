@@ -11,7 +11,7 @@ const cursor = () => { const add = () => { if (document.getElementById('rec-curs
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', add); else add(); };
 (async () => {
   const b = await chromium.launch(); // 1440×810 CSS pixels at 4/3 device scale: the page reads about a third larger and still fills 1920×1080.
-  const c = await b.newContext({viewport:{width:1440, height:810}, deviceScaleFactor:4/3, recordVideo:{dir:out, size:{width:1920, height:1080}}});
+  const c = await b.newContext({viewport:{width:1440, height:810}, recordVideo:{dir:out, size:{width:1440, height:810}}});
   await c.addInitScript(cursor); await c.addInitScript(() => { window.auraLandingInAutomation = true; window.auraWelcomeInAutomation = true; });
   const p = await c.newPage(); const t0 = Date.now(); const marks = []; const errors = []; p.on('pageerror', e => errors.push(e.message));
   const mark = label => marks.push({label, t:(Date.now() - t0) / 1000}); const pause = ms => new Promise(r => setTimeout(r, ms));
@@ -24,9 +24,18 @@ const cursor = () => { const add = () => { if (document.getElementById('rec-curs
   const type = async (sel, text) => { await p.locator(sel).fill(''); await click(sel, 300); await p.keyboard.press('End'); await p.keyboard.type(text, {delay:65}); await pause(600); };
   const ask = async (q, label) => {
     await p.evaluate(() => document.getElementById('agent-record_qa').replaceChildren());
-    await type('#agent-question-text', q); await click('.question-submit', 300);
-    await waitFor(label, () => document.querySelector('#agent-record_qa .investigation-trail'));
-    await pause(500); await view('#agent-record_qa'); await p.mouse.move(520, 450, {steps:15}); await pause(9000); };
+    await type('#agent-question-text', q);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      // If the checked answer falls back, a clinician would simply ask again: show that honestly.
+      if (attempt) { mark('ask_again:' + label); await pause(4000); await p.evaluate(() => document.getElementById('agent-record_qa').replaceChildren()); }
+      await click('.question-submit', 300);
+      await waitFor(label + (attempt ? '_again' : ''), () => document.querySelector('#agent-record_qa .investigation-trail'));
+      await pause(500); await view('#agent-record_qa'); await p.mouse.move(520, 450, {steps:15});
+      const fellBack = await p.evaluate(() => /not validated|showing related facts/i.test(document.getElementById('agent-record_qa').textContent));
+      if (!fellBack) break;
+      mark('fallback:' + label);
+    }
+    await pause(9000); };
 
   await p.goto(base, {waitUntil:'networkidle'}); await pause(1500); mark('start'); await pause(3500);
   // 1 · Patient: a calm start

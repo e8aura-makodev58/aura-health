@@ -305,6 +305,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-14 — Claude — Usage demo video (song half, option B) and one-line-per-finding notes
+- New `video/tools/record_usage.cjs` + `assemble_usage.py`: a real usage session on the live site (no tour, no safety example), positive note "I enjoyed painting today for 3 hours"; waits trimmed to 3 s; re-asks a clinician question once if it falls back. Output `aura-health-usage-demo-novoice.mp4` 3:51 and `aura-health-combined-usage-draft-novoice.mp4` 7:18 (not in git). Details in `SONG_CUT_PLAN.md` option B.
+- `aura_ui/agent.js`: appointment notes show one plain line per finding (claims combining two findings no longer joined with ";"). agent/impression browser suites PASS. Deployed.
+
 ### 2026-10-14 — Claude — Submission materials updated for today's features
 - Description (FORM_CONTENT + SUBMISSION_CHECKLIST box 2.3): patient-controlled sharing paragraph; agent patient tasks (note reply, ideas, activities) and their checks; Q&A calculations in code; 367 tests at `8ea19c9`; today's live checks. ARCHITECTURE_DOCUMENT §6.2 (agent on the patient side), §12.1 (sharing), tools list incl. `summarize_checkins`; ARCHITECTURE_REVIEW addendum marks two superseded rows. Slide 11 adds "Patient-controlled sharing" box (arrow: limits what clinician runs can read), patient/clinician box text; slide 14 sharing point; regenerated via `reconcile_architecture.py` (deck, PNGs, reviewed PDF). SCRIPT scene 9 and SONG_CUT_PLAN section 8 mention sharing (section 8: 39 words in 24 s). Full, short, part-1 and combined videos rebuilt (not in git).
 - Note: LibreOffice renders slide 14 with a substitute font and overlaps lines; with Nunito installed (as documented) it lays out cleanly.

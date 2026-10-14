@@ -13,6 +13,25 @@ This replaces the earlier plan (song–voice–song); the total stays inside the
 Built by `tools/assemble_short.py` (with `FIRST_HALF=1`) and `tools/assemble_landscape.py`; the
 landscape take comes from `tools/record_tour.cjs <url> <dir> deskfull`.
 
+## Option B (2026-10-14): real usage demo instead of the guided story
+
+`aura-health-usage-demo-novoice.mp4` (3:51) is one live take of actual use in landscape (recorded at
+1440×810, scaled to 1920×1080), with no guided story and no safety example. Only AI waiting time was
+trimmed (each wait kept to 3 s; the appointment-note draft lost ~32 s). Built by
+`tools/record_usage.cjs` + `tools/assemble_usage.py`. Content, in order: patient home and summary,
+Taken, a medication topic, the note **"I enjoyed painting today for 3 hours"** with AURA's reply,
+"Things you've mentioned" (painting · Creative · 3 h), agent-picked ideas and an acknowledged choice,
+plain appointment notes, "What your clinician can see", the clinician findings and activity totals,
+"Has the patient mentioned spending more time on hobbies recently?", the 30-day Rough check-in
+percentage, then Demo guide → Minimum only → sharing line and "Do we have access to the patient's
+notes?" ("not shared"). All three clinician answers passed first time in this take (the recorder
+re-asks once if an answer falls back).
+
+`aura-health-combined-usage-draft-novoice.mp4` = first half (3:26) + usage demo (3:51) = **7:18**;
+with the two 8-s Miora clips about **7:34**, inside the 8-minute limit. The song (about 2:37–2:43 at
+100–104 BPM) is shorter than this half: start the sung version with the demo and continue with the
+instrumental version (or loop the chorus) to the end, letting the outro land on the Miora clip.
+
 ## Cue sheet (final-video times, intro clip included)
 
 | Final video | On screen | Audio |
