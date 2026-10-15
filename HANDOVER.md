@@ -310,6 +310,12 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Agent draft repair; story agent step checked on both servers
+- User asked to reproduce the clinician-question fallback locally before blaming blue: green failed too (3/5 vs blue 5/5 at the same time), so it is model variance, not the deployment. Causes seen: CALCULATION_ANSWER_INCOMPLETE (fixed earlier), FINDING_MISMATCH, UNSUPPORTED_SIGNAL, PROHIBITED_CLAIM (wording such as "caused", "healthy").
+- `aura_agent/runtime.py`: one bounded repair when a well-formed draft fails a grounding check (FINDING_MISMATCH, UNSUPPORTED_SIGNAL, UNDELIVERED_FACT, FABRICATED_NUMBER_OR_DATE, HEADLINE_BUDGET, UNSUPPORTED_CATEGORY); the corrected draft goes through all checks and the verifier again. Never repaired: PROHIBITED_CLAIM (clinical-claims policy, user decision pending) and malformed/empty/wrong-shape replies (existing contract `test_patient_prompt_contract`). Tests: repair succeeds once, only once, prohibited content never repaired.
+- Rolled out blue/green style: green updated and checked → public switched to green → blue updated and checked directly → public switched back to blue. Now: blue live, green standby, both at `1cb6354`.
+- Verified: 392 Python tests OK; green 15/15 story agent answers checked after the fix (the repair did not fire in those runs; improvement partly model variance); blue 1/2 directly (the fallback was PROHIBITED_CLAIM).
+
 ### 2026-10-15 — Claude — Blue/green hosting: "AURA agent live" light and switch script
 - **blue** = Tencent Cloud Lighthouse (Singapore), **green** = the original self-hosted machine. Both run the same `main`, both have live AI (OpenAI gpt-6-luna). Exactly one runs the Cloudflare tunnel connector (dashboard-managed tunnel, route `http://app:8000`; no Cloudflare changes needed). As of this entry **green is live**, blue is standby.
 - `deploy/switch.sh status|blue|green [--force]`: health-gates the target (app healthy, `/health` node name matches, live AI on, token file readable), stops the other connector **first**, starts the target, then samples the public `/health` until all 20 answers come from the target (alerts and re-stops the other if both answer). Machine details in `~/.config/aura/switch.env` (not in the repo). A switch ends current demo sessions (in-memory per server): switch between judges.
