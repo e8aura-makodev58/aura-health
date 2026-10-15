@@ -310,6 +310,12 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Gemini (Antigravity) — Review 2: catch-up/calendar UI and browser suite
+- Fast-forwarded `improve/feature-gemini` to `origin/main` `ab1dd09`. Added `docs/BACKLOG_AND_CALENDAR_REVIEW2_GEMINI.md` (reviews `aura_ui/catchup.js` and `tests/browser/catchup_calendar.cjs`; recommendations only, no code changed).
+- Main findings: (M) keyboard focus lost on every day tap because `showPreview()` rebuilds the buttons; (M) failed `update-window` load leaves controls enabled and `showPreview()` throws on null `state.window`; plus low items and test gaps (hard-coded fixture dates, failure paths untested, layout checks page-level only). No safety bypass found.
+- Verified: `catchup_calendar.cjs` hosted on port 8056, 12/12 checks PASS (needed `NODE_PATH` to codebuddy's playwright and `LD_LIBRARY_PATH` to `/home/makodev58/rendertest/libs/usr/lib/x86_64-linux-gnu` for libgbm). Python suite not run.
+- Left for Claude: fix the two M findings. No merge/deploy.
+
 ### 2026-10-15 — Codex — Independent review of Claude's completed catch-up/calendar backend
 - User: “Claude is done, check your assigned task.” Latest remote handover assigns backend review; inspected main `ab1dd09` / implementation `1dbcd0c` without merging into this branch. Added `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md` and `docs/evidence/calendar-backend-review-probes.py`. Five findings (two P1): save validation/write transaction race, dropped late-report provenance, held input claimed as saved, agent report-day timezone mismatch, coverage denominator; smaller contract follow-ups retained separately.
 - Verified: synthetic fake-gate/interleaving probes reproduce findings; calendar6 PASS/222.004s (unrestricted rerun), medication-update8 PASS/0.540s and sharing6 PASS/9.607s;20 focused tests total. Initial restricted calendar runner stalled and was stopped (143). Harness compile and `git diff --check` PASS. No full-suite/browser/live/model run; Claude's recorded381 remains his evidence.
