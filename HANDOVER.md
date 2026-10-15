@@ -310,6 +310,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Settings gear and dialog spacing (user request)
+- Header gear replaced with a clean, evenly toothed outline; settings dialog fields/buttons/notes spaced (Unlock no longer touches the token field; same for Save key and Refresh available models). Found by the settings suite: the "AURA agent live" light overflowed phones narrower than ~380 px; now dot-only there (label and tooltip keep the status).
+- Verified: settings, catchup_calendar (16), landing, welcome suites PASS; no overlaps in the unlocked editor (390/1280); no horizontal scroll at 320/360/390. Rolled out blue/green; blue live, green standby, both `0b7e98e`.
+
 ### 2026-10-15 — Claude — Agent answer reliability: rephraser and findings from the record (user-approved)
 - `aura_agent/runtime.py` + `tasks.py`: (1) `fill_findings`: each claim's structured finding (signal/direction/since) is filled from the cited delivered fact instead of copied by the model (the model mis-copied it in 4 of 5 live runs; FINDING_MISMATCH rejected correct answers even after a repair). (2) `rephrase_neutral`: when a draft fails the prohibited-wording check, a separate low-reasoning task restates only the sentences without causal/evaluative words; the result must pass the same wording check, every other check and the verifier; once per answer (user approved; the checker rules in `grounding.py` are unchanged and remain the authority). (3) Earlier: one citation repair for well-formed drafts. Never repaired: malformed/wrong-shape replies.
 - Rolled out blue/green (green first, then blue, public back on blue). Now blue live, green standby, both at `df02d9e`.
