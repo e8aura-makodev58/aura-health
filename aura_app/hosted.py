@@ -225,6 +225,13 @@ class HostedDemo:
                     await send({"type":"lifespan.shutdown.complete"}); return
         if scope["type"] != "http":
             return
+        # Which server answered (blue/green deployment): a name, never infrastructure detail.
+        node = os.environ.get("AURA_NODE_NAME", "local")
+        outer_send = send
+        async def send(message):
+            if message["type"] == "http.response.start":
+                message = {**message, "headers": [*message.get("headers", []), (b"x-aura-node", node.encode("latin1", "replace"))]}
+            await outer_send(message)
         headers = {key.lower():value for key,value in scope["headers"]}
         secure_cookie = self.secure_cookie
         if secure_cookie and scope.get("scheme") == "http":
@@ -236,7 +243,8 @@ class HostedDemo:
             except (ValueError, TypeError):
                 pass  # Malformed/non-IP hosts never weaken the public cookie.
         if scope["path"] == "/health":
-            await JSONResponse({"status":"ok", "synthetic_only":True, "seed":self.seed})(scope, receive, send)
+            await JSONResponse({"status":"ok", "synthetic_only":True, "seed":self.seed, "node":node,
+                                "node_label":os.environ.get("AURA_NODE_LABEL", "")})(scope, receive, send)
             return
         if scope["path"] in {"/", "/signals"} or scope["path"].startswith("/assets/"):
             await self.presentation_app(scope, receive, send)

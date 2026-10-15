@@ -619,3 +619,22 @@ body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #r
 .safety-demo-reset[hidden] {display:none}
 .safety-demo-reset p {margin:0;flex:1 1 220px}
 .safety-demo-reset button {min-height:40px;padding:8px 16px;font-size:.85rem;font-weight:700}
+
+/* "AURA agent live" light: blue/green = which server answers, red = offline */
+.agent-live {display:inline-flex;align-items:center;gap:6px;margin-left:12px;margin-right:auto;padding:4px 10px 4px 8px;border-radius:var(--radius-pill);border:1px solid var(--line);background:var(--white);font-size:.72rem;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);white-space:nowrap;cursor:default}
+.agent-dot {width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.agent-live[data-state="live"][data-node="blue"] .agent-dot {background:#2f6fd6;box-shadow:0 0 0 3px rgba(47,111,214,.18)}
+.agent-live[data-state="live"][data-node="green"] .agent-dot,
+.agent-live[data-state="live"][data-node="other"] .agent-dot {background:#2f9a55;box-shadow:0 0 0 3px rgba(47,154,85,.18)}
+.agent-live[data-state="offline"] .agent-dot {background:#c8372d;box-shadow:0 0 0 3px rgba(200,55,45,.18)}
+.agent-live[data-state="offline"] {color:#9d2a22}
+@media (prefers-reduced-motion: no-preference) {
+  .agent-live[data-state="live"] .agent-dot {animation:agent-pulse 2.4s ease-in-out infinite}
+}
+@keyframes agent-pulse {50% {opacity:.45}}
+.agent-short {display:none}
+@media (max-width:420px) {
+  .agent-live {margin-left:6px;padding:3px 8px 3px 6px;font-size:.66rem}
+  .agent-long {display:none}
+  .agent-short {display:inline}
+}

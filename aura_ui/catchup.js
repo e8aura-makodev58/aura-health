@@ -331,4 +331,28 @@ async function loadCoverage() {
     ` · last check-in ${day(data.last_checkin_day)} · latest watch data ${day(data.last_wearable_day)}.`;
   strip.hidden = false;
 }
+/* ---- "AURA agent live" light: which server answers (blue/green) and whether live AI is on ---- */
+const NODE_NAMES = {blue: "blue", green: "green"};
+async function checkAgent() {
+  const light = byId("agent-live"), text = byId("agent-live-text");
+  let health = null, status = null;
+  try {
+    const [h, s] = await Promise.all([fetch("/health", {cache: "no-store"}), fetch("/system/status", {cache: "no-store"})]);
+    if (h.ok) health = await h.json();
+    if (s.ok) status = await s.json();
+  } catch { /* unreachable: shown as offline */ }
+  const live = Boolean(health?.status === "ok" && status?.live_enabled);
+  const node = NODE_NAMES[health?.node] || (health ? "other" : "none");
+  light.dataset.state = live ? "live" : "offline";
+  light.dataset.node = node;
+  text.textContent = live ? "AURA agent live" : "AURA agent offline";
+  byId("agent-live-short").textContent = live ? "Agent live" : "Agent offline";
+  const where = health ? `Served by ${health.node}${health.node_label ? ` · ${health.node_label}` : ""}` : "Server not reachable";
+  const ai = status ? (status.live_enabled ? `Live AI: ${status.provider} ${status.model}` : "Live AI is off; fixed wording is used") : "AI status unavailable";
+  light.title = `${where}. ${ai}.`;
+  light.setAttribute("aria-label", `${text.textContent}. ${where}.`);
+}
+checkAgent();
+setInterval(checkAgent, 30000);
+document.addEventListener("aura-settings-updated", checkAgent);
 })();
