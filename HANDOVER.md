@@ -310,6 +310,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Codex — Independent review of Claude's completed catch-up/calendar backend
+- User: “Claude is done, check your assigned task.” Latest remote handover assigns backend review; inspected main `ab1dd09` / implementation `1dbcd0c` without merging into this branch. Added `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md` and `docs/evidence/calendar-backend-review-probes.py`. Five findings (two P1): save validation/write transaction race, dropped late-report provenance, held input claimed as saved, agent report-day timezone mismatch, coverage denominator; smaller contract follow-ups retained separately.
+- Verified: synthetic fake-gate/interleaving probes reproduce findings; calendar6 PASS/222.004s (unrestricted rerun), medication-update8 PASS/0.540s and sharing6 PASS/9.607s;20 focused tests total. Initial restricted calendar runner stalled and was stopped (143). Harness compile and `git diff --check` PASS. No full-suite/browser/live/model run; Claude's recorded381 remains his evidence.
+- Left: Claude fixes/final gate and Gemini's independent UI/browser review. No production code, main merge, settings or deployment changed.
+
 ### 2026-10-15 — Claude — Catch-up + calendar built, merged and deployed (`1dbcd0c`)
 - Codex/Gemini had no commits, so Claude built all of §9 (backend, UI, browser suite); see spec §9.7 for contract differences. New: `aura_app/record_calendar.py`, `aura_ui/catchup.js`, `tests/test_record_calendar.py`, `tests/browser/catchup_calendar.cjs`; edits to models/service/evidence/hosted/api/companion/agent/tools, `index.html`, `app.js` (calendar page), `evidence.js` (relearning line).
 - Verified: full Python suite **381 OK** (707 s); hosted browser suites catchup_calendar (12 checks, phone + laptop), companion, milestone7, workflows, agent, plain_language, dual_view, welcome, landing, tour, cards, impression, qa_display, final_dash, story_charts all PASS. Live (gpt-6-luna): "I took it on most days except last Friday and yesterday" → preview in 9.8 s, question "Were Fri 6 Mar and Tue 10 Mar the only days you missed?", Yes → saved 14 days, calendar shows ringed (filled in later) marks; no page errors.
