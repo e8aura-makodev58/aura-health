@@ -310,6 +310,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Agent answer reliability: rephraser and findings from the record (user-approved)
+- `aura_agent/runtime.py` + `tasks.py`: (1) `fill_findings`: each claim's structured finding (signal/direction/since) is filled from the cited delivered fact instead of copied by the model (the model mis-copied it in 4 of 5 live runs; FINDING_MISMATCH rejected correct answers even after a repair). (2) `rephrase_neutral`: when a draft fails the prohibited-wording check, a separate low-reasoning task restates only the sentences without causal/evaluative words; the result must pass the same wording check, every other check and the verifier; once per answer (user approved; the checker rules in `grounding.py` are unchanged and remain the authority). (3) Earlier: one citation repair for well-formed drafts. Never repaired: malformed/wrong-shape replies.
+- Rolled out blue/green (green first, then blue, public back on blue). Now blue live, green standby, both at `df02d9e`.
+- Verified: 395 Python tests OK. Live: causal questions 6/6 checked after rephrase; guided story green 5/5, blue 3/3 directly, plus a final public run; traces show findings filled, one citation repair and one rephrase all ending in checked answers. Agent step 20–41 s (budget 90 s).
+
 ### 2026-10-15 — Claude — Agent draft repair; story agent step checked on both servers
 - User asked to reproduce the clinician-question fallback locally before blaming blue: green failed too (3/5 vs blue 5/5 at the same time), so it is model variance, not the deployment. Causes seen: CALCULATION_ANSWER_INCOMPLETE (fixed earlier), FINDING_MISMATCH, UNSUPPORTED_SIGNAL, PROHIBITED_CLAIM (wording such as "caused", "healthy").
 - `aura_agent/runtime.py`: one bounded repair when a well-formed draft fails a grounding check (FINDING_MISMATCH, UNSUPPORTED_SIGNAL, UNDELIVERED_FACT, FABRICATED_NUMBER_OR_DATE, HEADLINE_BUDGET, UNSUPPORTED_CATEGORY); the corrected draft goes through all checks and the verifier again. Never repaired: PROHIBITED_CLAIM (clinical-claims policy, user decision pending) and malformed/empty/wrong-shape replies (existing contract `test_patient_prompt_contract`). Tests: repair succeeds once, only once, prohibited content never repaired.
