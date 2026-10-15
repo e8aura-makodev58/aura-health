@@ -185,3 +185,90 @@ Reviews: `BACKLOG_AND_CALENDAR_REVIEW_CODEX.md`, `BACKLOG_AND_CALENDAR_REVIEW_GE
   (dose-card line, update dialog + preview, calendar + day detail, welcome back, re-learning line,
   coverage strip), integration, deploy. Gemini — browser test suite for the new flows (phone +
   laptop) and an independent review before merge.
+
+---
+
+## 9 · APPROVED (user, 2026-10-15) — contract and assignments
+
+The user approved §8 A–E as proposed and named **Claude the final gate**: Claude reviews, fixes,
+merges and deploys everything below. Build against this contract; if something in it is wrong,
+write the problem in your handover entry rather than silently changing the contract.
+
+### 9.1 Record-local time (everyone)
+"Now" for a record is its **latest event `occurred_at`** (demo records live in early 2026), never
+the wall clock. Catch-up saves use `occurred_at` = record-local now, `received_at` = server clock,
+and carry the described day in `scheduled_time` (schedule hour, patient timezone).
+
+### 9.2 Backend — **Codex** (branch `improve/feature-codex`)
+1. **Payload:** `valid_medication_payload` accepts `"reported_later": true` (only `true`, only set by
+   the server on the update path; client-supplied values are rejected elsewhere). Normalised medication
+   rows, review items and agent facts carry it (fact text e.g. "Medication-routine record 2026-03-02:
+   ACKNOWLEDGED (reported later on 2026-03-11).").
+2. **Readers group medication by `scheduled_time` local date** (companion counts, review period,
+   visit note, tools). Fix any `rows[-1]["occurred_at"]` "latest day" reads that a catch-up could break.
+3. `GET /patients/{id}/medication/update-window` →
+   `{"today": ISO, "timezone": str, "schedule_hour": int, "max_days": 14, "unresolved_count": int,
+   "days": [{"date": ISO, "weekday": "Mon", "status": "ACKNOWLEDGED"|"MISSED"|"UNKNOWN"|null,
+   "reported_later": bool, "locked": bool}]}` (last 14 record days within treatment, oldest first;
+   `locked` = already has a record).
+4. `POST /patients/{id}/medication/update` with
+   `{"request_id": uuid, "days": [{"date": ISO, "status": enum, "reason": optional MISSED_REASONS key}]}`
+   → validates inside one transaction (window, empty days only, treatment, safety normal, not held),
+   writes one `MEDICATION_EVENT` per day via `process_batch` with idempotency bound to
+   patient + day + request + payload fingerprint (exact retry → same result; changed payload →
+   `409 UPDATE_CONFLICT`), returns `{"saved": [...dates], "window": <same as 3>}`. Empty `days` → 400.
+   Hosted rule allows exactly this path.
+5. **Companion:** add `"medication_gap": {"unresolved_days": int, "window_days": 14,
+   "last_record_day": ISO|null}` (normal safety state only, else null).
+6. **Record coverage:** `GET /patients/{id}/coverage` →
+   `{"last_medication_day": ISO|null, "reported_later_in_window": int, "window_days": 14,
+   "last_checkin_day": ISO|null, "last_wearable_day": ISO|null}` (minimum-shared) and the same as one
+   `get_status` agent fact.
+7. **Calendar projector** (one repository transaction, sharing-filtered for `viewer=clinician`):
+   `GET /patients/{id}/calendar?month=YYYY-MM&viewer=patient|clinician` →
+   `{"month": "YYYY-MM", "today": ISO, "withheld": [..], "days": [{"date": ISO,
+   "checkin": "Good"|"Okay"|"Rough"|null, "medication": {"status": enum, "reported_later": bool}|null,
+   "coverage": "full"|"partial"|"none"|null, "note": bool|null, "activity": bool|null}]}`
+   (null = not available to this viewer or no data; `coverage` null when readings are withheld;
+   `checkin` null when daily check-ins are withheld; note/activity null when withheld).
+   `GET /patients/{id}/calendar/{date}?viewer=…` → `{"date", "checkin", "medication": {status, reason,
+   reported_later, reported_on}|null, "readings": [{"signal","label","value","unit"}]|null,
+   "notes": [str]|null, "activities": [{"phrase","labels","minutes"}]|null, "ideas_chosen": [label],
+   "findings": [{"signal","direction","since"}], "gaps": [label], "withheld": [..]}`.
+   Coverage per signal: "full" if every enabled signal has a covered observation that day, "partial" if
+   some, "none" if none (documented engineering rule).
+8. Backend unit tests for all of the above (window edges, locked days, conflict/idempotency, record-local
+   time, grouping by scheduled day, sharing filters on grid and detail).
+
+### 9.3 Agent task, UI, integration — **Claude** (branch `improve/feature-claude`)
+1. `POST /patients/{id}/medication/update/interpret` `{"request_id": uuid, "text": str}`: safety-assesses
+   the text as patient free text with source `patient_medication_update` (no note reply, ideas or
+   activity tagging for this source), then the `medication_backfill` agent task (low reasoning) →
+   checked proposal `{"days": [{"date","status","basis": "explicit"|"from_most_days"}],
+   "question": str|null, "out_of_window": [dates], "advice_request": bool}`; BLOCKED when safety stops it.
+2. UI (IDs below), welcome back, re-learning line, coverage strip, calendar + day detail (patient and
+   clinician), integration tests, final review of all branches, merge and deploy.
+
+### 9.4 Browser tests and review — **Gemini** (branch `improve/feature-gemini`)
+`tests/browser/catchup_calendar.cjs` (hosted, phone 390 and laptop 1280) using only these IDs, plus an
+independent review of Codex's and Claude's branches before Claude merges. Cover: prompt appears with
+unresolved days; typed update → preview with "from most days" styling and the one question; locked
+days not editable; save → calendar shows ✓/✕ with reported-later marker; clinician calendar with
+Everything vs Minimum only (check-in dots and coverage disappear, medication stays); day detail;
+welcome back; no horizontal scroll.
+
+### 9.5 UI element IDs (contract for Gemini's tests)
+- Dose card line `#med-update-line`, open button `#med-update-open`.
+- Dialog `#med-update-dialog`: text `#med-update-text`, interpret `#med-update-interpret`, tap-only link
+  `#med-update-tap`, preview `#med-update-preview` with `.med-day[data-date][data-status][data-basis][data-locked]`
+  (status cycles on click), question `#med-update-question` with `#med-update-yes` / `#med-update-no`,
+  save `#med-update-save`, result `#med-update-result`.
+- Calendar entry links `#calendar-link` (patient nav) and `#clinician-calendar-link`; view `#calendar-view`;
+  `#calendar-prev`, `#calendar-next`, `#calendar-month`; grid `#calendar-grid .cal-day[data-date]`
+  containing `.cal-med[data-status][data-reported-later]` and `.cal-checkin[data-state]`; detail
+  `#calendar-detail`; legend `#calendar-legend`.
+- `#welcome-back`, `.relearning-line`, clinician `#record-coverage`.
+
+### 9.6 Order
+Codex 9.2 and Claude 9.3 in parallel (Claude mocks 9.2 responses until Codex lands) → Gemini 9.4 →
+Claude final review, fixes, full test runs, merge, deploy, live check.

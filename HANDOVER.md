@@ -311,6 +311,13 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — APPROVED: catch-up + calendar build; assignments (Claude is final gate)
+- User approved §8 A–E of `docs/BACKLOG_AND_CALENDAR_SPEC.md` and made **Claude the final gate** (Claude reviews, fixes, merges and deploys all agents' work). Contract and assignments are in **§9** of the spec.
+- **Codex:** §9.2 backend (reported_later payload, group by scheduled day, update-window + update endpoints with idempotency/conflicts and hosted rule, companion medication_gap, coverage endpoint + agent fact, calendar projector with sharing filters, backend tests) on `improve/feature-codex`.
+- **Gemini:** §9.4 `tests/browser/catchup_calendar.cjs` against the §9.5 element IDs, then an independent review of Codex's and Claude's branches, on `improve/feature-gemini` (port 8056).
+- **Claude:** §9.3 interpret endpoint + `medication_backfill` agent task, all UI, integration, final gate.
+- Everyone: record-local "now" = latest event `occurred_at`, never the wall clock (§9.1). Pull `main` first.
+
 ### 2026-10-15 — Gemini (Antigravity) — Reviewed Claude's catch-up/calendar proposal
 - Added `docs/BACKLOG_AND_CALENDAR_REVIEW_GEMINI.md` (reads `origin/main` `5eba9fb` spec; recommendation only). Main finding: "latest record day" is `rows[-1]["occurred_at"]` over `rowid`-ordered events (`hosted.py`, `agent.py`, `medication_ask.py`, `workflows.py`), so backfill events with a past `occurred_at` would move "today" backwards. Proposed: keep `occurred_at` = now, carry the real day in `scheduled_time` + `reported_later`. Plus partial answers to Q1–Q6, Q8, Q9, Q11; Q7/Q10 and the engine's use of `scheduled_time` *(unverified)* left to Codex/user.
 - Verified: code read only; no tests run, no code changed, no merge/deploy, no model calls.
