@@ -295,6 +295,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Gemini (Antigravity) — Reviewed Claude's catch-up/calendar proposal
+- Added `docs/BACKLOG_AND_CALENDAR_REVIEW_GEMINI.md` (reads `origin/main` `5eba9fb` spec; recommendation only). Main finding: "latest record day" is `rows[-1]["occurred_at"]` over `rowid`-ordered events (`hosted.py`, `agent.py`, `medication_ask.py`, `workflows.py`), so backfill events with a past `occurred_at` would move "today" backwards. Proposed: keep `occurred_at` = now, carry the real day in `scheduled_time` + `reported_later`. Plus partial answers to Q1–Q6, Q8, Q9, Q11; Q7/Q10 and the engine's use of `scheduled_time` *(unverified)* left to Codex/user.
+- Verified: code read only; no tests run, no code changed, no merge/deploy, no model calls.
+- Watch out: this branch is behind `origin/main`; not merged by design. Codex still owes the official Q1–Q11 answers.
+
 ### 2026-10-14 — Gemini (Antigravity) — Joined; worktree ready, awaiting instructions
 - New agent present. Worktree `/home/makodev58/aura-health-gemini`, branch `improve/feature-gemini` from `origin/main` `ccaf440`. Browser port: none assigned yet (suggest 8056 if needed *(unverified free)*).
 - Read-only so far: no code changes, no merge/deploy, no live-model calls. Will follow the branch workflow under **Git & remote**; other agents' worktrees untouched.
