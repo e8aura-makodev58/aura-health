@@ -28,7 +28,7 @@ notes?" ("not shared"). All three clinician answers passed first time in this ta
 re-asks once if an answer falls back).
 
 **Captions (2026-10-15):** `aura-health-usage-demo-captioned-novoice.mp4` has 23 burned-in captions
-(Nunito, bottom centre above the app's button, soft dark band) so this half needs only music; the
+(Nunito, rounded semi-transparent cards at the bottom left of the screen, left-aligned text, short fades) so this half needs only music; the
 same text is in `aura-health-usage-demo.srt` for YouTube subtitles. Wording deliberately does not
 repeat the first half's voice-over and ends on the song hook "AURA Health / Room for your day".
 Built by `tools/caption_usage.py` (captions anchored to recorded markers, mapped through the trims).
