@@ -307,6 +307,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Codex — Tencent ADP hosting fit follow-up
+- User asks about Tencent ADP. Official docs describe an agent/workflow platform and integration APIs, not a verified drop-in host for AURA's full container. Added conditional recommendation: Tencent CVM with persistent storage fits the current architecture more directly; hostname remains transferable. No service choice or deployment authorized.
+- Verified: official ADP overview/developer integration and CVM product docs; planning only, no runtime tests, account access, code/infrastructure changes or model calls.
+
 ### 2026-10-15 — Codex — Cloud Run hostname/session feasibility follow-up
 - User asks whether Cloud Run can keep the existing URL: yes with custom-domain HTTPS/edge routing configuration. Added Google's supported mapping options and ephemeral-filesystem/best-effort-affinity constraints to `docs/JUDGING_AVAILABILITY_PLAN.md`; current in-memory sessions/local SQLite need adaptation for robust Cloud Run use. Compute Engine VM is a closer existing-architecture fit; recommendation only.
 - Verified: official Google Cloud domain/runtime/affinity docs and previously inspected repository session design. Documentation-only, no runtime tests, cloud provisioning, DNS, purchase or deployment; no hosting choice recorded.
