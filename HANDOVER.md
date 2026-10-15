@@ -105,6 +105,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
+- **Tencent CVM credentials (2026-10-15):** user favors CVM for judging and asks about LLM-key storage; no rollout instruction yet. Current source uses owner-only plaintext JSON, not application-level encryption. Options: retain private store on persistent/encrypted disk for minimal change, or add Tencent SSM retrieval via scoped CVM role. SSM integration is unimplemented; see availability plan. User's expectation of more judging points was not independently verified.
+
 - **Judging resilience:** confirm shared power/internet/location and whether fresh synthetic sessions after failover are acceptable; verify live ingress/account features, expected traffic and recovery target before selecting final routing. Plan is not a deployment decision; see `docs/JUDGING_AVAILABILITY_PLAN.md`.
 
 - **Catch-up/calendar review findings:** Claude's main spec §9 records approved choices and his completed implementation/deploy; Codex reviewed that implementation rather than rebuilding the earlier backend assignment. Resolve R1–R5 in `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md`, plus clarify whole-request identity/replay and the coverage denominator. Final fix/review acceptance remains with Claude; no Codex merge/deployment authority inferred.
@@ -306,6 +308,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-15 — Codex — Explain current key storage and Tencent CVM options
+- User favors Tencent CVM and asks how LLM keys will be stored. Verified `SystemSettings` and settings UI source: private0700 directory/0600 plaintext JSON, token-protected writes, no saved-key readback/browser persistence. Documented minimal-change private file vs unimplemented SSM/KMS + scoped CVM-role retrieval. No secrets inspected/copied or deployment changes.
+- Verified: source only plus official Tencent SSM/instance-role docs; documentation-only, runtime tests not rerun. Hosting/key-management choice remains planning, not provisioning authority.
 
 ### 2026-10-15 — Codex — Tencent ADP hosting fit follow-up
 - User asks about Tencent ADP. Official docs describe an agent/workflow platform and integration APIs, not a verified drop-in host for AURA's full container. Added conditional recommendation: Tencent CVM with persistent storage fits the current architecture more directly; hostname remains transferable. No service choice or deployment authorized.
