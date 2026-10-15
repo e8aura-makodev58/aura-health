@@ -32,6 +32,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (documentation updated 2026-10-14; implementation evidence dated below)
 
+- **Judging availability planning (user, 2026-10-15):** unused Proxmox host available, no VM yet; user asks whether a load balancer/working-server failover is best while Claude fixes bugs. Proposal in `docs/JUDGING_AVAILABILITY_PLAN.md`: running standby VM, then external health-based primary/standby routing with separate tunnels/sticky sessions. Current process-local sessions/local SQLite prevent seamless failover; topology and acceptable session restart are pending user answers. No provisioning/code/routing/settings changes or purchase authorized/performed.
+
 - **Catch-up/calendar backend review (Codex, 2026-10-15):** user relayed Claude's assigned review after implementation. Reviewed immutable main `ab1dd09` (feature `1dbcd0c`) against approved spec §9 in an isolated `/tmp` source export; local runtime remains unchanged, no merge/deploy/model calls. Changes requested in `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md`: P1 save transaction/conflict race and lost late-report provenance in appointment/clinician consumers; P2 held-save success response, local report date in agent facts and coverage denominator. Synthetic reproduction harness included. Claude owns fixes/final gate; Gemini owns UI/browser review. Earlier brainstorming-only direction applied to the proposal review, not this newly assigned implementation review.
 
 - **Codex Q&A calculations (2026-10-14, branch delivery):** from main `eac0334`, added read-only `summarize_checkins` for arbitrary supported windows/categories, deterministic percentages/counts/coverage, cited derived facts and a bounded missing-answer repair. Prompt v12; exact calculated display sentences preserve denominator/dates/missingness. Existing engines and shared patient percentage restrictions unchanged. See `docs/CLINICIAN_QA_CALCULATIONS.md`. Full355 tests PASS/492.432s plus final focused10 PASS; Claude merges/deploys later, no live-model calls in this task.
@@ -102,6 +104,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Signal-registry foundation implemented (DECISIONS §41):** sponsor-editable/versioned `aura_longitudinal/signal_registry.json` and `AURA_SIGNAL_REGISTRY` override; `GET /signals`, typed scalar ingestion, source-linked research/display-only charts and agent evidence. Original four parameter values/rules retained; HRV/respiratory rate/skin deviation enabled E3_RESEARCH; SpO2/BP/thermometer/weight display-only. Calendar coverage is not cadence-discounted or interpolated. New-channel anchors require calendar coverage; configurable absolute spread floor handles zero-centered skin deviation (0.1 °C provisional default). No safety changes, DB schema/dependencies, real intake, simulator agent or flu generator in this step. Details: [`docs/SIGNAL_REGISTRY_IMPLEMENTATION.md`](docs/SIGNAL_REGISTRY_IMPLEMENTATION.md).
 
 ## Open decisions
+
+- **Judging resilience:** confirm shared power/internet/location and whether fresh synthetic sessions after failover are acceptable; verify live ingress/account features, expected traffic and recovery target before selecting final routing. Plan is not a deployment decision; see `docs/JUDGING_AVAILABILITY_PLAN.md`.
 
 - **Catch-up/calendar review findings:** Claude's main spec §9 records approved choices and his completed implementation/deploy; Codex reviewed that implementation rather than rebuilding the earlier backend assignment. Resolve R1–R5 in `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md`, plus clarify whole-request identity/replay and the coverage denominator. Final fix/review acceptance remains with Claude; no Codex merge/deployment authority inferred.
 
@@ -211,6 +215,8 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+- **Availability discussion:** resolve topology/session-continuity choices in `docs/JUDGING_AVAILABILITY_PLAN.md`, then agree VM/standby/routing scope. Claude's bug-fix work remains separate; no automatic infrastructure rollout inferred.
+
 - **Claude final gate:** read `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md` and its synthetic probes, fix the save race and retrospective appointment/review dates first, then the smaller confirmed findings; compare Gemini's UI/browser review and rerun targeted regressions before final integration. Codex's current assignment is backend review, not the superseded build task.
 
 - **Claude review/merge:** Codex's `docs/CLINICIAN_QA_CALCULATIONS.md` describes the new Q&A tool/harness and limits. Rehearse the original Rough-days percentage question after merge/deployment; check actual model tool selection and answer, not just mock success. Preserve concurrent patient-reply work when merging.
@@ -300,6 +306,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-15 — Codex — Plan judging availability using a Proxmox standby
+- User requested planning while Claude fixes bugs; unused Proxmox host has no VM. Added `docs/JUDGING_AVAILABILITY_PLAN.md`: conditional external primary/standby failover, sticky routing, readiness/capacity checks, bounded rehearsal and explicit fresh-session limitation. Asked user about shared failure domains and session continuity; answers pending.
+- Verified: hosted session/bootstrap/health source, Docker/Compose/deployment configuration and official Cloudflare routing/affinity/failover docs. Documentation-only; runtime tests not rerun, no paid model/load/outage tests, no Proxmox/live account inspection. No code/provisioning/routing/purchase/deploy changes.
+- Left: topology, acceptable session restart, actual live ingress/feature availability/cost and expected visitor load. Claude's bug fixes are not independently reviewed here.
 
 ### 2026-10-15 — Codex — Independent review of Claude's completed catch-up/calendar backend
 - User: “Claude is done, check your assigned task.” Latest remote handover assigns backend review; inspected main `ab1dd09` / implementation `1dbcd0c` without merging into this branch. Added `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md` and `docs/evidence/calendar-backend-review-probes.py`. Five findings (two P1): save validation/write transaction race, dropped late-report provenance, held input claimed as saved, agent report-day timezone mismatch, coverage denominator; smaller contract follow-ups retained separately.
