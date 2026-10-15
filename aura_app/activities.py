@@ -25,6 +25,7 @@ class ActivityService:
         assessed = {ref["event_id"] for ref in repo.safety_references(patient_id)
                     if not ref["state"]["degraded"] and ref["outcome"] not in {"DEFER_EVENT", "REJECT_EVENT", "SET_DEGRADED"}}
         notes = [row for row in rows if row["event_type"] == "PATIENT_FREE_TEXT" and row["event_id"] in assessed
+                 and row["source"] != "patient_medication_update"
                  and not row["longitudinal_deferred"] and isinstance(row["payload"].get("text"), str)
                  and not row["payload"]["text"].startswith("fixture ")]
         stored = [row for row in repo.timeline(patient_id) if row["record_type"] == "PATIENT_ACTIVITY"]

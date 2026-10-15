@@ -93,6 +93,11 @@ class MedicationAskIn(BaseModel):
     topic_id: str | None = None
     question: str | None = Field(default=None, min_length=1, max_length=500)
 
+class MedicationUpdateTextIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    request_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    text: str = Field(min_length=1, max_length=500)
+
 class SharingIn(BaseModel):
     model_config = {"extra": "forbid", "strict": True}
     notes: bool | None = None
@@ -254,6 +259,13 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     @app.post("/patients/{patient_id}/medication/ask")
     def medication_ask(patient_id: str, body: MedicationAskIn):
         return medication_service.ask(patient_id, **body.model_dump())
+
+    from .medication_update import MedicationUpdateService
+    medication_update = MedicationUpdateService(service, agent_service.provider)
+
+    @app.post("/patients/{patient_id}/medication/update/interpret")
+    def medication_update_interpret(patient_id: str, body: MedicationUpdateTextIn):
+        return medication_update.interpret(patient_id, request_id=body.request_id, text=body.text)
 
     @app.get("/patients/{patient_id}/agent-runs/{run_id}")
     def agent_trace(patient_id: str, run_id: str):

@@ -220,6 +220,9 @@ class PatientCommunicationService:
             template = "SUPERSEDED_EVENT"
         elif purpose == CommunicationPurpose.EXPLAIN_OBSERVATION:
             mode = GenerationMode.OBSERVATION_EXPLANATION
+        elif envelope.source == "patient_medication_update":
+            # Words describing past doses are a records update, not a note: no reply card.
+            template = "STAY_QUIET"
         elif envelope.event_type == EventType.PATIENT_FREE_TEXT:
             mode = GenerationMode.NORMAL_SUPPORT
         else:

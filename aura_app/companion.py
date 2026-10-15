@@ -172,6 +172,7 @@ class CompanionService:
         end = max(datetime.fromisoformat(row["occurred_at"]) for row in rows)
         notes = [row["payload"]["text"][:300] for row in rows
                  if row["event_type"] == "PATIENT_FREE_TEXT" and not row["longitudinal_deferred"]
+                 and row["source"] != "patient_medication_update"
                  and datetime.fromisoformat(row["occurred_at"]) > end - timedelta(days=7)
                  and isinstance(row["payload"].get("text"), str) and not row["payload"]["text"].startswith("fixture ")]
         return notes[-limit:]
