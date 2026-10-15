@@ -613,3 +613,9 @@ body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #r
 @media (min-width:700px) {
   .home-shortcuts {grid-template-columns:repeat(7,minmax(0,1fr));max-width:640px}
 }
+
+/* Demo-only reset at the top of the safety panel (hosted synthetic sessions) */
+.safety-demo-reset {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin:0 0 10px;padding:8px 12px;border:1px dashed var(--warning-border);border-radius:var(--radius-md);background:rgba(255,255,255,.6);font-size:.85rem}
+.safety-demo-reset[hidden] {display:none}
+.safety-demo-reset p {margin:0;flex:1 1 220px}
+.safety-demo-reset button {min-height:40px;padding:8px 16px;font-size:.85rem;font-weight:700}

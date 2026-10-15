@@ -310,6 +310,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Visible demo reset on the safety panel (user request)
+- After the safety example (outside the guided story) the only reset was inside the Demo guide. The safety panel now starts with a compact, dashed "Demo only: a real patient couldn't dismiss this. Here you can start fresh. [Reset the demo]" bar (hosted sessions with `can_reset` only; not for a lost connection; hidden while the guided story runs because its card has its own reset). It asks for confirmation, resets this visitor's synthetic session and reloads the same patient. Shared `resetDemo()` in `app.js` (Demo guide button unchanged).
+- Verified: catchup_calendar.cjs 16 checks (new CU7: reset visible without scrolling the panel, panel cleared, same patient, fresh record), tour, milestone7, dual_view, welcome, companion (one flaky medication-answer failure, then 2 clean runs), plain_language, landing PASS; live check after deploy.
+
 ### 2026-10-15 — Claude — Guided story: past medication records step (user request, in-app story only)
 - `aura_ui/tour.js`: step 5 "Missed a few days? Just say so" replaces "Honest when it can't answer" (still 9 steps). It opens the update dialog, types "I took it on most days except last Friday and yesterday", lets the live model propose days, answers Yes, saves, closes and opens the calendar, spotlighting the latest filled-in day (ringed ✕ next to today's solid ✕). If the model can't read it, it taps two days instead; if safety stops the text, the story pauses as usual. The 3-minute video is unchanged (user: not needed).
 - Verified: tour.cjs (typed path via stub, step 5 asserts calendar with ≥10 ringed marks) and catchup_calendar.cjs, 9 consecutive clean runs after relaxing the shortcut-jump position check (one earlier unexplained failure in that pair, not reproduced). Fallback path checked locally (failing AI → 2 ringed days). Live, phone and laptop: AURA turned the sentence into days, asked one question, saved; 10 ringed marks; no page errors.

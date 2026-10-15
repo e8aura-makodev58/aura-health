@@ -132,6 +132,19 @@ async function run(browser,width){
  assert.match(await page.locator('#welcome-back').innerText(),/Welcome back\. You can carry on from today/);
  await page.unroute('**/coverage');
  console.log(`CU6_${tag}_WELCOME_BACK PASS`);
+ // 7 · after the safety example (outside the story), a visible demo-only reset starts fresh
+ const before=await page.evaluate(()=>window.auraAgentContext().patientId);
+ await page.locator('#talk').click();await page.waitForSelector('#input-dialog[open]');
+ await page.locator('[data-fixture="fixture safety concern"]').click();await page.locator('#send-input').click();
+ await page.waitForSelector('#safety-panel:not([hidden]) #safety-demo-reset:not([hidden])',{timeout:30000});
+ const inView=await page.locator('#safety-reset-demo').evaluate(b=>{const r=b.getBoundingClientRect(),p=document.getElementById('safety-panel').getBoundingClientRect();return r.top>=p.top&&r.bottom<=p.bottom&&r.bottom<=innerHeight;});
+ assert.equal(inView,true,'reset visible without scrolling the panel');
+ page.once('dialog',dialog=>dialog.accept());
+ await page.locator('#safety-reset-demo').click();
+ await page.waitForFunction(()=>document.getElementById('safety-panel').hidden&&window.auraAgentContext().record,null,{timeout:60000});
+ assert.equal(await page.evaluate(()=>window.auraAgentContext().patientId),before,'same patient, fresh');
+ assert.equal(await page.locator('#med-update-line').isVisible(),true,'fresh record: prompt is back');
+ console.log(`CU7_${tag}_SAFETY_PANEL_RESET PASS`);
  assert.deepEqual(errors,[]);
  }finally{
   // Leave the session as found even if a check fails.

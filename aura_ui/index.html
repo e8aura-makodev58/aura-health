@@ -30,7 +30,12 @@
   </section>
   <header class="masthead"><a class="brand" href="#home" aria-label="AURA home"><img src="/assets/media/aura-mark.svg" width="32" height="32" alt="" aria-hidden="true"><span>AURA</span></a><div class="header-controls"><a href="#about" data-page="about" class="info-link" aria-label="About AURA and privacy">About AURA</a><button id="system-settings" aria-label="System settings" aria-haspopup="dialog"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 3 2 3-1 2 3 3-1 1-3 3-1 2-3-2-2 1-3-3-2-3 1-2-3Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div></header>
   <aside id="safety-panel" class="safety-panel" hidden tabindex="0" aria-labelledby="safety-heading" aria-describedby="safety-message">
-    <div class="safety-inner"><p class="eyebrow">Safety policy · development content</p><h2 id="safety-heading">Safety check pending</h2><p id="safety-message"></p>
+    <div class="safety-inner">
+      <div id="safety-demo-reset" class="safety-demo-reset" hidden>
+        <p><strong>Demo only:</strong> a real patient couldn't dismiss this. Here you can start fresh.</p>
+        <button id="safety-reset-demo" type="button">Reset the demo</button>
+      </div>
+      <p class="eyebrow">Safety policy · development content</p><h2 id="safety-heading">Safety check pending</h2><p id="safety-message"></p>
       <div id="safety-resources" class="resources" aria-label="Safety resources"></div>
       <button id="retry-connection" hidden>Retry connection</button>
       <p class="fine">This prototype is not an emergency monitoring service. Safety content and contacts are not yet clinically reviewed.</p>
