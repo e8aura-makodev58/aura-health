@@ -307,6 +307,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Codex — Cloud Run hostname/session feasibility follow-up
+- User asks whether Cloud Run can keep the existing URL: yes with custom-domain HTTPS/edge routing configuration. Added Google's supported mapping options and ephemeral-filesystem/best-effort-affinity constraints to `docs/JUDGING_AVAILABILITY_PLAN.md`; current in-memory sessions/local SQLite need adaptation for robust Cloud Run use. Compute Engine VM is a closer existing-architecture fit; recommendation only.
+- Verified: official Google Cloud domain/runtime/affinity docs and previously inspected repository session design. Documentation-only, no runtime tests, cloud provisioning, DNS, purchase or deployment; no hosting choice recorded.
+
 ### 2026-10-15 — Codex — Plan judging availability using a Proxmox standby
 - User requested planning while Claude fixes bugs; unused Proxmox host has no VM. Added `docs/JUDGING_AVAILABILITY_PLAN.md`: conditional external primary/standby failover, sticky routing, readiness/capacity checks, bounded rehearsal and explicit fresh-session limitation. Asked user about shared failure domains and session continuity; answers pending.
 - Verified: hosted session/bootstrap/health source, Docker/Compose/deployment configuration and official Cloudflare routing/affinity/failover docs. Documentation-only; runtime tests not rerun, no paid model/load/outage tests, no Proxmox/live account inspection. No code/provisioning/routing/purchase/deploy changes.

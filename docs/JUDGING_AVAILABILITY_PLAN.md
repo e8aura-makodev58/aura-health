@@ -40,6 +40,10 @@ Maintain an independently accessible walkthrough video for a widespread outage. 
 
 ## Decisions pending
 
+Cloud Run follow-up (user, 2026-10-15): the existing `https://aura-health.makodev58.com` hostname can be retained when changing hosting. Google's recommended custom-domain path is an external Application Load Balancer; a correctly configured third-party edge proxy is another option. The hostname's DNS/routing and HTTPS configuration must point to the new service; a plain CNAME to its default URL is not the complete setup. Native domain mapping is currently Preview/limited availability. See [Google's domain documentation](https://docs.cloud.google.com/run/docs/mapping-custom-domains).
+
+Cloud Run is not a drop-in reliability improvement for AURA's present session/store design: its default writable filesystem is in memory and not persistent across instance shutdown, and affinity is best effort. Replacements can lose local workspaces even if minimum instances are configured. Robust multi-instance use needs external session/data storage. A Compute Engine VM with persistent disk is a closer fit for the existing deployment, subject to normal single-host availability limits. No cloud service selected or provisioned. Sources: [runtime contract](https://docs.cloud.google.com/run/docs/container-contract), [session affinity](https://docs.cloud.google.com/run/docs/configuring/session-affinity).
+
 - Does Proxmox share the current host's location, power, router and internet connection?
 - Is restarting a synthetic demo session after failure acceptable, or must the judge's same session survive?
 - Is Cloudflare currently the live ingress, and is its load-balancing feature available/acceptable on the account? Repository tunnel configuration is evidence of support, not verification of the current account.
