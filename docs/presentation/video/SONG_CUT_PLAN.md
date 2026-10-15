@@ -27,6 +27,13 @@ percentage, then Demo guide → Minimum only → sharing line and "Do we have ac
 notes?" ("not shared"). All three clinician answers passed first time in this take (the recorder
 re-asks once if an answer falls back).
 
+**Captions (2026-10-15):** `aura-health-usage-demo-captioned-novoice.mp4` has 23 burned-in captions
+(Nunito, bottom centre above the app's button, soft dark band) so this half needs only music; the
+same text is in `aura-health-usage-demo.srt` for YouTube subtitles. Wording deliberately does not
+repeat the first half's voice-over and ends on the song hook "AURA Health / Room for your day".
+Built by `tools/caption_usage.py` (captions anchored to recorded markers, mapped through the trims).
+`aura-health-combined-usage-captioned-novoice.mp4` = first half + captioned demo (7:18).
+
 `aura-health-combined-usage-draft-novoice.mp4` = first half (3:26) + usage demo (3:51) = **7:18**;
 with the two 8-s Miora clips about **7:34**, inside the 8-minute limit. The song (about 2:37–2:43 at
 100–104 BPM) is shorter than this half: start the sung version with the demo and continue with the
