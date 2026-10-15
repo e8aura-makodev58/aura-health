@@ -310,6 +310,12 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Catch-up + calendar built, merged and deployed (`1dbcd0c`)
+- Codex/Gemini had no commits, so Claude built all of §9 (backend, UI, browser suite); see spec §9.7 for contract differences. New: `aura_app/record_calendar.py`, `aura_ui/catchup.js`, `tests/test_record_calendar.py`, `tests/browser/catchup_calendar.cjs`; edits to models/service/evidence/hosted/api/companion/agent/tools, `index.html`, `app.js` (calendar page), `evidence.js` (relearning line).
+- Verified: full Python suite **381 OK** (707 s); hosted browser suites catchup_calendar (12 checks, phone + laptop), companion, milestone7, workflows, agent, plain_language, dual_view, welcome, landing, tour, cards, impression, qa_display, final_dash, story_charts all PASS. Live (gpt-6-luna): "I took it on most days except last Friday and yesterday" → preview in 9.8 s, question "Were Fri 6 Mar and Tue 10 Mar the only days you missed?", Yes → saved 14 days, calendar shows ringed (filled in later) marks; no page errors.
+- Review requested (user relays): Codex reviews the backend → `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md`; Gemini reviews the suite + `catchup.js` → `..._REVIEW2_GEMINI.md`. Claude fixes findings.
+- Watch out: "most days" can also fill today as Taken (reported later); today's dose card still reads only same-day taps.
+
 ### 2026-10-15 — Claude — APPROVED: catch-up + calendar build; assignments (Claude is final gate)
 - User approved §8 A–E of `docs/BACKLOG_AND_CALENDAR_SPEC.md` and made **Claude the final gate** (Claude reviews, fixes, merges and deploys all agents' work). Contract and assignments are in **§9** of the spec.
 - **Codex:** §9.2 backend (reported_later payload, group by scheduled day, update-window + update endpoints with idempotency/conflicts and hosted rule, companion medication_gap, coverage endpoint + agent fact, calendar projector with sharing filters, backend tests) on `improve/feature-codex`.
