@@ -57,7 +57,7 @@ https://aura-health.makodev58.com
 
 ## Demo Video Link
 
-PENDING — record/upload the 5–8-minute video and replace this line with its URL.
+https://youtu.be/bfWcyyGmxJs
 
 ## Source Code
 

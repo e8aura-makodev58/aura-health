@@ -1,5 +1,7 @@
 # AURA Health · submission checklist and copy-paste text
 
+> **Ready-to-upload folder:** [`../../submission-upload/`](../../submission-upload/) has the form text (`FORM.md`, video link filled in) and the three upload files.
+
 One page for submitting the **TENCENT CLOUD HACKATHON SINGAPORE 2026: Project Submission** form.
 Work top to bottom: tick the checklist, then copy each field's text from the boxes below.
 Deadline recorded: **16 Oct 2026**; confirm the organiser's exact closing time and timezone.
@@ -101,7 +103,7 @@ https://aura-health.makodev58.com
 
 ### 2.5 Demo Video Link
 ```
-PASTE YOUR VIDEO LINK HERE
+https://youtu.be/bfWcyyGmxJs
 ```
 
 ### 2.6 Source Code
