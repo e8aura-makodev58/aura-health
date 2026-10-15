@@ -245,6 +245,22 @@ class CheckinAnalysisTests(unittest.TestCase):
         self.assertEqual(provider.rephrased, 1)
         self.assertTrue(any(row.get('code') == 'PROHIBITED_CLAIM' and row.get('result') == 'REJECT' for row in result['trace']))
 
+    def test_finding_metadata_comes_from_the_record_not_the_model(self):
+        from aura_agent.runtime import fill_findings
+        class Tools:
+            delivered = {'f1': {'text': 'Sleep later since 2026-02-23.', 'finding': {'signal': 'SLEEP_MIDPOINT', 'direction': 'LATER', 'since': '2026-02-23'}},
+                         'f2': {'text': 'Rough on 7 of 7 days.'}}
+        wrong = {'headline': '', 'question_ids': [], 'claims': [
+            {'text': 'Sleep later.', 'fact_ids': ['f1'], 'findings': [{'fact_id': 'f1', 'signal': 'SLEEP_MIDPOINT', 'direction': 'EARLIER', 'since': '2026-02-21'}], 'section': 'changes'},
+            {'text': 'Rough days.', 'fact_ids': ['f2'], 'findings': [{'fact_id': 'f2', 'signal': 'X', 'direction': 'Y', 'since': 'Z'}], 'section': 'routine'},
+            {'text': 'Unknown.', 'fact_ids': ['f9'], 'findings': [], 'section': 'routine'}]}
+        fixed, changed = fill_findings(wrong, Tools())
+        self.assertTrue(changed)
+        self.assertEqual(fixed['claims'][0]['findings'], [{'fact_id': 'f1', 'signal': 'SLEEP_MIDPOINT', 'direction': 'LATER', 'since': '2026-02-23'}])
+        self.assertEqual(fixed['claims'][1]['findings'], [])
+        self.assertEqual(fixed['claims'][2], wrong['claims'][2], 'undelivered citations are left for the checker to reject')
+        self.assertEqual(fill_findings(fixed, Tools()), (fixed, False))
+
 
 if __name__ == '__main__':
     unittest.main()

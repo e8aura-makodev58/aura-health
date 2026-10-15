@@ -44,6 +44,24 @@ def load_config():
     return AgentConfig(**json.loads(Path(__file__).with_name("engineering_config.json").read_text()))
 
 
+def fill_findings(raw, tools):
+    """Copy each cited fact's structured finding (signal/direction/since) from the server's own record.
+
+    The model used to copy this metadata by hand and a slip rejected a correct answer. Claim wording is
+    still checked against the same facts by the independent verifier. Returns (draft, changed)."""
+    if not isinstance(raw, dict) or not isinstance(raw.get('claims'), list):
+        return raw, False
+    claims, changed = [], False
+    for claim in raw['claims']:
+        ids = claim.get('fact_ids') if isinstance(claim, dict) else None
+        if isinstance(ids, list) and ids and all(isinstance(fid, str) and fid in tools.delivered for fid in ids):
+            findings = [{'fact_id': fid, **tools.delivered[fid]['finding']} for fid in ids if tools.delivered[fid].get('finding')]
+            changed |= claim.get('findings') != findings
+            claim = {**claim, 'findings': findings}
+        claims.append(claim)
+    return {**raw, 'claims': claims}, changed
+
+
 def rephrase_neutral(provider, raw):
     """Restate a draft's sentences without causal or evaluative wording (texts only; facts and IDs unchanged)."""
     claims = raw.get('claims') if isinstance(raw, dict) else None
@@ -216,6 +234,9 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                 try:
                     raw = json.loads(reply['content'])
                     if not presentation:
+                        raw, filled = fill_findings(raw, tools)
+                        if filled:
+                            trace.append({'action': 'FINDINGS_FROM_RECORD'})
                         try:
                             validate(raw, tools, role)  # early check; the real validation below runs again
                         except ValueError as exc:
