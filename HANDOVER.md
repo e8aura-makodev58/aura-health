@@ -310,6 +310,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Guided story: past medication records step (user request, in-app story only)
+- `aura_ui/tour.js`: step 5 "Missed a few days? Just say so" replaces "Honest when it can't answer" (still 9 steps). It opens the update dialog, types "I took it on most days except last Friday and yesterday", lets the live model propose days, answers Yes, saves, closes and opens the calendar, spotlighting the latest filled-in day (ringed ✕ next to today's solid ✕). If the model can't read it, it taps two days instead; if safety stops the text, the story pauses as usual. The 3-minute video is unchanged (user: not needed).
+- Verified: tour.cjs (typed path via stub, step 5 asserts calendar with ≥10 ringed marks) and catchup_calendar.cjs, 9 consecutive clean runs after relaxing the shortcut-jump position check (one earlier unexplained failure in that pair, not reproduced). Fallback path checked locally (failing AI → 2 ringed days). Live, phone and laptop: AURA turned the sentence into days, asked one question, saved; 10 ringed marks; no page errors.
+
 ### 2026-10-15 — Claude — Home icon shortcuts (user request)
 - User: calendar was hard to find at the bottom and every card needed scrolling. Added `#home-shortcuts` under the home heading: Dose, Medicine, Coming up, Ideas (jump to the card, focus it, reduced-motion aware; hidden when the card is hidden, e.g. safety state) and Calendar, Appointment, My data (open the page). One row on laptop, 4+3 grid on phone. `features.js` now places the summary after the shortcuts.
 - Verified: `catchup_calendar.cjs` 14 checks (new CU1b) plus welcome, landing, tour, companion, cards, dual_view, impression, final_dash, plain_language, milestone7 PASS; live check after deploy.

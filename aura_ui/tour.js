@@ -53,7 +53,10 @@
      }},
     {chapter: "Your day", title: "Missed a few days? Just say so", text: `The patient writes: "${CATCH_UP}"`,
      enter: async () => { patientHome(); await wait(() => visible($("dose-card")), 20000); },
-     target: () => visible($("calendar-view")) ? $("calendar-grid") : visible($("med-update-line")) ? $("med-update-line") : $("dose-card"),
+     // On the calendar, point at the latest day filled in later (yesterday's missed dose): small enough to stay above the card on a phone.
+     target: () => visible($("calendar-view"))
+       ? ([...document.querySelectorAll('#calendar-grid .cal-med[data-reported-later="true"]')].pop()?.closest(".cal-day") || $("calendar-grid"))
+       : visible($("med-update-line")) ? $("med-update-line") : $("dose-card"),
      action: async run => {
        const live = () => tour && tour.run === run;
        $("med-update-open").click();
