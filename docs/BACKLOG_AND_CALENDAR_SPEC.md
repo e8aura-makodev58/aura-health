@@ -130,3 +130,58 @@ Codex: §1 backend (payload flag, hosted rule, batch save, safety/longitudinal h
 projections. Claude: agent task + checks, UI (dose card line, catch-up dialog + preview, calendar,
 welcome back, re-learning line, engagement strip), integration tests, deploy. Order: Codex answers
 Q1–Q11 → Codex backend → Claude UI/agent → joint review → deploy.
+
+---
+
+## 8 · Reconciled after Codex and Gemini reviews (2026-10-15, Claude) — pending user approval
+
+Reviews: `BACKLOG_AND_CALENDAR_REVIEW_CODEX.md`, `BACKLOG_AND_CALENDAR_REVIEW_GEMINI.md`.
+
+**Agreed by all three (supersedes §1.2 step 6 and related text):**
+1. **No backdated `occurred_at`.** A catch-up is a report made *now*: `occurred_at`/`received_at` =
+   report time, the described day lives in `scheduled_time`, plus server-derived late-report metadata
+   (Gemini found that "latest record day" is read from the last inserted event, so a backdated event
+   would move the demo's "today" backwards). Every reader groups medication by `scheduled_time`'s
+   local date.
+2. **Normal safety path, never bypassed;** typed catch-up text is patient text, safety-assessed, and
+   must not also trigger note reply, ideas or activity extraction.
+3. **Server-validated retrospective window** (last 14 record days, within treatment, no future days),
+   **fill empty days only** (existing records shown and locked), conflict check inside the save
+   transaction, recheck safety/sharing at save, no silent truncation (out-of-window dates are
+   disclosed in the preview).
+4. **Idempotency:** batch keyed to patient + scheduled day + request, bound to a payload
+   fingerprint; exact retry returns the stored result; a changed payload under the same key is
+   rejected as a conflict.
+5. **UNKNOWN only when the patient picks "Not sure";** untouched days stay unrecorded; empty save
+   creates nothing.
+6. **Review items** for explicit missed reasons, labelled with the described day and the report day.
+7. **Calendar:** one read projector in one transaction; observation `day`, medication scheduled
+   day, patient-local dates for check-ins/notes; **sharing filters markers too** (check-in dots
+   hidden if daily check-ins are withheld; note/activity icons only if shared; wearable coverage
+   bars count as detailed readings); UI-only, no new agent tool; Q&A facts gain late-report labels.
+8. **Phone cells show medication and check-in only;** coverage, notes and findings go in day detail;
+   no continuous "finding bands" (detection dates don't prove every day in between).
+9. **Honest copy:** UI says "Update past medication records" (not "catch up"); welcome text only
+   claims recorded data that exists; re-learning text describes the actual per-signal state and
+   never promises automatic recovery (e.g. "AURA doesn't currently have a usable reference for
+   your sleep").
+10. **Prompt trigger counts unresolved days** in the window (not just "days since the newest record").
+
+**Choices for the user:**
+- **A · "Most days except Friday and yesterday."** Codex: "most days" does not prove every other
+  day was taken. Proposal: the preview pre-fills the other days as *Taken (from "most days")* in a
+  distinct style and asks one question — "Were Friday and yesterday the only days you missed?" —
+  **Yes** confirms them, **No** leaves them unresolved for tapping. Nothing is saved before that.
+- **B · "I stopped taking it" with dates.** Proposal for version one: safety first, the existing
+  fixed "talk to your doctor or pharmacist" line, and the days go to tap-only confirmation (no AI
+  date inference for stop statements).
+- **C · Clinician "Record coverage" strip** (last scheduled day with a medication report, how many
+  reported later in the window, last check-in, latest wearable day): part of the shared **minimum**?
+  Proposal: yes (it is coverage metadata, not content).
+- **D · Thresholds:** prompt after **3** unresolved days; edit window **14** days (engineering
+  settings, configurable).
+- **E · Work split:** Codex — data contract, validator, hosted rule, batch idempotency/conflicts,
+  calendar projector (+ backend tests). Claude — `medication_backfill` agent task and checks, all UI
+  (dose-card line, update dialog + preview, calendar + day detail, welcome back, re-learning line,
+  coverage strip), integration, deploy. Gemini — browser test suite for the new flows (phone +
+  laptop) and an independent review before merge.
