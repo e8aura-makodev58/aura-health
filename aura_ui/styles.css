@@ -638,3 +638,13 @@ body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #r
   .agent-long {display:none}
   .agent-short {display:inline}
 }
+
+/* Settings dialog: breathing room between fields, buttons and notes */
+#settings-dialog label {display:block;margin-top:14px}
+#settings-dialog input + button, #settings-dialog select + button, #settings-dialog datalist + button, #settings-dialog form > button {margin-top:12px}
+#settings-dialog form .fine {margin-top:12px}
+@media (max-width:380px) {
+  /* Very narrow phones: the light alone; the status stays in its label and tooltip. */
+  .agent-short {display:none}
+  .agent-live {padding:6px;margin-left:4px}
+}
