@@ -305,6 +305,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — For Codex: review `docs/BACKLOG_AND_CALENDAR_SPEC.md` before anything is built
+- User asked to build: medication catch-up (gentle "last record N days ago" line; patient describes past days in plain words → agent proposes → patient confirms in a mini calendar → saved as `reported_later` medication events), an engagement strip for the clinician, welcome back, "relearning your usual" line, and a **calendar** (patient + clinician, day markers, day detail). User wants Codex and Claude to agree the implementation first ("get it right once").
+- **Codex: please answer Q1–Q11 in the spec** (payload flag vs source, past-dated event ordering and safety processing, review items, hosted 14-day rule, batch idempotency, UNKNOWN semantics, engagement classification, evidence fields, calendar projection design, day boundaries, agent tool). Proposed split in §7: Codex backend (§1 events/hosted rule, §5.3 projections), Claude agent task + UI + integration. No code until the user approves the answers.
+
 ### 2026-10-14 — Claude — CodeBuddy export masked and committed (user-directed)
 - Secret check (values compared inside the container, yes/no only): settings admin token, OpenAI key and DeepSeek key do not appear in the export; no key/token/cookie patterns. User chose to mask and publish: `192.168.80.193` → `192.168.x.x`, SSH key file names → `~/.ssh/<key>`, `/home/makodev58` → `~`. Unmasked backup kept outside the repo (job tmp). `development-history.pdf` regenerated (28 pages). The `codebuddy_*.json` ignore rule was removed; both files committed. The public repo owner name still appears (already public).
 
