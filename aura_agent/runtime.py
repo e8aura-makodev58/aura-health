@@ -44,6 +44,11 @@ def load_config():
     return AgentConfig(**json.loads(Path(__file__).with_name("engineering_config.json").read_text()))
 
 
+# Grounding failures the model may correct once. Prohibited content is never repaired: it falls back.
+REPAIRABLE = frozenset({'FINDING_MISMATCH', 'UNSUPPORTED_SIGNAL', 'UNDELIVERED_FACT', 'FABRICATED_NUMBER_OR_DATE',
+                        'HEADLINE_BUDGET', 'HEADLINE_SCHEMA', 'MALFORMED_JSON', 'UNSUPPORTED_CATEGORY'})
+
+
 def run(role, query, tools, provider, config=None, *, presentation=False):
     config = config or load_config()
     schema = deepcopy(OUTPUT_SCHEMA)
@@ -189,7 +194,22 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                     messages.append({'role':'assistant','content':reply.get('content')})
                     messages.append({'role':'user','content':f'Server contract: retrieve {needed} before finalizing. Read all keys for retained history; use {{}} for this retrieval. No retrieved evidence is not evidence of no change. This does not relax output grounding.'})
                     continue
-                raw = json.loads(reply['content'])
+                try:
+                    raw = json.loads(reply['content'])
+                    if not presentation:
+                        validate(raw, tools, role)  # early check; the real validation below runs again
+                except ValueError as exc:
+                    # One bounded repair: tell the model which grounding check failed and let it correct
+                    # its draft. The corrected draft goes through every check again (and the verifier).
+                    code = 'MALFORMED_JSON' if isinstance(exc, json.JSONDecodeError) else str(exc)
+                    if code not in REPAIRABLE or any(item.get('action') == 'DRAFT_REPAIR_REQUESTED' for item in trace):
+                        raise
+                    trace.append({'action': 'DRAFT_REPAIR_REQUESTED', 'code': code})
+                    messages.append({'role': 'assistant', 'content': reply.get('content')})
+                    messages.append({'role': 'user', 'content': f'The server rejected this draft ({code}). Return a corrected draft in exactly the same JSON format, '
+                        'using only facts you have retrieved: each claim\'s text, signal, direction and dates must match its cited facts exactly, '
+                        'and anything you cannot support must be removed. This does not relax any check; remaining budgets still apply.'})
+                    continue
                 # Exact calculated answers are required only when the question asks for a number; a
                 # calculation the agent ran on its own while exploring must not sink a grounded answer.
                 asks_number = bool(re.search(r"%|\bper ?cent|\bpercentage|\bproportion|\bhow many\b|\bhow often\b|"

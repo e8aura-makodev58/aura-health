@@ -167,6 +167,47 @@ class CheckinAnalysisTests(unittest.TestCase):
         self.assertTrue(result['generation_used'])
         self.assertEqual(provider.checked[0]['facts'][0]['analysis']['denominator'], 30)
 
+    def _repairing(self, bad_drafts):
+        class Provider:
+            live = True
+            model_id = 'mock-repair'
+            drafts = 0
+            def step(self, messages, specs):
+                if not specs:
+                    checks = json.loads(messages[1]['content'])
+                    return {'content': json.dumps({'verdicts': [{'index': i, 'supported': True} for i in range(len(checks))]})}
+                results = [json.loads(m['content']) for m in messages if m['role'] == 'tool']
+                if not results:
+                    return {'tool_calls': [{'id': 'c1', 'type': 'function', 'function': {'name': 'summarize_checkins', 'arguments': json.dumps(ARGS)}}]}
+                fact = results[0]['facts'][0]
+                self.drafts += 1
+                if self.drafts <= len(bad_drafts):
+                    return {'content': json.dumps(bad_drafts[self.drafts - 1](fact))}
+                return {'content': json.dumps(draft(fact))}
+        provider = Provider()
+        return provider, run(AgentRole.RECORD_QA, 'What percentage of the past 30 days was Rough?',
+                             RecordTools(evidence(), AgentRole.RECORD_QA), provider, AgentConfig())
+
+    def test_one_grounding_repair_turns_a_rejected_draft_into_a_checked_answer(self):
+        made_up = lambda fact: draft(fact, 'Rough on 99 of 30 recorded days.')
+        provider, result = self._repairing([made_up])
+        self.assertTrue(result['generation_used'])
+        self.assertIn('66.7%', str(result))
+        self.assertEqual([row['code'] for row in result['trace'] if row.get('action') == 'DRAFT_REPAIR_REQUESTED'], ['FABRICATED_NUMBER_OR_DATE'])
+
+    def test_repair_is_attempted_once_only(self):
+        made_up = lambda fact: draft(fact, 'Rough on 99 of 30 recorded days.')
+        provider, result = self._repairing([made_up, made_up])
+        self.assertFalse(result['generation_used'])
+        self.assertEqual(sum(row.get('action') == 'DRAFT_REPAIR_REQUESTED' for row in result['trace']), 1)
+        self.assertTrue(any(row.get('code') == 'FABRICATED_NUMBER_OR_DATE' and row.get('result') == 'REJECT' for row in result['trace']))
+
+    def test_prohibited_content_is_never_repaired(self):
+        advice = lambda fact: draft(fact, 'You should stop your medication and increase the dose.')
+        provider, result = self._repairing([advice])
+        self.assertFalse(result['generation_used'])
+        self.assertFalse(any(row.get('action') == 'DRAFT_REPAIR_REQUESTED' for row in result['trace']))
+
 
 if __name__ == '__main__':
     unittest.main()
