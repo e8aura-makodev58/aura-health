@@ -92,7 +92,7 @@ class VendorProvider:
             # Legacy Hunyuan has no assumed JSON-mode support; exact validation still wins.
             if not (self.provider=="tencent" and self.base.endswith("hunyuan.cloud.tencent.com/v1")):
                 payload["response_format"]={"type":"json_object"}
-            if self.provider=="deepseek":
+            if self.provider=="deepseek" or self._tokenhub():
                 # Reasoning tokens would use the 1024-token budget and the short communication deadline.
                 payload["thinking"]={"type":"disabled"}
         result=self._request("POST","/chat/completions",payload)
@@ -103,6 +103,10 @@ class VendorProvider:
             return json.loads(choice["message"]["content"])
         except (KeyError,IndexError,TypeError,ValueError) as exc:
             raise ProviderUnavailable("Invalid provider output", kind=_output_kind(result)) from exc
+
+    def _tokenhub(self):
+        """Tencent TokenHub endpoints (OpenAI-compatible, thinking models); not the legacy Hunyuan host."""
+        return self.provider == "tencent" and "tokenhub" in self.base
 
     def agent_step(self, messages, tools):
         """Native function calling, separate from unchanged M5 candidate wording."""
@@ -116,6 +120,10 @@ class VendorProvider:
             # JSON mode providers (DeepSeek) reject a request whose prompt never says "json".
             if not any("json" in str(m.get("content") or "").lower() for m in messages):
                 payload["messages"] = [dict(messages[0], content=str(messages[0].get("content") or "") + "\nReturn plain JSON only."), *messages[1:]]
+        if self._tokenhub():
+            # TokenHub (e.g. Hy4 preview): thinking off for "none", otherwise the operator's effort level.
+            if self.reasoning == 'none': payload['thinking'] = {'type': 'disabled'}
+            else: payload['reasoning_effort'] = self.reasoning
         if self.provider=='deepseek':
             payload['thinking']={'type':'disabled' if self.reasoning=='none' else 'enabled'}
             # Stable endpoint: local strict validation remains authoritative.

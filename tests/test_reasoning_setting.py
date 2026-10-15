@@ -11,12 +11,12 @@ from aura_app.system_settings import SystemSettings
 from aura_communication.vendor import VendorProvider
 
 
-def capture(provider, reasoning):
+def capture(provider, reasoning, variant=None):
     sent = {}
     def handler(request):
         sent.update(json.loads(request.content))
         return httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": "{}"}}]})
-    VendorProvider(provider, "fixture-model", "fixture-key", reasoning=reasoning,
+    VendorProvider(provider, "fixture-model", "fixture-key", reasoning=reasoning, variant=variant,
                    transport=httpx.MockTransport(handler)).agent_step([{"role": "user", "content": "json"}], [])
     return sent
 
@@ -34,6 +34,12 @@ class ReasoningSettingTests(unittest.TestCase):
         self.assertNotIn("reasoning", capture("openrouter", "none"))
         self.assertGreater(capture("openai", "medium")["max_completion_tokens"], capture("openai", "none")["max_completion_tokens"])
         self.assertEqual(capture("openai", "bogus")["reasoning_effort"], "none")
+        # Tencent TokenHub (Hy4 preview): thinking off for "none", else the effort level; legacy Hunyuan untouched.
+        self.assertEqual(capture("tencent", "none", "singapore")["thinking"], {"type": "disabled"})
+        self.assertEqual(capture("tencent", "medium", "singapore")["reasoning_effort"], "medium")
+        self.assertNotIn("thinking", capture("tencent", "medium", "singapore"))
+        legacy = capture("tencent", "medium", "hunyuan")
+        self.assertNotIn("thinking", legacy); self.assertNotIn("reasoning_effort", legacy)
 
     def test_rs2_settings_default_medium_validate_and_persist(self):
         with TemporaryDirectory() as root:
