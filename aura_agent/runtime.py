@@ -44,6 +44,24 @@ def load_config():
     return AgentConfig(**json.loads(Path(__file__).with_name("engineering_config.json").read_text()))
 
 
+def rephrase_neutral(provider, raw):
+    """Restate a draft's sentences without causal or evaluative wording (texts only; facts and IDs unchanged)."""
+    claims = raw.get('claims') if isinstance(raw, dict) else None
+    if not isinstance(claims, list) or not all(isinstance(c, dict) and isinstance(c.get('text'), str) for c in claims):
+        raise ValueError('PROHIBITED_CLAIM')
+    headline = raw.get('headline') if isinstance(raw.get('headline'), str) else ''
+    texts = [claim['text'] for claim in claims] + ([headline] if headline else [])
+    result = structured_task(provider, 'rephrase_neutral', {'texts': texts}, reasoning='low')
+    new = result.get('texts') if isinstance(result, dict) and set(result) == {'texts'} else None
+    if (not isinstance(new, list) or len(new) != len(texts)
+            or not all(isinstance(text, str) and 0 < len(text.strip()) <= 600 for text in new)):
+        raise ValueError('PROHIBITED_CLAIM')
+    rewritten = {**raw, 'claims': [{**claim, 'text': new[index].strip()} for index, claim in enumerate(claims)]}
+    if headline:
+        rewritten['headline'] = new[-1].strip()
+    return rewritten
+
+
 # Grounding failures in a well-formed draft the model may correct once. Prohibited content and
 # malformed/empty/wrong-shape replies are never repaired: they fall back (existing contract).
 REPAIRABLE = frozenset({'FINDING_MISMATCH', 'UNSUPPORTED_SIGNAL', 'UNDELIVERED_FACT', 'FABRICATED_NUMBER_OR_DATE',
@@ -198,7 +216,18 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                 try:
                     raw = json.loads(reply['content'])
                     if not presentation:
-                        validate(raw, tools, role)  # early check; the real validation below runs again
+                        try:
+                            validate(raw, tools, role)  # early check; the real validation below runs again
+                        except ValueError as exc:
+                            # Wording rejected: a small separate task restates the sentences neutrally,
+                            # once. The checker stays the authority: the result must pass it again.
+                            if str(exc) != 'PROHIBITED_CLAIM' or any(item.get('action') in {'DRAFT_REPHRASED', 'DRAFT_REPAIR_REQUESTED'} for item in trace):
+                                raise
+                            stage = 'REPHRASE'
+                            raw = rephrase_neutral(provider, raw)
+                            trace.append({'action': 'DRAFT_REPHRASED', 'code': 'PROHIBITED_CLAIM'})
+                            stage = 'DRAFT_VALIDATION'
+                            validate(raw, tools, role)
                 except ValueError as exc:
                     # One bounded repair: tell the model which grounding check failed and let it correct
                     # its draft. The corrected draft goes through every check again (and the verifier).

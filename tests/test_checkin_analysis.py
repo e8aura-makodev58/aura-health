@@ -208,6 +208,43 @@ class CheckinAnalysisTests(unittest.TestCase):
         self.assertFalse(result['generation_used'])
         self.assertFalse(any(row.get('action') == 'DRAFT_REPAIR_REQUESTED' for row in result['trace']))
 
+    def _rephrasing(self, rewrite):
+        class Provider:
+            live = True
+            model_id = 'mock-rephrase'
+            rephrased = 0
+            def step(self, messages, specs, reasoning=None):
+                if not specs and 'wording check rejected' in messages[0]['content']:
+                    self.rephrased += 1
+                    self.reasoning = reasoning
+                    texts = json.loads(messages[1]['content'])['texts']
+                    return {'content': json.dumps({'texts': [rewrite(text) for text in texts]})}
+                if not specs:
+                    checks = json.loads(messages[1]['content'])
+                    return {'content': json.dumps({'verdicts': [{'index': i, 'supported': True} for i in range(len(checks))]})}
+                results = [json.loads(m['content']) for m in messages if m['role'] == 'tool']
+                if not results:
+                    return {'tool_calls': [{'id': 'c1', 'type': 'function', 'function': {'name': 'summarize_checkins', 'arguments': json.dumps(ARGS)}}]}
+                fact = results[0]['facts'][0]
+                return {'content': json.dumps(draft(fact, fact['text'] + ' This was caused by stress.'))}
+        provider = Provider()
+        return provider, run(AgentRole.RECORD_QA, 'Was anything reported around the change?',
+                             RecordTools(evidence(), AgentRole.RECORD_QA), provider, AgentConfig())
+
+    def test_rejected_wording_is_rephrased_once_and_checked_again(self):
+        provider, result = self._rephrasing(lambda text: text.replace(' This was caused by stress.', ''))
+        self.assertTrue(result['generation_used'])
+        self.assertEqual(provider.rephrased, 1)
+        self.assertEqual(provider.reasoning, 'low')
+        self.assertNotIn('caused', json.dumps(result['draft']))
+        self.assertTrue(any(row.get('action') == 'DRAFT_REPHRASED' for row in result['trace']))
+
+    def test_a_rephrase_that_still_breaks_the_rule_falls_back(self):
+        provider, result = self._rephrasing(lambda text: text)  # unchanged: still "caused"
+        self.assertFalse(result['generation_used'])
+        self.assertEqual(provider.rephrased, 1)
+        self.assertTrue(any(row.get('code') == 'PROHIBITED_CLAIM' and row.get('result') == 'REJECT' for row in result['trace']))
+
 
 if __name__ == '__main__':
     unittest.main()
