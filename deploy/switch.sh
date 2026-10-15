@@ -5,6 +5,7 @@
 #   deploy/switch.sh blue|green      health-gate the target, stop the other connector FIRST, start the
 #                                    target, then confirm every public answer comes from the target
 #   deploy/switch.sh blue --force    continue even if the other side can't be reached (risk: both live)
+#   deploy/switch.sh help            plain-language guide (deploy/SWITCH_HELP.md), incl. rules for bots
 #
 # Demo sessions live in one server's memory, so a switch ends current visitors' sessions (they reload).
 # Machine details live outside the public repo, in ~/.config/aura/switch.env:
@@ -97,7 +98,8 @@ switch() {
 }
 
 case "${1:-}" in
+  help|-h|--help) cat "$(dirname "$0")/SWITCH_HELP.md"; exit 0 ;;
   status) status ;;
   blue|green) switch "$1" "${2:-}" ;;
-  *) sed -n '2,13p' "$0"; exit 2 ;;
+  *) sed -n '2,14p' "$0"; exit 2 ;;
 esac

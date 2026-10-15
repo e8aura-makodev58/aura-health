@@ -310,6 +310,9 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Switch script help (for the owner and the Telegram agent)
+- `deploy/SWITCH_HELP.md` (also `deploy/switch.sh help`): purpose of blue/green, commands, how to read the output, when to switch, rules for bots (only `status|blue|green|--force|help`; confirm before switching; `--force` only on explicit "force"; never touch containers/tunnel/.env directly), and the manual Lighthouse command if green is down. The user's Telegram agent (Hermes, on the green machine) will call the script.
+
 ### 2026-10-15 — Claude — Settings gear and dialog spacing (user request)
 - Header gear replaced with a clean, evenly toothed outline; settings dialog fields/buttons/notes spaced (Unlock no longer touches the token field; same for Save key and Refresh available models). Found by the settings suite: the "AURA agent live" light overflowed phones narrower than ~380 px; now dot-only there (label and tooltip keep the status).
 - Verified: settings, catchup_calendar (16), landing, welcome suites PASS; no overlaps in the unlocked editor (390/1280); no horizontal scroll at 320/360/390. Rolled out blue/green; blue live, green standby, both `0b7e98e`.
