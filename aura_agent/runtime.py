@@ -44,9 +44,10 @@ def load_config():
     return AgentConfig(**json.loads(Path(__file__).with_name("engineering_config.json").read_text()))
 
 
-# Grounding failures the model may correct once. Prohibited content is never repaired: it falls back.
+# Grounding failures in a well-formed draft the model may correct once. Prohibited content and
+# malformed/empty/wrong-shape replies are never repaired: they fall back (existing contract).
 REPAIRABLE = frozenset({'FINDING_MISMATCH', 'UNSUPPORTED_SIGNAL', 'UNDELIVERED_FACT', 'FABRICATED_NUMBER_OR_DATE',
-                        'HEADLINE_BUDGET', 'HEADLINE_SCHEMA', 'MALFORMED_JSON', 'UNSUPPORTED_CATEGORY'})
+                        'HEADLINE_BUDGET', 'UNSUPPORTED_CATEGORY'})
 
 
 def run(role, query, tools, provider, config=None, *, presentation=False):
@@ -201,8 +202,8 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                 except ValueError as exc:
                     # One bounded repair: tell the model which grounding check failed and let it correct
                     # its draft. The corrected draft goes through every check again (and the verifier).
-                    code = 'MALFORMED_JSON' if isinstance(exc, json.JSONDecodeError) else str(exc)
-                    if code not in REPAIRABLE or any(item.get('action') == 'DRAFT_REPAIR_REQUESTED' for item in trace):
+                    code = str(exc)
+                    if isinstance(exc, json.JSONDecodeError) or code not in REPAIRABLE or any(item.get('action') == 'DRAFT_REPAIR_REQUESTED' for item in trace):
                         raise
                     trace.append({'action': 'DRAFT_REPAIR_REQUESTED', 'code': code})
                     messages.append({'role': 'assistant', 'content': reply.get('content')})
