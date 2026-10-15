@@ -127,6 +127,26 @@ class CheckinAnalysisTests(unittest.TestCase):
         self.assertEqual(provider.calls, 3)
         self.assertTrue(any(row.get('code') == 'CALCULATION_ANSWER_INCOMPLETE' for row in result['trace']))
 
+    def test_exploratory_calculation_does_not_reject_a_non_numeric_question(self):
+        # The agent may tally check-ins while exploring; only a question asking for a number must quote it.
+        class Explorer:
+            live = True
+            model_id = 'mock-explorer'
+            calls = 0
+            def step(self, messages, specs):
+                self.calls += 1
+                if self.calls == 1:
+                    return {'tool_calls': [{'id': 'c1', 'type': 'function', 'function': {'name': 'summarize_checkins', 'arguments': json.dumps(ARGS)}}]}
+                result = next(json.loads(m['content']) for m in messages if m['role'] == 'tool')
+                return {'content': json.dumps(draft(result['facts'][0], '20 days were recorded as Rough.'))}
+        provider = Explorer()
+        result = run(AgentRole.RECORD_QA, 'When did sleep timing change, and was anything reported around then?',
+                     RecordTools(evidence(), AgentRole.RECORD_QA), provider)
+        # The draft passes validation and goes on to the independent verifier (a third model call).
+        self.assertFalse(any(row.get('stage') == 'DRAFT_VALIDATION' for row in result['trace']))
+        self.assertFalse(any(row.get('code') == 'CALCULATION_ANSWER_INCOMPLETE' or row.get('action') == 'CALCULATION_ANSWER_REQUIRED'
+                             for row in result['trace']))
+
     def test_tool_loop_answers_calculation_and_verifier_sees_method(self):
         class Provider:
             live = True

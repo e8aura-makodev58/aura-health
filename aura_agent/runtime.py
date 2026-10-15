@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from copy import deepcopy
 import json
+import re
 from pathlib import Path
 from math import isfinite
 from time import monotonic
@@ -189,7 +190,12 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                     messages.append({'role':'user','content':f'Server contract: retrieve {needed} before finalizing. Read all keys for retained history; use {{}} for this retrieval. No retrieved evidence is not evidence of no change. This does not relax output grounding.'})
                     continue
                 raw = json.loads(reply['content'])
-                if role.value == 'record_qa':
+                # Exact calculated answers are required only when the question asks for a number; a
+                # calculation the agent ran on its own while exploring must not sink a grounded answer.
+                asks_number = bool(re.search(r"%|\bper ?cent|\bpercentage|\bproportion|\bhow many\b|\bhow often\b|"
+                                             r"\bshare of\b|\bfraction\b|\bratio\b|\brate\b|\bnumber of\b|\bcount\b",
+                                             str(query), re.IGNORECASE))
+                if role.value == 'record_qa' and asks_number:
                     calculated = {fid for fid, fact in tools.delivered.items()
                                   if fact.get('analysis', {}).get('kind') == 'checkin_proportion'}
                     cited = {fid for claim in raw.get('claims', []) for fid in claim.get('fact_ids', [])
