@@ -147,7 +147,7 @@ class RecordTools:
         for row in sorted(evidence["medication"], key=lambda r: r.get("day") or r["at"][:10])[-8:]:
             day = row.get("day") or row["at"][:10]
             if not row["deferred"] and day >= cutoff:
-                later = f" (reported later on {row['at'][:10]})" if row.get("reported_later") else ""
+                later = f" (reported later on {row.get('reported_on') or row['at'][:10]})" if row.get("reported_later") else ""
                 add("get_decisions", row["event_id"], f"Medication-routine record {day}: {row['status']}{later}.")
         for row in evidence["held"]:
             active_key = next((key for key, s in self.keys.items() if s['key']['signal']==row['signal'] and s['key']['source']==row['source'] and (s['key'].get('metric') or '')==(row.get('metric') or '')), None)

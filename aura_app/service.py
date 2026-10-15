@@ -15,7 +15,7 @@ from aura_safety.resources import ResourceRegistry
 from aura_longitudinal.registry import SignalRegistry, load_registry
 
 from .longitudinal import LongitudinalProjector, Projection, key_from, points_from_payload
-from .models import AppError, ApplicationEvent, ApplicationResult, EventType, MISSED_REASONS, valid_medication_payload
+from .models import AppError, ApplicationEvent, ApplicationResult, EventType, MISSED_REASONS, medication_day_fields, valid_medication_payload
 from .repositories import RepositoryConflict, RepositoryFactory, UnitOfWork
 from .safety import ResolvedSafetyGate, SafetyGateUnavailable, UnconfiguredSafetyGate
 
@@ -515,8 +515,11 @@ class PatientEventService:
             if source_ref not in existing:
                 item_id = str(uuid4())
                 reason = MISSED_REASONS[report["payload"]["reason"]].lower()
+                when = medication_day_fields(report["payload"], report["occurred_at"], self._patient(repo, event.patient_id)["timezone"])
+                dated = (f"Missed dose on {when['day']} (reported later on {when['reported_on']})" if when["reported_later"]
+                         else f"Missed dose on {when['day']} reported")
                 repo.save_review_item({"item_id": item_id, "patient_id": event.patient_id,
-                    "source_ref": source_ref, "summary": f"Missed dose reported — reason: {reason}. Worth discussing with your doctor or pharmacist.",
+                    "source_ref": source_ref, "summary": f"{dated} — reason: {reason}. Worth discussing with your doctor or pharmacist.",
                     "created_at": report["occurred_at"], "status": "OPEN", "patient_visible": True, "share_status": "NOT_SHARED"})
                 created.append(item_id)
                 existing.add(source_ref)
@@ -550,7 +553,7 @@ class PatientEventService:
 
     def review_snapshot(self, patient_id: str) -> dict:
         with self.repositories.transaction() as repo:
-            self._patient(repo, patient_id)
+            zone = self._patient(repo, patient_id)["timezone"]
             events = repo.events(patient_id)
             timeline = repo.timeline(patient_id)
             baselines = repo.baselines(patient_id)
@@ -588,8 +591,10 @@ class PatientEventService:
                                         for b in baselines],
                     "meaningful_longitudinal_changes": list(changes.values()),
                     "patient_checkin_trend": [{"at": row["occurred_at"], "state": row["detail"]["state"]} for row in checkins],
-                    "medication_routine_events": [{"at": row["occurred_at"], "status": row["detail"]["status"],
-                        **({"reason": row["detail"]["reason"]} if row["detail"].get("reason") else {})} for row in medication],
+                    "medication_routine_events": sorted(({"at": row["occurred_at"], "status": row["detail"]["status"],
+                        **medication_day_fields(row["detail"], row["occurred_at"], zone),
+                        **({"reason": row["detail"]["reason"]} if row["detail"].get("reason") else {})} for row in medication),
+                        key=lambda row: (row["day"], row["at"])),
                     "active_context": active["longitudinal"]["active_contexts"] if active else [],
                     "explained_held_for_review": held,
                     "unresolved_items": repo.review_items(patient_id),

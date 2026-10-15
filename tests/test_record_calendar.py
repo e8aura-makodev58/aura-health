@@ -106,3 +106,100 @@ class RecordCalendarTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReviewFixTests(unittest.TestCase):
+    """Regressions for the second Codex review (R1–R4): fakes and temporary synthetic records only."""
+    NOW = __import__("datetime").datetime(2026, 3, 11, 23, tzinfo=__import__("datetime").timezone.utc)
+
+    def setUp(self):
+        from aura_app.models import ApplicationEvent, EventType
+        from aura_app.persistence import SQLiteRepositoryFactory
+        from aura_app.record_calendar import RecordCalendarService
+        from aura_app.service import PatientEventService
+        from aura_app.sharing import SharingService
+        temp = TemporaryDirectory(); self.addCleanup(temp.cleanup)
+        self.factory = SQLiteRepositoryFactory(Path(temp.name) / "r.sqlite3"); self.factory.initialize()
+        test = self
+
+        class Gate:
+            fail, pause = False, None
+            def resolve(self, *args):
+                if self.pause:
+                    self.pause()
+                if self.fail:
+                    from aura_app.safety import SafetyGateUnavailable
+                    raise SafetyGateUnavailable("fake unavailable")
+                return ()
+        self.gate = Gate()
+        self.events = PatientEventService(self.factory, safety_gate=self.gate)
+        self.cal = RecordCalendarService(self.events, SharingService(self.events), clock=lambda: test.NOW)
+        self.make = lambda pid, zone="UTC": (
+            self.events.create_patient(patient_id=pid, display_name="Synthetic", age=35, timezone_name=zone,
+                                       treatment={"medication_name": "Sertraline", "regimen_start": "2026-02-01"}),
+            self.events.process(ApplicationEvent(pid + "-seed", pid, EventType.PATIENT_CHECKIN, test.NOW, test.NOW,
+                                                 "synthetic", {"state": "Okay"}, pid + "-seed", pid + "-seed")))
+
+    def save(self, pid, day, status, request=None, reason=None):
+        item = {"date": day, "status": status, **({"reason": reason} if reason else {})}
+        return self.cal.save(pid, request_id=request or str(uuid4()), days=[item])
+
+    def test_rf1_overlapping_saves_fill_a_day_once(self):
+        import threading
+        from aura_app.models import AppError
+        self.make("race")
+        started, results = threading.Event(), []
+        def slow():
+            self.gate.pause = None
+            started.set(); threading.Event().wait(0.5)   # hold A's write transaction open
+        self.gate.pause = slow
+        def run(status):
+            try:
+                results.append(self.save("race", "2026-03-10", status)["saved"])
+            except AppError as error:
+                results.append(error.code)
+        a = threading.Thread(target=run, args=("ACKNOWLEDGED",)); a.start(); started.wait(5)
+        b = threading.Thread(target=run, args=("MISSED",)); b.start(); a.join(); b.join()
+        self.assertEqual(sorted(map(str, results)), sorted(["['2026-03-10']", "UPDATE_CONFLICT"]))
+        with self.factory.transaction() as repo:
+            self.assertEqual([row["status"] for row in repo.medication_events("race")], ["ACKNOWLEDGED"])
+
+    def test_rf2_same_request_changed_answer_conflicts_and_exact_retry_replays(self):
+        from aura_app.models import AppError
+        self.make("key"); request = str(uuid4())
+        self.save("key", "2026-03-10", "MISSED", request)
+        self.assertEqual(self.save("key", "2026-03-10", "MISSED", request)["replayed"], ["2026-03-10"])
+        with self.assertRaises(AppError) as caught:
+            self.save("key", "2026-03-10", "ACKNOWLEDGED", request)
+        self.assertEqual(caught.exception.code, "UPDATE_CONFLICT")
+
+    def test_rf3_review_snapshot_and_items_carry_the_described_day(self):
+        self.make("late")
+        self.save("late", "2026-03-09", "MISSED", reason="FORGOT")
+        self.save("late", "2026-03-10", "ACKNOWLEDGED")
+        snapshot = self.events.review_snapshot("late")
+        self.assertEqual([(r["day"], r["reported_on"], r["reported_later"]) for r in snapshot["medication_routine_events"]],
+                         [("2026-03-09", "2026-03-11", True), ("2026-03-10", "2026-03-11", True)])
+        self.assertIn("Missed dose on 2026-03-09 (reported later on 2026-03-11)", snapshot["unresolved_items"][0]["summary"])
+
+    def test_rf4_report_day_is_patient_local_everywhere(self):
+        from aura_app.evidence import EvidenceViewService
+        from aura_agent.tools import RecordTools
+        self.make("zone", "Asia/Singapore")
+        self.save("zone", "2026-03-10", "MISSED")
+        self.assertEqual(self.cal.day("zone", "2026-03-10")["medication"]["reported_on"], "2026-03-12")
+        facts = [f["text"] for f in RecordTools(EvidenceViewService(self.events).get("zone"), "record_qa").facts.values()]
+        self.assertIn("Medication-routine record 2026-03-10: MISSED (reported later on 2026-03-12).", facts)
+
+    def test_rf5_held_input_is_never_reported_as_saved(self):
+        self.make("held")
+        self.gate.fail = True
+        result = self.save("held", "2026-03-10", "MISSED")
+        self.assertEqual((result["status"], result["saved"], result["held"]), ("HELD", [], ["2026-03-10"]))
+
+    def test_rf6_gap_reports_the_actual_latest_record_day(self):
+        from aura_app.models import ApplicationEvent, EventType
+        self.make("old")
+        self.events.process(ApplicationEvent("old-med", "old", EventType.MEDICATION_EVENT, self.NOW, self.NOW, "synthetic",
+                                             {"scheduled_time": "2026-02-10T08:00:00+00:00", "status": "ACKNOWLEDGED"}, "old-med", "old-med"))
+        self.assertEqual(self.cal.medication_gap("old")["last_record_day"], "2026-02-10")

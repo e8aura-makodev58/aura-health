@@ -103,50 +103,64 @@ class RecordCalendarService:
 
     # ---- saving past days ----------------------------------------------------------------
     def save(self, patient_id, *, request_id, days):
+        """Save past days. Window, safety, slot and retry checks and the write share ONE transaction,
+        so overlapping requests cannot both fill a day. Idempotency is per day: patient + day + request,
+        bound to that day's payload (a changed payload under the same key is a conflict)."""
         if not isinstance(days, list) or not days or len(days) > WINDOW_DAYS:
             raise AppError("INVALID_MEDICATION_UPDATE", "Choose at least one day to save")
+        from .service import PatientEventService
         with self.events.repositories.transaction() as repo:
             window, context = self._window(repo, patient_id)
             held = any(row["longitudinal_deferred"] for row in context["rows"])
             if blocked_reason(repo.safety_state(patient_id), self.events.resource_registry, self.clock(), held=held):
                 raise AppError("SAFETY_ACTIVE", "Medication updates are paused while the safety pathway is active", 409)
-        editable = {d["date"] for d in window["days"]}
-        tz, now = context["tz"], context["now"]
-        events, seen, replayed = [], set(), []
-        for item in days:
-            if not isinstance(item, dict) or set(item) - {"date", "status", "reason"}:
-                raise AppError("INVALID_MEDICATION_UPDATE", "Each day needs a date and a status")
-            when, status, reason = item.get("date"), item.get("status"), item.get("reason")
-            if when not in editable or when in seen:
-                raise AppError("INVALID_MEDICATION_UPDATE", f"{when} is not a day you can update here")
-            if status not in STATUSES or (reason is not None and (status != "MISSED" or reason not in MISSED_REASONS)):
-                raise AppError("INVALID_MEDICATION_UPDATE", "Use Taken, Missed or Not sure")
-            seen.add(when)
-            day = date.fromisoformat(when)
-            payload = {"scheduled_time": datetime.combine(day, time(SCHEDULE_HOUR), tzinfo=tz).isoformat(),
-                       "status": status, "reported_later": True}
-            if reason:
-                payload["reason"] = reason
-            key = str(uuid5(NAMESPACE_URL, f"aura-medication-backfill:{patient_id}:{when}:{request_id}"))
-            existing = context["recorded"].get(day)
-            if existing:
-                if existing["idempotency_key"] == key and existing["payload"] == payload:
-                    replayed.append(when)  # exact retry: same result
+            editable = {d["date"] for d in window["days"]}
+            tz, now = context["tz"], context["now"]
+            stored = {row["idempotency_key"]: row for row in context["rows"]}
+            events, seen, replayed, held_days = [], set(), [], []
+            for item in days:
+                if not isinstance(item, dict) or set(item) - {"date", "status", "reason"}:
+                    raise AppError("INVALID_MEDICATION_UPDATE", "Each day needs a date and a status")
+                when, status, reason = item.get("date"), item.get("status"), item.get("reason")
+                if when not in editable or when in seen:
+                    raise AppError("INVALID_MEDICATION_UPDATE", f"{when} is not a day you can update here")
+                if status not in STATUSES or (reason is not None and (status != "MISSED" or reason not in MISSED_REASONS)):
+                    raise AppError("INVALID_MEDICATION_UPDATE", "Use Taken, Missed or Not sure")
+                seen.add(when)
+                day = date.fromisoformat(when)
+                payload = {"scheduled_time": datetime.combine(day, time(SCHEDULE_HOUR), tzinfo=tz).isoformat(),
+                           "status": status, "reported_later": True}
+                if reason:
+                    payload["reason"] = reason
+                key = str(uuid5(NAMESPACE_URL, f"aura-medication-backfill:{patient_id}:{when}:{request_id}"))
+                prior = stored.get(key)
+                if prior is not None:
+                    if prior["payload"] != payload:
+                        raise AppError("UPDATE_CONFLICT", f"{when} was already sent with a different answer", 409)
+                    (held_days if prior["longitudinal_deferred"] else replayed).append(when)  # exact retry
                     continue
-                raise AppError("UPDATE_CONFLICT", f"{when} already has a record", 409)
-            fingerprint = sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
-            events.append(ApplicationEvent(str(uuid5(NAMESPACE_URL, f"{key}:{fingerprint}")), patient_id, EventType.MEDICATION_EVENT,
-                                           now, self.clock(), UPDATE_SOURCE, payload, key, key))
-        if events:
-            self.events.process_batch(events)
-        return {"saved": sorted(seen), "replayed": sorted(replayed), "window": self.update_window(patient_id)}
+                if day in context["recorded"]:
+                    raise AppError("UPDATE_CONFLICT", f"{when} already has a record", 409)
+                fingerprint = sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
+                events.append(ApplicationEvent(str(uuid5(NAMESPACE_URL, f"{key}:{fingerprint}")), patient_id, EventType.MEDICATION_EVENT,
+                                               now, self.clock(), UPDATE_SOURCE, payload, key, key))
+            child = PatientEventService(_shared(repo), safety_gate=self.events.safety_gate, safety_engine=self.events.safety_engine,
+                                        resource_registry=self.events.resource_registry, signal_registry=self.events.signal_registry)
+            results = [child.process(event) for event in events]
+        written = [event.payload["scheduled_time"][:10] for event in events]  # local dates, in event order
+        # The safety domain may hold input (e.g. its check could not run): never report that as saved.
+        held_days += [day for day, result in zip(written, results) if result.longitudinal.get("deferred")]
+        saved = sorted(d for d in seen if d not in held_days)
+        return {"status": "HELD" if held_days else "SAVED", "saved": saved, "held": sorted(held_days),
+                "replayed": sorted(replayed), "window": self.update_window(patient_id)}
 
     # ---- gap, coverage ------------------------------------------------------------------
     def medication_gap(self, patient_id):
-        window = self.update_window(patient_id)
-        recorded = [d["date"] for d in window["days"] if d["locked"]]
+        with self.events.repositories.transaction() as repo:
+            window, context = self._window(repo, patient_id)
+        recorded = sorted(context["recorded"])  # the actual latest described day, even outside the window
         return {"unresolved_days": window["unresolved_count"], "window_days": WINDOW_DAYS,
-                "last_record_day": recorded[-1] if recorded else None,
+                "last_record_day": recorded[-1].isoformat() if recorded else None,
                 "prompt": window["unresolved_count"] >= PROMPT_AFTER}
 
     def coverage(self, patient_id):

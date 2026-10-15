@@ -4,14 +4,18 @@ const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const base=process.env.AURA_BROWSER_URL;
 if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Local synthetic fixture only');
-const noScroll=page=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);
+const noScroll=page=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1
+ &&[...document.querySelectorAll('#med-update-dialog[open],#med-update-preview,#calendar-grid,#calendar-detail')].every(node=>node.scrollWidth<=node.clientWidth+1));
+const shift=(iso,by)=>{const d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+by);return d.toISOString().slice(0,10);};
 
 async function run(browser,width){
  const tag=width<500?'PHONE':'LAPTOP';
  const context=await browser.newContext({viewport:{width,height:900}}),errors=[];
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  const loaded=()=>page.waitForFunction(()=>window.auraAgentContext().record&&document.getElementById('notice').hidden);
+ const api=async path=>(await page.request.get(`${base}/patients/${encodeURIComponent(await page.evaluate(()=>window.auraAgentContext().patientId))}${path}`)).json();
  await page.goto(base);await loaded();
+ try{
  await page.getByRole('button',{name:'Patient',exact:true}).click();
  // 1 · the gentle prompt on the dose card
  await page.waitForSelector('#med-update-line:not([hidden])');
@@ -28,10 +32,16 @@ async function run(browser,width){
  assert.equal(await days.count(),14);
  const last=days.last();
  assert.equal(await last.getAttribute('data-locked'),'true');assert.equal(await last.isDisabled(),true);
- const a=days.nth(11),b=days.nth(12),aDate=await a.getAttribute('data-date'),bDate=await b.getAttribute('data-date');
- await a.click();
- await page.locator(`#med-update-preview .med-day[data-date="${bDate}"]`).click();
- await page.locator(`#med-update-preview .med-day[data-date="${bDate}"]`).click();
+ const window1=await api('/medication/update-window');
+ const open1=window1.days.filter(d=>!d.locked).map(d=>d.date);
+ assert.ok(open1.length>=2,'two unrecorded days to fill');
+ const aDate=open1.at(-2),bDate=open1.at(-1);
+ await page.locator(`#med-update-preview .med-day[data-date="${aDate}"]`).click();
+ // Keyboard: focus stays on the same day after each change, and the change is announced.
+ await page.locator(`#med-update-preview .med-day[data-date="${bDate}"]`).focus();
+ await page.keyboard.press('Enter');await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>document.activeElement?.dataset.date),bDate,'focus kept');
+ assert.match(await page.locator('#med-update-message').innerText(),/: Missed\.$/);
  assert.equal(await page.locator(`#med-update-preview .med-day[data-date="${aDate}"]`).getAttribute('data-status'),'ACKNOWLEDGED');
  assert.equal(await page.locator(`#med-update-preview .med-day[data-date="${bDate}"]`).getAttribute('data-status'),'MISSED');
  assert.equal(await noScroll(page),true,'dialog fits');
@@ -54,8 +64,17 @@ async function run(browser,width){
  await page.waitForSelector('#med-update-question:not([hidden])');
  assert.equal(await page.locator('#med-update-preview .med-day[data-basis="from_most_days"]').count(),1);
  assert.equal(await page.locator('#med-update-save').isDisabled(),true,'question first');
+ const dashed=await page.locator('#med-update-preview .med-day[data-basis="from_most_days"]').evaluate(n=>getComputedStyle(n).borderTopStyle);
+ assert.equal(dashed,'dashed','"most days" styling');
  await page.locator('#med-update-no').click();
  assert.equal(await page.locator('#med-update-preview .med-day[data-basis="from_most_days"]').count(),0,'No leaves them unresolved');
+ assert.equal(await page.locator('#med-update-save').isDisabled(),false);
+ await page.locator('#med-update-close').click();
+ await page.locator('#med-update-open').click();await page.waitForSelector('#med-update-dialog[open]');
+ await page.locator('#med-update-text').fill('I took it most days except one');await page.locator('#med-update-interpret').click();
+ await page.waitForSelector('#med-update-question:not([hidden])');await page.locator('#med-update-yes').click();
+ assert.equal(await page.locator('#med-update-preview .med-day[data-basis="from_most_days"]').count(),0,'Yes confirms them');
+ assert.equal(await page.locator('#med-update-preview .med-day[data-basis="explicit"]').count(),2);
  assert.equal(await page.locator('#med-update-save').isDisabled(),false);
  await page.locator('#med-update-close').click();await page.unroute('**/medication/update/interpret');
  console.log(`CU3_${tag}_MOST_DAYS_QUESTION PASS`);
@@ -69,7 +88,10 @@ async function run(browser,width){
  assert.match(await page.locator('#calendar-legend').innerText(),/blank day means nothing was recorded/);
  await cell.click();await page.waitForSelector('#calendar-detail:not([hidden])');
  assert.match(await page.locator('#calendar-detail').innerText(),/Missed · filled in later/);
- assert.equal(await noScroll(page),true,'calendar fits');
+ assert.equal(await noScroll(page),true,'calendar and detail fit');
+ const today=(await api('/coverage')).today;
+ const future=page.locator(`#calendar-grid .cal-day[data-date="${shift(today,1)}"]`);
+ if(await future.count())assert.equal(await future.isDisabled(),true,'future days are not selectable');
  await page.locator('#calendar-prev').click();
  await page.waitForFunction(m=>document.getElementById('calendar-month').textContent!==m,await page.locator('#calendar-month').innerText());
  console.log(`CU4_${tag}_PATIENT_CALENDAR PASS`);
@@ -87,11 +109,13 @@ async function run(browser,width){
  assert.equal(await page.locator(`#calendar-grid .cal-day[data-date="${bDate}"] .cal-med`).getAttribute('data-status'),'MISSED','medication stays');
  await page.locator(`#calendar-grid .cal-day[data-date="${bDate}"]`).click();await page.waitForSelector('#calendar-detail:not([hidden])');
  assert.match(await page.locator('#calendar-detail').innerText(),/Not shared by the patient: detailed readings/);
+ assert.equal(await page.locator('#calendar-update-day').count(),0,'clinician cannot edit the patient\'s records');
  await page.evaluate(()=>window.auraSaveSharing({notes:true,readings:true,checkin_history:true,activity_details:true}));
  assert.equal(await noScroll(page),true);
  console.log(`CU5_${tag}_CLINICIAN_SHARING PASS`);
  // 6 · welcome back after a long gap (coverage mocked)
- await page.route('**/coverage',route=>route.fulfill({json:{today:'2026-03-11',last_medication_day:'2026-02-20',reported_later_in_window:0,window_days:14,last_checkin_day:'2026-02-21',last_wearable_day:'2026-03-11'}}));
+ const real=await api('/coverage');
+ await page.route('**/coverage',route=>route.fulfill({json:{...real,last_medication_day:shift(real.today,-19),last_checkin_day:shift(real.today,-18)}}));
  await page.getByRole('button',{name:'Patient',exact:true}).click();
  await page.evaluate(()=>{location.hash='home';});
  await page.waitForSelector('#welcome-back:not([hidden])');
@@ -99,7 +123,11 @@ async function run(browser,width){
  await page.unroute('**/coverage');
  console.log(`CU6_${tag}_WELCOME_BACK PASS`);
  assert.deepEqual(errors,[]);
- await context.close();
+ }finally{
+  // Leave the session as found even if a check fails.
+  await page.evaluate(()=>window.auraSaveSharing?.({notes:true,readings:true,checkin_history:true,activity_details:true})).catch(()=>{});
+  await context.close();
+ }
 }
 (async()=>{
  const browser=await chromium.launch({headless:true});

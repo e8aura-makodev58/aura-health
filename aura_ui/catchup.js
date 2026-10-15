@@ -53,16 +53,23 @@ function resetDialog() {
   byId("med-update-save").hidden = false;
   for (const id of ["med-update-text", "med-update-interpret", "med-update-tap"]) byId(id).disabled = false;
 }
-async function openUpdate(onlyDate) {
+async function openUpdate(focusDate) {
   resetDialog();
   const dialog = byId("med-update-dialog");
+  state.window = null;
   try { state.window = await getJSON(`${base()}/medication/update-window`); }
-  catch (error) { byId("med-update-message").textContent = error.message; dialog.showModal(); return; }
+  catch (error) {
+    // Nothing to edit without the server's window: say so and leave only Close.
+    for (const id of ["med-update-text", "med-update-interpret", "med-update-tap"]) byId(id).disabled = true;
+    byId("med-update-message").textContent = `${error.message} Please close this and try again.`;
+    byId("med-update-save").disabled = true; dialog.showModal(); return;
+  }
   dialog.showModal();
-  if (onlyDate) showPreview();
+  if (focusDate) { byId("med-update-message").textContent = "Tap a day to set it."; showPreview(focusDate); }
   updateSave();
 }
-function showPreview() {
+function showPreview(focusDate) {
+  if (!state.window) return;
   const preview = byId("med-update-preview");
   preview.replaceChildren();
   for (const day of state.window.days) {
@@ -79,11 +86,13 @@ function showPreview() {
     if (!day.locked) button.addEventListener("click", () => {
       const next = CYCLE[(CYCLE.indexOf(state.days.get(day.date)?.status || null) + 1) % CYCLE.length];
       if (next) state.days.set(day.date, {status: next, basis: "explicit"}); else state.days.delete(day.date);
-      showPreview(); updateSave();
+      showPreview(day.date); updateSave();
+      byId("med-update-message").textContent = `${longDate(day.date)}: ${next ? STATUS[next].label : "no record"}.`;
     });
     preview.append(button);
   }
   preview.hidden = false; byId("med-update-key").hidden = false;
+  if (focusDate) preview.querySelector(`.med-day[data-date="${focusDate}"]`)?.focus();
 }
 function updateSave() {
   const count = [...state.days.values()].filter(day => day.status).length;
@@ -142,15 +151,19 @@ byId("med-update-save").addEventListener("click", async () => {
   try {
     const saved = await getJSON(`${base()}/medication/update`, {request_id: state.requestId, days});
     state.window = saved.window; state.days = new Map();
-    result.textContent = `Saved ${saved.saved.length} ${saved.saved.length === 1 ? "day" : "days"}. They're marked as filled in later.`;
+    result.textContent = saved.status === "HELD"
+      ? "AURA couldn't finish its safety check, so these days are waiting and aren't saved yet. Nothing more to do right now."
+      : `Saved ${saved.saved.length} ${saved.saved.length === 1 ? "day" : "days"}. They're marked as filled in later.`;
     result.hidden = false; byId("med-update-save").hidden = true; byId("med-update-key").hidden = true;
     byId("med-update-question").hidden = true;
     showPreview();
     for (const id of ["med-update-text", "med-update-interpret", "med-update-tap"]) byId(id).disabled = true;
-    if (typeof loadCompanion === "function") loadCompanion(patient());
+    if (saved.status === "HELD") await window.auraRefresh?.();
+    else if (typeof loadCompanion === "function") loadCompanion(patient());
     if (!byId("calendar-view").hidden) loadCalendar(calendarMonth);
   } catch (error) {
-    result.textContent = error.code === "UPDATE_CONFLICT" ? "One of those days already has a record. Please open this again to see the latest." : error.message;
+    result.textContent = error.code === "UPDATE_CONFLICT" ? "One of those days already has a record. Please open this again to see the latest."
+      : error.code === "SAFETY_ACTIVE" ? error.message : `${error.message} It's safe to press Save again.`;
     result.hidden = false; updateSave();
   }
 });
@@ -252,9 +265,10 @@ async function loadDay(date) {
   else if (day.activities.length) section(clinician ? "Mentioned activities" : "Things you mentioned", list(day.activities.map(item => `${item.phrase}${item.minutes ? ` (${item.minutes >= 60 ? `${Math.round(item.minutes / 6) / 10} h` : `${item.minutes} min`})` : ""}`)));
   if (day.ideas_chosen?.length) section(clinician ? "Ideas chosen" : "Ideas you picked", list(day.ideas_chosen));
   if (day.findings.length) section(clinician ? "Changes in this period" : "Changes AURA noticed",
-    list(day.findings.map(row => clinician ? `${row.label}: ${row.direction.replaceAll("_", " ").toLowerCase()} (since ${longDate(row.since)})` : `A change in your ${row.label.toLowerCase()}, since ${longDate(row.since)}`)));
+    list(day.findings.map(row => clinician ? `${row.label}: ${row.direction.replaceAll("_", " ").toLowerCase()} (first detected ${longDate(row.since)})` : `A change in your ${row.label.toLowerCase()}, first noticed ${longDate(row.since)}`)));
   detail.hidden = false;
-  detail.scrollIntoView({block: "nearest", behavior: "smooth"});
+  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  detail.scrollIntoView({block: "nearest", behavior: still ? "auto" : "smooth"});
 }
 function list(items) { const ul = el("ul"); for (const text of items) ul.append(el("li", text)); return ul; }
 function shiftDays(iso, by) { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + by); return d.toISOString().slice(0, 10); }
@@ -286,7 +300,7 @@ async function renderWelcomeBack() {
   const last = [data?.last_checkin_day, data?.last_medication_day].filter(Boolean).sort().pop();
   const away = data && last ? daysBetween(last, data.today) : 0;
   box.hidden = !(role() === "patient" && window.auraCompanionData?.safety_normal && away >= 7);
-  box.textContent = "Welcome back. You can carry on from today, or update past medication records if you'd like.";
+  if (!box.hidden) box.textContent = "Welcome back. You can carry on from today, or update past medication records if you'd like.";
 }
 async function loadCoverage() {
   const strip = byId("record-coverage");

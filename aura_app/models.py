@@ -124,6 +124,21 @@ MISSED_REASONS = {
 }
 
 
+def local_day(stamp: str, zone: str) -> str:
+    """Patient-local calendar date of a stored timestamp."""
+    from zoneinfo import ZoneInfo
+    return datetime.fromisoformat(stamp).astimezone(ZoneInfo(zone)).date().isoformat()
+
+
+def medication_day_fields(payload: dict, occurred_at: str, zone: str) -> dict:
+    """Described day, plus the report day when the record was filled in later (both patient-local)."""
+    fields = {"day": local_day(payload.get("scheduled_time") or occurred_at, zone),
+              "reported_later": bool(payload.get("reported_later"))}
+    if fields["reported_later"]:
+        fields["reported_on"] = local_day(occurred_at, zone)
+    return fields
+
+
 def valid_medication_payload(payload: Any) -> bool:
     """Exact categorical input shape. No free text or model interpretation."""
     if not isinstance(payload, dict) or not {"scheduled_time", "status"} <= set(payload) <= {"scheduled_time", "status", "reason", "reported_later"}:

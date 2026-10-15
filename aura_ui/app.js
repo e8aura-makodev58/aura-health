@@ -302,7 +302,7 @@ function renderReview() {
   reviewGroup("Reference & data availability", current.status.signals.map(signal => `${signalLabel(signal)} · ${sensingLabels[signal.sensing_state]} · ${trustLabels[signal.trust_state]} · coverage ${number(signal.rolling.coverage_ratio)}`));
   reviewGroup("Meaningful observations", snapshot.meaningful_longitudinal_changes.map(change => change.latest.description));
   reviewGroup("Your recent check-ins", snapshot.patient_checkin_trend.slice(-7).map(checkin => `${dateLabel(checkin.at)} · ${checkin.state}`));
-  reviewGroup("Medication-routine records", snapshot.medication_routine_events.map(event => `${dateLabel(event.at)} · ${event.status}`));
+  reviewGroup("Medication-routine records", snapshot.medication_routine_events.map(event => `${dateLabel(event.day || event.at)} · ${event.status}${event.reported_later ? ` · filled in later (${dateLabel(event.reported_on)})` : ""}`));
   reviewGroup("Active context", snapshot.active_context.map(context => context.patient_explanation || context.explanation || "Recorded context"));
   reviewGroup("Explained & held for review", snapshot.explained_held_for_review.map(row => { const held = row.record || row; return `${held.detected_drift.description} Explanation: ${held.explanation}. Anchored reference retained.`; }));
   reviewGroup("Unresolved review items", snapshot.unresolved_items.map(item => item.summary));

@@ -210,14 +210,14 @@
       const section=node("section"), entries=node("div",null,"categorical-strip");
       const end=evidence.period.end ? day(evidence.period.end) : 0;
       const start=byId("chart-range").value === "all" ? -Infinity : end-55*dayMs;
-      const visibleRows=rows.filter(row=>day(row.at)>=start && day(row.at)<=end);
+      const visibleRows=[...rows].sort((a,b)=>day(a.day||a.at)-day(b.day||b.at)).filter(row=>day(row.day||row.at)>=start && day(row.day||row.at)<=end);
       const preview=node("div",null,"categorical-strip reports-preview");
       preview.append(node("span",`${title} · latest ${Math.min(7,visibleRows.length)} in chart dates`,"fine"));
-      for (const row of visibleRows.slice(-7)) preview.append(node("span",`${shortDate(day(row.at))} · ${row[field]}${row.deferred ? " · held" : ""}`,"report-dot"));
+      for (const row of visibleRows.slice(-7)) preview.append(node("span",`${shortDate(day(row.day||row.at))} · ${row[field]}${row.reported_later ? " · filled in later" : ""}${row.deferred ? " · held" : ""}`,"report-dot"));
       if(!visibleRows.length) preview.append(node("span","None recorded in chart dates", "fine"));
       for (const row of visibleRows) {
-        const entry=node("span",`${shortDate(day(row.at))} · ${row[field]}${row.deferred ? " · held pending safety evaluation" : ""}`,"report-dot");
-        entry.title=`${shortDate(day(row.at))} · patient-reported`;entry.dataset.eventId=row.event_id; entries.append(entry);
+        const entry=node("span",`${shortDate(day(row.day||row.at))} · ${row[field]}${row.reported_later ? ` · filled in later (${row.reported_on})` : ""}${row.deferred ? " · held pending safety evaluation" : ""}`,"report-dot");
+        entry.title=`${shortDate(day(row.day||row.at))} · patient-reported`;entry.dataset.eventId=row.event_id; entries.append(entry);
       }
       section.append(preview); strip.append(section);
       exact.append(node('h3',`${title} · exact records`),entries);
