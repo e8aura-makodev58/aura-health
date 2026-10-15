@@ -18,6 +18,14 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
    if(body.question)return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:'ABSTAINED',topic_id:null,
     answer:"I'm not able to identify that medication, please check with your pharmacist.",source_label:'Approved medication information (development content)',trace:[]})});
    return route.continue();});
+  // Past medication records: the live site's model reads the sentence; locally a stub proposes the same shape.
+  await page.route('**/medication/update/interpret',async route=>{
+   const pid=await page.evaluate(()=>window.auraAgentContext().patientId);
+   const window=await (await page.request.get(`${base}/patients/${encodeURIComponent(pid)}/medication/update-window`)).json();
+   const open=window.days.filter(d=>!d.locked);
+   await route.fulfill({json:{status:'PROPOSED',window,question:`Were ${open.at(-2).weekday} and ${open.at(-1).weekday} the only days you missed?`,out_of_window:[],advice_request:false,message:null,
+    days:open.map((d,i)=>({date:d.date,status:i>=open.length-2?'MISSED':'ACKNOWLEDGED',basis:i>=open.length-2?'explicit':'from_most_days'}))}});
+  });
   await page.goto(base);await page.waitForFunction(()=>document.getElementById('scenario').options.length>0);
   return {context,page,doses};};
  const ready=page=>page.waitForFunction(()=>{const n=document.querySelector('.tour-next');return n&&!n.disabled;},null,{timeout:180000});
@@ -47,6 +55,12 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   console.log('TOUR1_START_HELP_VISIBLE_ONE_DOSE_BACK_SAFE PASS');
   for(let index=3;index<9;index++){
    await page.locator('.tour-next').click();await ready(page);assert.equal(await step(page),index);
+   if(index===4){ // past days from one sentence: preview, one question, saved, then the calendar
+    assert.match(await page.locator('.tour-status').innerText(),/AURA turned the sentence into days, asked one question, and saved them/);
+    assert.equal(await page.locator('#calendar-view').isVisible(),true);
+    assert.ok(await page.locator('#calendar-grid .cal-med[data-reported-later="true"]').count()>=10);
+    assert.equal(await page.locator('#med-update-dialog').evaluate(d=>d.open),false);
+   }
    if(index===7){ // no model locally, so the agent falls back: a visible, user-chosen "Ask again" is offered
     assert.match(await page.locator('.tour-status').innerText(),/couldn't complete this answer/);
     await page.locator('.tour-retry').click();await ready(page);

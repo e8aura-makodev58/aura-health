@@ -5,7 +5,7 @@
 (function () {
   const $ = id => document.getElementById(id);
   const QUESTION = "When did sleep timing change, and was anything reported around then?";
-  const MED_QUESTION = "Can I take ibuprofen with it?";
+  const CATCH_UP = "I took it on most days except last Friday and yesterday";
   let tour = null; // {run, index, done:Set, card, hole}
 
   const visible = el => Boolean(el && el.offsetParent !== null && !el.hidden);
@@ -51,16 +51,44 @@
        const shown = await wait(() => !$("medication-answer").hidden && $("answer-text").textContent.trim(), 20000, run);
        return shown ? "This is what the leaflet says about a missed dose." : "The answer isn't available just now. You can still continue.";
      }},
-    {chapter: "Your day", title: "Honest when it can't answer", text: `Asked: "${MED_QUESTION}"`,
-     enter: async () => { patientHome(); await wait(() => visible($("medication-card")), 20000); },
-     target: () => $("medication-card"),
+    {chapter: "Your day", title: "Missed a few days? Just say so", text: `The patient writes: "${CATCH_UP}"`,
+     enter: async () => { patientHome(); await wait(() => visible($("dose-card")), 20000); },
+     target: () => visible($("calendar-view")) ? $("calendar-grid") : visible($("med-update-line")) ? $("med-update-line") : $("dose-card"),
      action: async run => {
-       const details = document.querySelector(".medication-ask"); if (details) details.open = true;
-       $("medication-question").value = MED_QUESTION;
-       $("answer-text").textContent = "";
-       $("medication-ask-btn").click();
-       const shown = await wait(() => !$("medication-answer").hidden && $("answer-text").textContent.trim(), 30000, run);
-       return shown ? "AURA says it can't identify that medication, and points to the pharmacist." : "The answer isn't available just now. You can still continue.";
+       const live = () => tour && tour.run === run;
+       $("med-update-open").click();
+       if (!await wait(() => $("med-update-dialog").open, 15000, run)) return live() ? "This isn't available just now. You can still continue." : "";
+       await pause(900); if (!live()) return "";
+       $("med-update-text").value = CATCH_UP;
+       await pause(1600); if (!live()) return "";
+       $("med-update-interpret").click();
+       // AURA reads the sentence (about 10 seconds live); if it can't, the days are tapped instead.
+       await wait(() => !$("med-update-preview").hidden || (!$("med-update-interpret").disabled && !/reading that/.test($("med-update-message").textContent)), 60000, run);
+       if (!live()) return "";
+       const typed = !$("med-update-preview").hidden && Boolean(document.querySelector('#med-update-preview .med-day[data-basis="explicit"], #med-update-preview .med-day[data-basis="from_most_days"]'));
+       if (typed) {
+         await pause(2600); if (!live()) return "";
+         if (visible($("med-update-question"))) { $("med-update-yes").click(); await pause(1500); }
+       } else {
+         $("med-update-tap").click(); await pause(900);
+         const open = [...document.querySelectorAll('#med-update-preview .med-day[data-locked="false"]')].slice(-2).map(day => day.dataset.date);
+         const tap = date => document.querySelector(`#med-update-preview .med-day[data-date="${date}"]`)?.click();
+         if (open[0]) tap(open[0]);
+         if (open[1]) { tap(open[1]); await pause(400); tap(open[1]); }
+         await pause(1500);
+       }
+       if (!live()) return "";
+       $("med-update-save").click();
+       await wait(() => !$("med-update-result").hidden, 20000, run);
+       if (!live()) return "";
+       const saved = /^Saved/.test($("med-update-result").textContent);
+       await pause(1800); if (!live()) return "";
+       $("med-update-dialog").close();
+       if (!saved) return "This couldn't be saved just now. You can still continue.";
+       location.hash = "calendar";
+       await wait(() => document.querySelector('#calendar-grid .cal-med[data-reported-later="true"]'), 15000, run);
+       return typed ? "AURA turned the sentence into days, asked one question, and saved them. Ringed marks mean filled in later."
+                    : "Saved by tapping the days. Ringed marks mean filled in later.";
      }},
     {chapter: "Getting ready for a visit", title: "Ready for the appointment", text: "The skipped dose and its reason are ready to discuss. Nothing is sent until the patient decides.",
      enter: async () => { $("patient-role").click(); location.hash = "review"; await wait(() => visible($("review-view")), 10000); await pause(600); },
@@ -85,7 +113,7 @@
      }},
     {chapter: "When things change", title: "When life changes", text: "Three days of flu, simulated. AURA describes what changed in this person's own records.",
      enter: async () => { patientHome(); await wait(() => visible($("month-recap")), 20000); },
-     target: () => visible($("suggestion-card")) && tour?.done.has(8) ? $("suggestion-card") : $("month-recap"),
+     target: () => visible($("suggestion-card")) && tour?.done.has(STEPS.length - 1) ? $("suggestion-card") : $("month-recap"),
      action: async run => {
        const id = record().patientId;
        const response = await fetch(`/patients/${encodeURIComponent(id)}/workflows/advance`, {method: "POST", headers: {"Content-Type": "application/json"},
