@@ -32,6 +32,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (documentation updated 2026-10-14; implementation evidence dated below)
 
+- **Brainstorming only (user, 2026-10-15):** Gemini joined the team; user requested review of Claude's catch-up/calendar proposal, with Gemini's independent review to follow. Codex review: `docs/BACKLOG_AND_CALENDAR_REVIEW_CODEX.md`, against remote `5eba9fb`. No implementation/work split/deployment authorized in this session. Local runtime remains at `ecfa8b8`; newer remote implementation was read without merging.
+
 - **Codex Q&A calculations (2026-10-14, branch delivery):** from main `eac0334`, added read-only `summarize_checkins` for arbitrary supported windows/categories, deterministic percentages/counts/coverage, cited derived facts and a bounded missing-answer repair. Prompt v12; exact calculated display sentences preserve denominator/dates/missingness. Existing engines and shared patient percentage restrictions unchanged. See `docs/CLINICIAN_QA_CALCULATIONS.md`. Full355 tests PASS/492.432s plus final focused10 PASS; Claude merges/deploys later, no live-model calls in this task.
 
 - **Architecture PDF audited (Codex,2026-10-14):** against immutable main `90e31ea`; corrected `docs/submission/assets/aura-health-architecture-reviewed.pdf`, native deck slides11–13 and architecture sources. Main boundaries match: deterministic state/policy, read-only agent, curated medication and synthetic ingestion. Clarified90-s between-call budget/30-s provider timeout, separate verifier, resource-rendering versus assessment latency, built-in fallback, demo roles/Not-sent sharing and blocked/stale suppression. See `docs/submission/ARCHITECTURE_REVIEW.md`. Work isolated in `/tmp/aura-architecture-review`, branch `codex/architecture-review` from latestmain; existing named agent branches/worktrees preserved, no merge/deploy/live-model calls. Full334 Python PASS/459.063s; artifact checks and mock-clock probe PASS. Existing Starlette/httpx warning; source/model live status not re-read.
@@ -100,6 +102,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Signal-registry foundation implemented (DECISIONS §41):** sponsor-editable/versioned `aura_longitudinal/signal_registry.json` and `AURA_SIGNAL_REGISTRY` override; `GET /signals`, typed scalar ingestion, source-linked research/display-only charts and agent evidence. Original four parameter values/rules retained; HRV/respiratory rate/skin deviation enabled E3_RESEARCH; SpO2/BP/thermometer/weight display-only. Calendar coverage is not cadence-discounted or interpolated. New-channel anchors require calendar coverage; configurable absolute spread floor handles zero-centered skin deviation (0.1 °C provisional default). No safety changes, DB schema/dependencies, real intake, simulator agent or flu generator in this step. Details: [`docs/SIGNAL_REGISTRY_IMPLEMENTATION.md`](docs/SIGNAL_REGISTRY_IMPLEMENTATION.md).
 
 ## Open decisions
+
+- **Catch-up/calendar proposal:** resolve ambiguous day inference, retrospective event timestamps, retry/conflict semantics, calendar sharing and honest return/relearning wording with the user and Gemini. See Codex's review for Q1–Q11; recommendations are not accepted decisions.
 
 - **Medication request identity resolved:** current `MedicationAskService` includes the exact question hash in the patient event identity; changed text with a reused run ID gets a fresh safety assessment. Regression MED4b exists; historical495087d finding is closed in the code inspected at90e31ea.
 - **Companion integration assumptions:** no booked-appointment field exists, so `coming_up` emits the stored medication review and refill estimate without an invented APPOINTMENT entry. Demo day is the latest recorded local day;08:00 is a configurable synthetic display hour. Counts are latest patient reports per day for the once-daily single-medication fixture, not verified adherence or a multi-dose regimen. Pharmacist/content review remains open. See backend notes for integration dependencies and stale M6 browser assertions.
@@ -207,6 +211,8 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+- **Current discussion:** compare Gemini's forthcoming review with Claude's proposal and Codex's review; agree feature scope before coding. No new agent invocation or deployment inferred.
+
 - **Claude review/merge:** Codex's `docs/CLINICIAN_QA_CALCULATIONS.md` describes the new Q&A tool/harness and limits. Rehearse the original Rough-days percentage question after merge/deployment; check actual model tool selection and answer, not just mock success. Preserve concurrent patient-reply work when merging.
 
 - **Ad soundtrack:** generate from `docs/submission/AURA_AD_SONG_v5.md` (current; the original `AURA_AD_SONG.md` is Codex's first draft). Review the actual audio/duration before using it; cut per `docs/presentation/video/SONG_CUT_PLAN.md`. Lyrics/prompt only are delivered; narration and video remain with their current owner.
@@ -294,6 +300,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-15 — Codex — Catch-up/calendar brainstorming review
+- User: Gemini joins; brainstorming only, no code. Reviewed Claude's `5eba9fb` proposal and relevant remote source; added `docs/BACKLOG_AND_CALENDAR_REVIEW_CODEX.md` with Q1–Q11 answers and product recommendations. Preserved independent branches; no merge, implementation, model call or deploy.
+- Verified: fetched origin, inspected clean local status/history and remote source. Runtime tests not rerun for this discussion/documentation-only task; historical results remain historical. Gemini review and user scope decisions pending.
 
 ### 2026-10-14 — Codex — Deterministic derived facts for clinician check-in Q&A
 - Fast-forwarded `improve/feature-codex` to main `eac0334` as requested. Added check-in aggregation tool, local-day/coverage/provenance rules, narrow grounded-percentage allowance, prompt v12, one bounded completion repair and a visible calculation trace. No engine changes, main merge, deployment, settings or paid model calls.
