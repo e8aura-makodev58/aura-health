@@ -285,3 +285,28 @@ gate, built §9.2 and §9.4 as well, keeping this contract. Differences worth kn
   for anyone outside the normal safety state.
 - Medication rows in evidence carry `day` (described local day) and `reported_later`; agent facts read
   "Medication-routine record {day}: {status} (reported later on {report day})." plus one coverage fact.
+
+### 9.8 Review 2 consolidated (2026-10-15, Claude, final gate)
+Reviews: `BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md` (backend, with probes in `docs/evidence/`) and
+`BACKLOG_AND_CALENDAR_REVIEW2_GEMINI.md` (UI and browser suite). Disposition:
+
+| Finding | Decision |
+|---|---|
+| Codex R1 save race / same-key changed answer | **Fixed.** Window, safety, slot and retry checks and the write share one `BEGIN IMMEDIATE` transaction; a changed answer under the same key is `409 UPDATE_CONFLICT`. Regressions RF1 (two threads), RF2. |
+| Codex R2 retrospective dates in appointment/review | **Fixed.** `review_snapshot().medication_routine_events` and evidence rows carry `day`, `reported_later`, `reported_on` (sorted by described day); review items read "Missed dose on {day} (reported later on {report day})"; appointment list and clinician strip show the described day and "filled in later". RF3. |
+| Codex R3 held batch reported as saved | **Fixed.** Save returns `status: SAVED|HELD`, `held` dates; held days are never in `saved`; UI says they are waiting and refreshes so the safety state shows. RF5. |
+| Codex R4 UTC report day | **Fixed.** One helper `medication_day_fields` computes patient-local described and report days for every reader. RF4. |
+| Codex R5 coverage denominator | **Contract clarified, no code change:** "full" = every engine-enabled signal *this record has a source for* (observed at least once) has a covered observation that day. Registry signals the patient has never worn (research/display channels) are not daily requirements. |
+| Gap `last_record_day` window-limited | **Fixed:** actual latest described day. RF6. |
+| Request ID binds days, not the whole POST | **Intended:** idempotency is per day (patient + day + request + payload). |
+| Replay depends on current window/safety | **Intended:** retries are honoured inside the current editable window and normal safety state only; across a safety boundary the safety response wins. |
+| Finding intervals imply daily evidence | **Wording fixed:** "first noticed {date}" (patient) / "first detected {date}" (clinician). |
+| 14/3 days as constants | **Accepted for the demo**; engineering settings later. |
+| Gemini 1 focus lost | **Fixed:** focus returns to the same day; status announced in the live message line. |
+| Gemini 2 window-load failure | **Fixed:** controls disabled, plain message, `showPreview` guards a missing window. |
+| Gemini 3 day button ignores date | **Fixed:** opens with the preview and focuses that day. |
+| Gemini 4 welcome back | Text only set when shown; refetch kept (cheap, keeps it current). Dismiss not added. |
+| Gemini 5 retry wording | **Fixed:** "It's safe to press Save again." |
+| Gemini 6, 7 | Accepted as is (server 409 is authoritative; session-long dismissal is fine for the demo). |
+| Gemini 8 reduced motion | **Fixed.** |
+| Gemini test gaps | **Added:** dates from the server window/coverage, keyboard focus check, Yes branch, computed dashed style, future days disabled, no update button for clinician, element-level overflow checks, sharing restored in `finally`. Not added: safety-blocked and conflict UI paths in the browser (covered by Python tests). |

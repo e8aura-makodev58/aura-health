@@ -220,7 +220,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
-- **Catch-up + calendar:** Codex and Gemini may still review the merged code (spec §9.2/§9.4) and report problems in their handover entries; Claude fixes. Do not rebuild these on your branches; pull `main` first.
+- **Catch-up + calendar: done.** Review 2 from Codex and Gemini is consolidated in spec §9.8 (all P1/M findings fixed). No open work assigned; pull `main` before anything new.
 
 - **Claude review/merge:** Codex's `docs/CLINICIAN_QA_CALCULATIONS.md` describes the new Q&A tool/harness and limits. Rehearse the original Rough-days percentage question after merge/deployment; check actual model tool selection and answer, not just mock success. Preserve concurrent patient-reply work when merging.
 
@@ -309,6 +309,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-15 — Claude — Review 2 consolidated, fixes merged and deployed
+- Merged Codex's and Gemini's review branches (docs + handover entries). Dispositions in `docs/BACKLOG_AND_CALENDAR_SPEC.md` §9.8. Fixed: save race and same-key changed answer (one transaction, 409), described/report days in review snapshot, review items, appointment list and clinician strip; patient-local report day; held input returned as HELD; gap's actual last record day; Gemini's focus retention/announcement, window-load failure, chosen-day focus, retry wording, reduced motion. R5 coverage resolved as a documented contract (signals this record has a source for).
+- Verified: full Python suite **387 OK** (713 s); 15 hosted browser suites PASS (catchup_calendar 12, companion 10, milestone7 7, workflows 5, agent 5, plain_language 2, dual_view 12, welcome 3, landing 2, tour 5, cards 4, impression 5, qa_display 2, final_dash 3, story_charts 3); Codex's probes show R1–R4 and the gap fixed.
+- Tests: 6 regressions in `tests/test_record_calendar.py` (incl. a two-thread race); browser suite strengthened (server-derived dates, keyboard focus, Yes branch, dashed style, future days, clinician has no edit button, element overflow, sharing restored in `finally`).
 
 ### 2026-10-15 — Gemini (Antigravity) — Review 2: catch-up/calendar UI and browser suite
 - Fast-forwarded `improve/feature-gemini` to `origin/main` `ab1dd09`. Added `docs/BACKLOG_AND_CALENDAR_REVIEW2_GEMINI.md` (reviews `aura_ui/catchup.js` and `tests/browser/catchup_calendar.cjs`; recommendations only, no code changed).
