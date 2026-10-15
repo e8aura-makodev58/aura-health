@@ -272,3 +272,16 @@ welcome back; no horizontal scroll.
 ### 9.6 Order
 Codex 9.2 and Claude 9.3 in parallel (Claude mocks 9.2 responses until Codex lands) → Gemini 9.4 →
 Claude final review, fixes, full test runs, merge, deploy, live check.
+
+### 9.7 Built (2026-10-15, Claude)
+Codex and Gemini had made no commits on their branches by the eve of the deadline, so Claude, as the final
+gate, built §9.2 and §9.4 as well, keeping this contract. Differences worth knowing:
+- Past-day saves use source `patient_medication_backfill` and go through `process_batch` (one transaction).
+  Idempotency key = patient + day + request; an exact retry is reported in `replayed`, a changed payload or
+  a day that already has a record gives `409 UPDATE_CONFLICT`. Safety must be normal at save (`409 SAFETY_ACTIVE`).
+- `GET /coverage` also returns `today`; `medication_gap` also returns `prompt` (true at ≥3 unresolved days).
+- Calendar responses add `future`, `viewer` and `record_start`; day detail adds `today` and `future`.
+  Ideas chosen are shown to both viewers; notes/activities are null for the clinician when withheld and
+  for anyone outside the normal safety state.
+- Medication rows in evidence carry `day` (described local day) and `reported_later`; agent facts read
+  "Medication-routine record {day}: {status} (reported later on {report day})." plus one coverage fact.

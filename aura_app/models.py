@@ -126,7 +126,9 @@ MISSED_REASONS = {
 
 def valid_medication_payload(payload: Any) -> bool:
     """Exact categorical input shape. No free text or model interpretation."""
-    if not isinstance(payload, dict) or not {"scheduled_time", "status"} <= set(payload) <= {"scheduled_time", "status", "reason"}:
+    if not isinstance(payload, dict) or not {"scheduled_time", "status"} <= set(payload) <= {"scheduled_time", "status", "reason", "reported_later"}:
+        return False
+    if "reported_later" in payload and payload["reported_later"] is not True:
         return False
     if not isinstance(payload["status"], str) or payload["status"] not in {"ACKNOWLEDGED", "MISSED", "UNKNOWN"}:
         return False

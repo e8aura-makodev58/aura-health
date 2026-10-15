@@ -269,6 +269,8 @@ class PatientEventService:
             detail["scheduled_time"] = event.payload["scheduled_time"]
             if "reason" in event.payload:
                 detail["reason"] = event.payload["reason"]
+            if event.payload.get("reported_later"):
+                detail["reported_later"] = True
         elif kind == EventType.CONTEXT_EVENT:
             repo.save_context({"event_id": event.event_id, "patient_id": event.patient_id,
                                "start_at": event.payload["start"], "end_at": event.payload.get("end"),

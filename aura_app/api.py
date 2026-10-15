@@ -98,6 +98,17 @@ class MedicationUpdateTextIn(BaseModel):
     request_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
     text: str = Field(min_length=1, max_length=500)
 
+class MedicationDayIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    status: Literal["ACKNOWLEDGED", "MISSED", "UNKNOWN"]
+    reason: str | None = None
+
+class MedicationUpdateIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    request_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    days: list[MedicationDayIn] = Field(min_length=1, max_length=14)
+
 class SharingIn(BaseModel):
     model_config = {"extra": "forbid", "strict": True}
     notes: bool | None = None
@@ -183,6 +194,8 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
 
     @app.post("/patients/{patient_id}/events")
     def ingest(patient_id: str, body: EventIn):
+        if body.event_type == EventType.MEDICATION_EVENT and "reported_later" in body.payload:
+            raise AppError("INVALID_EVENT", "Past days are updated through the medication update path")
         return service.process(envelope(patient_id, body))
 
     @app.post("/patients/{patient_id}/events/{event_id}/communication")
@@ -260,8 +273,30 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def medication_ask(patient_id: str, body: MedicationAskIn):
         return medication_service.ask(patient_id, **body.model_dump())
 
+    from .record_calendar import RecordCalendarService
+    calendar_service = RecordCalendarService(service, sharing_service)
     from .medication_update import MedicationUpdateService
-    medication_update = MedicationUpdateService(service, agent_service.provider)
+    medication_update = MedicationUpdateService(service, agent_service.provider, window=calendar_service.window_with_now)
+
+    @app.get("/patients/{patient_id}/medication/update-window")
+    def medication_update_window(patient_id: str):
+        return calendar_service.update_window(patient_id)
+
+    @app.post("/patients/{patient_id}/medication/update")
+    def medication_update_save(patient_id: str, body: MedicationUpdateIn):
+        return calendar_service.save(patient_id, request_id=body.request_id, days=[day.model_dump(exclude_none=True) for day in body.days])
+
+    @app.get("/patients/{patient_id}/coverage")
+    def record_coverage(patient_id: str):
+        return calendar_service.coverage(patient_id)
+
+    @app.get("/patients/{patient_id}/calendar")
+    def record_calendar(patient_id: str, month: str | None = None, viewer: Literal["patient", "clinician"] = "patient"):
+        return calendar_service.calendar(patient_id, month, viewer)
+
+    @app.get("/patients/{patient_id}/calendar/{day}")
+    def record_calendar_day(patient_id: str, day: str, viewer: Literal["patient", "clinician"] = "patient"):
+        return calendar_service.day(patient_id, day, viewer)
 
     @app.post("/patients/{patient_id}/medication/update/interpret")
     def medication_update_interpret(patient_id: str, body: MedicationUpdateTextIn):
@@ -334,7 +369,7 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def patient_asset(asset_name: str):
         if asset_name == "plain_terms.json":
             return FileResponse(ui.parent / "aura_agent" / "plain_terms.json")
-        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "evidence.css", "agent.js", "features.js", "companion.js", "tour.js"}:
+        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "evidence.css", "agent.js", "features.js", "companion.js", "tour.js", "catchup.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)
 

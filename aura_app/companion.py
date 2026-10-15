@@ -88,6 +88,18 @@ class CompanionService:
         self.clock = clock or (lambda: datetime.now(timezone.utc))
 
     def get(self, patient_id):
+        data = self._get(patient_id)
+        # Gentle prompt for unrecorded past days: normal safety state only (spec §9.2).
+        from .record_calendar import RecordCalendarService
+        try:
+            data["medication_gap"] = (RecordCalendarService(self.events, None).medication_gap(patient_id)
+                                      if data["safety_normal"] and data["medication"] else None)
+        except AppError:
+            data["medication_gap"] = None  # no record yet: nothing to fill in
+
+        return data
+
+    def _get(self, patient_id):
         with self.events.repositories.transaction() as repo:
             patient = self.events._patient(repo, patient_id)
             try:

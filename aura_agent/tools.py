@@ -38,6 +38,11 @@ class RecordTools:
                 self.required.add(fid)
 
         add("get_status", "committed:status", f"Recorded period ends {end or 'with no entries'}. Current communication decision: {evidence['current_decision']}.")
+        if evidence.get("record_coverage"):
+            c = evidence["record_coverage"]
+            add("get_status", "committed:coverage", f"Record coverage: last medication-routine record {c['last_medication_day'] or 'none'}; "
+                f"{c['reported_later_in_window']} of the last {c['window_days']} days reported later; last check-in {c['last_checkin_day'] or 'none'}; "
+                f"latest wearable day {c['last_wearable_day'] or 'none'}.")
         active_key = None
         for active_key, signal in self.keys.items():
             key, label = signal["key"], signal["label"]
@@ -139,9 +144,11 @@ class RecordTools:
                     'window_days':checkin_days, 'recorded_days':len(recent), 'start':start, 'end':end[:10],
                     'run_start':latest_run['start'], 'run_end':latest_run['end'],
                     'run_days':len(latest_run['source_refs']), 'source_refs':[row['event_id'] for row in recent]}
-        for row in evidence["medication"][-8:]:
-            if not row["deferred"] and row["at"][:10] >= cutoff:
-                add("get_decisions", row["event_id"], f"Medication-routine record {row['at'][:10]}: {row['status']}.")
+        for row in sorted(evidence["medication"], key=lambda r: r.get("day") or r["at"][:10])[-8:]:
+            day = row.get("day") or row["at"][:10]
+            if not row["deferred"] and day >= cutoff:
+                later = f" (reported later on {row['at'][:10]})" if row.get("reported_later") else ""
+                add("get_decisions", row["event_id"], f"Medication-routine record {day}: {row['status']}{later}.")
         for row in evidence["held"]:
             active_key = next((key for key, s in self.keys.items() if s['key']['signal']==row['signal'] and s['key']['source']==row['source'] and (s['key'].get('metric') or '')==(row.get('metric') or '')), None)
             add("get_review_snapshot", f"held:{row['signal']}:{row['source']}:{row['direction']}",

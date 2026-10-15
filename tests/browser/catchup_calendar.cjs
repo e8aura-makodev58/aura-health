@@ -1,0 +1,107 @@
+/* Past medication records, calendar, welcome back and coverage (spec §9.5 IDs). Hosted synthetic fixture only. */
+'use strict';
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const base=process.env.AURA_BROWSER_URL;
+if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Local synthetic fixture only');
+const noScroll=page=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);
+
+async function run(browser,width){
+ const tag=width<500?'PHONE':'LAPTOP';
+ const context=await browser.newContext({viewport:{width,height:900}}),errors=[];
+ const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ const loaded=()=>page.waitForFunction(()=>window.auraAgentContext().record&&document.getElementById('notice').hidden);
+ await page.goto(base);await loaded();
+ await page.getByRole('button',{name:'Patient',exact:true}).click();
+ // 1 · the gentle prompt on the dose card
+ await page.waitForSelector('#med-update-line:not([hidden])');
+ assert.match(await page.locator('#med-update-line').innerText(),/of the last 14 days have no medication record/);
+ await page.locator('#dose-card .dose-btn[data-dose="ACKNOWLEDGED"]').click();
+ await page.waitForFunction(()=>window.auraCompanionData?.dose_today?.status==='ACKNOWLEDGED',null,{timeout:20000});
+ console.log(`CU1_${tag}_PROMPT PASS`);
+ // 2 · tap-only: today's recorded dose is locked, two past days set by tapping, nothing saved before Save
+ await page.locator('#med-update-open').click();
+ await page.waitForSelector('#med-update-dialog[open]');
+ assert.equal(await page.locator('#med-update-save').isDisabled(),true);
+ await page.locator('#med-update-tap').click();
+ const days=page.locator('#med-update-preview .med-day');
+ assert.equal(await days.count(),14);
+ const last=days.last();
+ assert.equal(await last.getAttribute('data-locked'),'true');assert.equal(await last.isDisabled(),true);
+ const a=days.nth(11),b=days.nth(12),aDate=await a.getAttribute('data-date'),bDate=await b.getAttribute('data-date');
+ await a.click();
+ await page.locator(`#med-update-preview .med-day[data-date="${bDate}"]`).click();
+ await page.locator(`#med-update-preview .med-day[data-date="${bDate}"]`).click();
+ assert.equal(await page.locator(`#med-update-preview .med-day[data-date="${aDate}"]`).getAttribute('data-status'),'ACKNOWLEDGED');
+ assert.equal(await page.locator(`#med-update-preview .med-day[data-date="${bDate}"]`).getAttribute('data-status'),'MISSED');
+ assert.equal(await noScroll(page),true,'dialog fits');
+ await page.locator('#med-update-save').click();
+ await page.waitForSelector('#med-update-result:not([hidden])');
+ assert.match(await page.locator('#med-update-result').innerText(),/Saved 2 days/);
+ assert.equal(await page.locator(`#med-update-preview .med-day[data-date="${aDate}"]`).getAttribute('data-locked'),'true');
+ await page.locator('#med-update-close').click();
+ console.log(`CU2_${tag}_TAP_SAVE_LOCKED PASS`);
+ // 3 · typed update (agent proposal mocked): "most days" styling and the one question
+ await page.route('**/medication/update/interpret',async route=>{
+  const window=await (await page.request.get(`${base}/patients/${encodeURIComponent(await page.evaluate(()=>window.auraAgentContext().patientId))}/medication/update-window`)).json();
+  const open=window.days.filter(d=>!d.locked);
+  await route.fulfill({json:{status:'PROPOSED',window,question:`Were ${open[1].weekday} the only days you missed?`,out_of_window:[],advice_request:false,message:null,
+   days:[{date:open[0].date,status:'ACKNOWLEDGED',basis:'from_most_days'},{date:open[1].date,status:'MISSED',basis:'explicit'}]}});
+ });
+ await page.locator('#med-update-open').click();await page.waitForSelector('#med-update-dialog[open]');
+ await page.locator('#med-update-text').fill('I took it most days except one');
+ await page.locator('#med-update-interpret').click();
+ await page.waitForSelector('#med-update-question:not([hidden])');
+ assert.equal(await page.locator('#med-update-preview .med-day[data-basis="from_most_days"]').count(),1);
+ assert.equal(await page.locator('#med-update-save').isDisabled(),true,'question first');
+ await page.locator('#med-update-no').click();
+ assert.equal(await page.locator('#med-update-preview .med-day[data-basis="from_most_days"]').count(),0,'No leaves them unresolved');
+ assert.equal(await page.locator('#med-update-save').isDisabled(),false);
+ await page.locator('#med-update-close').click();await page.unroute('**/medication/update/interpret');
+ console.log(`CU3_${tag}_MOST_DAYS_QUESTION PASS`);
+ // 4 · patient calendar: reported-later markers and day detail
+ await page.locator('#calendar-link').click();
+ await page.waitForSelector('#calendar-view:not([hidden]) #calendar-grid .cal-day');
+ const cell=page.locator(`#calendar-grid .cal-day[data-date="${bDate}"]`);
+ assert.equal(await cell.locator('.cal-med').getAttribute('data-status'),'MISSED');
+ assert.equal(await cell.locator('.cal-med').getAttribute('data-reported-later'),'true');
+ assert.ok(await page.locator('#calendar-grid .cal-checkin[data-state]').count()>0);
+ assert.match(await page.locator('#calendar-legend').innerText(),/blank day means nothing was recorded/);
+ await cell.click();await page.waitForSelector('#calendar-detail:not([hidden])');
+ assert.match(await page.locator('#calendar-detail').innerText(),/Missed · filled in later/);
+ assert.equal(await noScroll(page),true,'calendar fits');
+ await page.locator('#calendar-prev').click();
+ await page.waitForFunction(m=>document.getElementById('calendar-month').textContent!==m,await page.locator('#calendar-month').innerText());
+ console.log(`CU4_${tag}_PATIENT_CALENDAR PASS`);
+ // 5 · clinician calendar: Everything vs Minimum only; coverage strip
+ await page.getByRole('button',{name:'Clinician',exact:true}).click();
+ await page.waitForFunction(()=>/filled in later/.test(document.getElementById('record-coverage').textContent)&&!document.getElementById('record-coverage').hidden);
+ assert.match(await page.locator('#record-coverage').innerText(),/^Record coverage: last medication record \w{3} \d+ \w{3} \(2 of the last 14 days filled in later\)/);
+ await page.locator('#clinician-calendar-link').click();
+ await page.waitForSelector('#calendar-view:not([hidden]) #calendar-grid .cal-day');
+ assert.ok(await page.locator('#calendar-grid .cal-checkin').count()>0,'everything shared');
+ await page.evaluate(()=>window.auraSaveSharing({notes:false,readings:false,checkin_history:false,activity_details:false}));
+ await page.evaluate(()=>{location.hash='patterns';});await page.waitForSelector('#patterns-view:not([hidden])');
+ await page.locator('#clinician-calendar-link').click();
+ await page.waitForFunction(()=>!document.querySelector('#calendar-view').hidden&&document.querySelectorAll('#calendar-grid .cal-day').length&&!document.querySelector('#calendar-grid .cal-checkin'));
+ assert.equal(await page.locator(`#calendar-grid .cal-day[data-date="${bDate}"] .cal-med`).getAttribute('data-status'),'MISSED','medication stays');
+ await page.locator(`#calendar-grid .cal-day[data-date="${bDate}"]`).click();await page.waitForSelector('#calendar-detail:not([hidden])');
+ assert.match(await page.locator('#calendar-detail').innerText(),/Not shared by the patient: detailed readings/);
+ await page.evaluate(()=>window.auraSaveSharing({notes:true,readings:true,checkin_history:true,activity_details:true}));
+ assert.equal(await noScroll(page),true);
+ console.log(`CU5_${tag}_CLINICIAN_SHARING PASS`);
+ // 6 · welcome back after a long gap (coverage mocked)
+ await page.route('**/coverage',route=>route.fulfill({json:{today:'2026-03-11',last_medication_day:'2026-02-20',reported_later_in_window:0,window_days:14,last_checkin_day:'2026-02-21',last_wearable_day:'2026-03-11'}}));
+ await page.getByRole('button',{name:'Patient',exact:true}).click();
+ await page.evaluate(()=>{location.hash='home';});
+ await page.waitForSelector('#welcome-back:not([hidden])');
+ assert.match(await page.locator('#welcome-back').innerText(),/Welcome back\. You can carry on from today/);
+ await page.unroute('**/coverage');
+ console.log(`CU6_${tag}_WELCOME_BACK PASS`);
+ assert.deepEqual(errors,[]);
+ await context.close();
+}
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ try{await run(browser,390);await run(browser,1280);}finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exit(1);});

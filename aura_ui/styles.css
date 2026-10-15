@@ -529,3 +529,75 @@ body[data-role="clinician"][data-share-readings="no"] #evidence-charts,
 body[data-role="clinician"][data-share-readings="no"] #record-comparison-toggle,
 body[data-role="clinician"][data-share-readings="no"] #record-comparison,
 body[data-role="clinician"][data-share-checkin-history="no"] .reports-card {display:none !important}
+
+/* Past medication records, calendar, welcome back, coverage (spec §9.3) */
+.med-update-line {margin-top:12px;padding:12px 14px;border-radius:var(--radius-md);background:var(--surface-soft);display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.med-update-line p {margin:0;flex:1 1 100%;font-size:.92rem}
+.med-update-actions {display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:10px 0}
+#med-update-dialog textarea {width:100%;box-sizing:border-box}
+.med-update-preview {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:12px 0 6px}
+.med-day {display:flex;flex-direction:column;align-items:center;gap:2px;min-height:64px;padding:6px 2px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white);color:var(--ink);font-size:.78rem;cursor:pointer}
+.med-day-num {font-weight:700;font-size:.95rem}
+.med-day-mark {font-size:1.05rem;line-height:1.2;color:var(--muted)}
+.med-day[data-status="ACKNOWLEDGED"] .med-day-mark {color:#2f7a45}
+.med-day[data-status="MISSED"] .med-day-mark {color:#b2412e}
+.med-day[data-status="UNKNOWN"] .med-day-mark {color:var(--accent-ink)}
+.med-day[data-basis="explicit"] {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.med-day[data-basis="from_most_days"] {border:2px dashed var(--accent-sunny);background:var(--warning-bg)}
+.med-day[data-locked="true"] {background:var(--surface-soft);color:var(--muted);cursor:default;opacity:.75}
+.med-update-question {margin:12px 0;padding:12px 14px;border-radius:var(--radius-md);background:var(--warning-bg);border:1px solid var(--warning-border)}
+.med-update-question p {margin:0 0 10px;font-weight:600}
+.med-update-question button {margin-right:8px;min-width:72px}
+#med-update-save {margin-top:12px;width:100%}
+#med-update-result {margin-top:12px;font-weight:600;color:var(--ink)}
+.welcome-back {margin:0 0 16px;padding:14px 16px;border-radius:var(--radius-lg);background:var(--surface-soft);font-size:.98rem}
+.relearning-line {margin:6px 0 0;font-size:.9rem;color:var(--ink-soft)}
+.record-coverage {margin:0 0 10px;padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--line);font-size:.9rem;color:var(--ink-soft)}
+.clinician-calendar-link {display:inline-block;margin:0 0 14px}
+body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #record-coverage {display:none}
+/* calendar */
+.calendar-head {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 8px}
+.calendar-head h2 {margin:0;font-size:1.25rem;text-align:center;flex:1}
+.calendar-head button {width:44px;height:44px;border-radius:var(--radius-pill);font-size:1.4rem;padding:0}
+.calendar-head button:disabled {opacity:.35}
+.calendar-weekdays, .calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calendar-weekdays span {text-align:center;font-size:.75rem;color:var(--muted);padding:4px 0}
+.cal-day {position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;min-height:58px;padding:6px 2px 8px;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:var(--white);color:var(--ink);font:inherit;cursor:pointer;overflow:hidden}
+.cal-day:disabled {background:transparent;color:var(--muted);cursor:default;opacity:.55}
+.cal-day.today {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.cal-day[aria-pressed="true"] {background:var(--surface-soft);border-color:var(--ink-soft)}
+.cal-num {font-size:.85rem;font-weight:700}
+.cal-marks {display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;min-height:18px}
+.cal-med {display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:.7rem;font-weight:800;color:var(--white);background:#2f7a45}
+.cal-med[data-status="MISSED"] {background:#b2412e}
+.cal-med[data-status="UNKNOWN"] {background:var(--accent-ink)}
+.cal-med[data-reported-later="true"] {background:var(--white);color:#2f7a45;box-shadow:inset 0 0 0 2px #2f7a45}
+.cal-med[data-reported-later="true"][data-status="MISSED"] {color:#b2412e;box-shadow:inset 0 0 0 2px #b2412e}
+.cal-med[data-reported-later="true"][data-status="UNKNOWN"] {color:var(--accent-ink);box-shadow:inset 0 0 0 2px var(--accent-ink)}
+.cal-checkin {display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent-leaf)}
+.cal-checkin[data-state="Okay"] {background:var(--accent-ink)}
+.cal-checkin[data-state="Rough"] {background:var(--accent-coral)}
+.cal-note {font-size:.75rem;color:var(--ink-soft);display:none}
+.cal-cover {position:absolute;left:8px;right:8px;bottom:3px;height:3px;border-radius:2px;background:var(--accent-blue);display:none}
+.cal-cover[data-coverage="partial"] {right:50%}
+.cal-cover[data-coverage="none"] {background:var(--line)}
+.cal-blank {min-height:58px}
+.calendar-legend {margin-top:16px}
+#calendar-view {max-width:920px}
+.calendar-legend li.cal-cover-legend {display:none}
+.calendar-legend h2 {font-size:1rem;margin:0 0 8px}
+.calendar-legend ul {list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 12px;font-size:.85rem}
+.calendar-legend li {display:flex;align-items:center;gap:8px}
+.calendar-legend .cal-cover.sample {position:static;display:inline-block;width:18px}
+.calendar-detail {margin-top:16px}
+.calendar-detail h2 {margin-top:0}
+.cal-section h3 {font-size:.95rem;margin:14px 0 4px}
+.cal-section p, .cal-section ul {margin:0;font-size:.92rem}
+.cal-section ul {padding-left:18px}
+.not-shared {color:var(--muted)}
+@media (min-width:700px) {
+  .cal-day {min-height:76px}
+  .cal-note {display:inline}
+  .cal-cover {display:block}
+  .calendar-legend li.cal-cover-legend {display:flex}
+}

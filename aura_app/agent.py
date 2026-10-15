@@ -153,7 +153,8 @@ class AgentService:
             evidence['agent_assessed_context_ids'] = sorted(assessed)
             evidence['assessed_notes'] = [{'event_id': row['event_id'], 'at': row['occurred_at'], 'text': row['payload']['text']}
                 for row in repo.events(patient_id) if row['event_type'] == 'PATIENT_FREE_TEXT'
-                and row['event_id'] in assessed and not row['longitudinal_deferred']]
+                and row['event_id'] in assessed and not row['longitudinal_deferred']
+                and row['source'] != 'patient_medication_update']
             # Patient-reported activities reach the agent as aggregates only (no phrases).
             notes = {row['event_id'] for row in evidence['assessed_notes']}
             activity_rows = [{'at': row['occurred_at'], 'items': row['detail']['items']} for row in repo.timeline(patient_id)
@@ -164,6 +165,12 @@ class AgentService:
                 summary = summarize(activity_rows, _dt.fromisoformat(evidence['period']['end']).date())
                 evidence['activity_summary'] = {'text': summary_text(summary), 'summary': summary,
                                                 'ref': 'activity-summary:' + summary['recent']['end']}
+        # Record coverage is metadata (minimum-shared): when things were last recorded, not what they said.
+        try:
+            from .record_calendar import RecordCalendarService
+            evidence['record_coverage'] = RecordCalendarService(self.events, None).coverage(patient_id)
+        except AppError:
+            pass
         return RecordTools(evidence, role, window_days=window_days, recent_readings_days=self.config.recent_readings_days, withheld=withheld,
                            checkin_days=self.config.checkin_days), evidence
 

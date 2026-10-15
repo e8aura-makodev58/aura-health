@@ -99,8 +99,8 @@ function showSafety(output) {
 
 function goPage() {
   const requested = location.hash.slice(1) || "home";
-  let page = requested==='disclaimer'?'about':["home", "patterns", "review", "about"].includes(requested) ? requested : "home";
-  if (presentationRole === "clinician" && page !== "about") page = "patterns";
+  let page = requested==='disclaimer'?'about':["home", "patterns", "review", "calendar", "about"].includes(requested) ? requested : "home";
+  if (presentationRole === "clinician" && !["about", "calendar"].includes(page)) page = "patterns";
   document.body.dataset.role = presentationRole;
   $('baseline-legend').textContent=presentationRole==='patient'?'Your usual':'Baseline';
   $('agent-workspace').hidden=presentationRole==='patient';
@@ -354,6 +354,7 @@ async function submitEvent(type, payload, special = false) {
 }
 // Exposed for companion.js dose recording — uses the same path, idempotency and refresh cycle.
 window.auraSubmitEvent = submitEvent;
+window.auraRefresh = () => refresh();
 async function sendPending() {
   if (busy || !pending) return; busy = true; toggleBusy(true);
   try {

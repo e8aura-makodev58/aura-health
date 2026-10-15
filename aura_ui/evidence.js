@@ -132,6 +132,9 @@
       const availability = current.rolling.coverage_ratio;
       card.append(node("p",`Data for ${availability == null ? 'an unknown number of' : Math.round(availability*14)} of 14 days · ${current.rolling.sample_count} readings.`,"fine"));
       if (current.trust_state === "REESTABLISHING") card.append(node("p","Usual being learned again; review still needed.","fine"));
+      // Honest about the actual state; never promises automatic recovery.
+      if (patient && (current.sensing_state === "UNOBSERVED" || current.trust_state === "REESTABLISHING"))
+        card.append(node("p",`AURA doesn't currently have a usable reference for your ${signal.label.toLowerCase()}.`,"relearning-line"));
     }
     const sources = node("section",null,"chart-sources"); sources.append(node("h3",`${signal.label} — dates, sources & exact values`));
     sources.append(node("p","From: your measurements. Missing days are left blank.","fine"));

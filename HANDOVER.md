@@ -32,7 +32,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (documentation updated 2026-10-14; implementation evidence dated below)
 
-- **Brainstorming only (user, 2026-10-15):** Gemini joined the team; user requested review of Claude's catch-up/calendar proposal, with Gemini's independent review to follow. Codex review: `docs/BACKLOG_AND_CALENDAR_REVIEW_CODEX.md`, against remote `5eba9fb`. No implementation/work split/deployment authorized in this session. Local runtime remains at `ecfa8b8`; newer remote implementation was read without merging.
+- **Catch-up + calendar built (2026-10-15, Claude, final gate):** spec `docs/BACKLOG_AND_CALENDAR_SPEC.md` §9. Codex and Gemini had no commits on their branches by the deadline eve, so Claude built §9.2 (backend) and §9.4 (browser suite) too. Backend `aura_app/record_calendar.py` (update window, save past days as `reported_later` medication events, coverage, calendar + day detail with sharing filters) and `aura_app/medication_update.py` (interpret typed text: safety first, `medication_backfill` agent task, checked proposal). UI `aura_ui/catchup.js` (dose-card prompt, update dialog + preview, calendar page for patient and clinician, welcome back, coverage strip) plus a relearning line in `evidence.js`. Tests `tests/test_record_calendar.py`, `tests/test_medication_update.py`, browser `tests/browser/catchup_calendar.cjs` (phone + laptop).
 
 - **Codex Q&A calculations (2026-10-14, branch delivery):** from main `eac0334`, added read-only `summarize_checkins` for arbitrary supported windows/categories, deterministic percentages/counts/coverage, cited derived facts and a bounded missing-answer repair. Prompt v12; exact calculated display sentences preserve denominator/dates/missingness. Existing engines and shared patient percentage restrictions unchanged. See `docs/CLINICIAN_QA_CALCULATIONS.md`. Full355 tests PASS/492.432s plus final focused10 PASS; Claude merges/deploys later, no live-model calls in this task.
 
@@ -113,7 +113,6 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Catch-up/calendar proposal:** resolve ambiguous day inference, retrospective event timestamps, retry/conflict semantics, calendar sharing and honest return/relearning wording with the user and Gemini. See Codex's review for Q1–Q11; recommendations are not accepted decisions.
 
 - **Medication request identity resolved:** current `MedicationAskService` includes the exact question hash in the patient event identity; changed text with a reused run ID gets a fresh safety assessment. Regression MED4b exists; historical495087d finding is closed in the code inspected at90e31ea.
 - **Companion integration assumptions:** no booked-appointment field exists, so `coming_up` emits the stored medication review and refill estimate without an invented APPOINTMENT entry. Demo day is the latest recorded local day;08:00 is a configurable synthetic display hour. Counts are latest patient reports per day for the once-daily single-medication fixture, not verified adherence or a multi-dose regimen. Pharmacist/content review remains open. See backend notes for integration dependencies and stale M6 browser assertions.
@@ -221,7 +220,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
-- **Current discussion:** compare Gemini's forthcoming review with Claude's proposal and Codex's review; agree feature scope before coding. No new agent invocation or deployment inferred.
+- **Catch-up + calendar:** Codex and Gemini may still review the merged code (spec §9.2/§9.4) and report problems in their handover entries; Claude fixes. Do not rebuild these on your branches; pull `main` first.
 
 - **Claude review/merge:** Codex's `docs/CLINICIAN_QA_CALCULATIONS.md` describes the new Q&A tool/harness and limits. Rehearse the original Rough-days percentage question after merge/deployment; check actual model tool selection and answer, not just mock success. Preserve concurrent patient-reply work when merging.
 
