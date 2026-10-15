@@ -76,9 +76,10 @@ was working unless the message says otherwise.
 
 ## If the green machine itself is down
 
-The script (and anything running on green, such as the Telegram agent) is unavailable. Blue keeps
-serving on its own. If blue's connector must be started by hand, use the Tencent Lighthouse web
-terminal (as user `ubuntu`):
+The script runs on green, so it is unavailable. An assistant on another machine that reaches green
+over SSH (such as the owner's Telegram agent) will report green as NOT REACHABLE; it must **not**
+start blue's connector itself. Blue keeps serving on its own. If blue's connector must be started by
+hand, the **owner** uses the Tencent Lighthouse web terminal (as user `ubuntu`):
 
 ```
 cd ~/aura-health && docker compose -f compose.yaml -f compose.tunnel.yaml up -d cloudflared
