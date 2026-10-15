@@ -36,7 +36,7 @@ function renderGap(data) {
 if (typeof renderCompanion === "function") {
   const baseRender = renderCompanion;
   // eslint-disable-next-line no-global-assign
-  renderCompanion = function (data) { baseRender(data); renderGap(data); renderWelcomeBack(); };
+  renderCompanion = function (data) { baseRender(data); renderGap(data); renderWelcomeBack(); updateShortcuts(); };
 }
 byId("med-update-dismiss").addEventListener("click", () => {
   try { sessionStorage.setItem(dismissedKey(), "1"); } catch { /* storage unavailable */ }
@@ -285,6 +285,25 @@ window.addEventListener("aura-record-view", () => {
   if (!onCalendar) calendarFor = null;
   if (role() === "clinician") loadCoverage();
 });
+
+/* ---- home shortcuts: jump to a card, or open a page ------------------------------------ */
+function updateShortcuts() {
+  // A shortcut shows only when its card does (the safety pathway hides the companion cards).
+  for (const link of document.querySelectorAll("#home-shortcuts [data-jump]")) {
+    const card = byId(link.dataset.jump);
+    link.hidden = !card || card.hidden || card.closest("[hidden]") !== null;
+  }
+}
+for (const link of document.querySelectorAll("#home-shortcuts [data-jump]")) link.addEventListener("click", event => {
+  event.preventDefault();
+  const card = byId(link.dataset.jump);
+  if (!card) return;
+  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  card.setAttribute("tabindex", "-1");
+  card.scrollIntoView({block: "start", behavior: still ? "auto" : "smooth"});
+  card.focus({preventScroll: true});
+});
+window.addEventListener("aura-record-view", updateShortcuts);
 
 /* ---- welcome back (patient) and record coverage (clinician) --------------------------- */
 let coverageFor = null, coverage = null;

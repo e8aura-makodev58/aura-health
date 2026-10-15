@@ -601,3 +601,15 @@ body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #r
   .cal-cover {display:block}
   .calendar-legend li.cal-cover-legend {display:flex}
 }
+
+/* Home shortcuts: small icon jumps to each card and page */
+.home-shortcuts {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px;margin:0 0 18px}
+.home-shortcuts a {display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 2px;border-radius:var(--radius-md);color:var(--ink);text-decoration:none;font-size:.75rem;font-weight:600;line-height:1.15;text-align:center;min-height:44px}
+.home-shortcuts a[hidden] {display:none}
+.home-shortcuts a:hover .shortcut-icon {background:var(--surface-soft);box-shadow:var(--shadow-md)}
+.home-shortcuts a:focus-visible {outline:3px solid var(--focus);outline-offset:2px}
+.shortcut-icon {display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--white);border:1px solid var(--line);box-shadow:var(--shadow-sm);font-size:1.15rem;color:var(--accent-ink);transition:box-shadow var(--dur-fast) var(--ease-out)}
+#home-view .card, #home-view .companion-card, #home-view .appointment-link {scroll-margin-top:16px}
+@media (min-width:700px) {
+  .home-shortcuts {grid-template-columns:repeat(7,minmax(0,1fr));max-width:640px}
+}

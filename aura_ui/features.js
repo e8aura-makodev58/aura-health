@@ -150,5 +150,5 @@
   tries.append(tryList);story.append(tries);
   byId('demo-panel').prepend(story);
   // Appointment entry is a one-tap card; its record count is filled by renderReview.
-  byId('home-view').querySelector('.page-intro').after(byId('month-recap'));
+  (byId('home-shortcuts')||byId('home-view').querySelector('.page-intro')).after(byId('month-recap'));
 })();

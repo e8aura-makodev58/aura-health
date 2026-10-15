@@ -23,6 +23,15 @@ async function run(browser,width){
  await page.locator('#dose-card .dose-btn[data-dose="ACKNOWLEDGED"]').click();
  await page.waitForFunction(()=>window.auraCompanionData?.dose_today?.status==='ACKNOWLEDGED',null,{timeout:20000});
  console.log(`CU1_${tag}_PROMPT PASS`);
+ // 1b · icon shortcuts under the heading: each visible card has one; a jump brings the card to the top
+ assert.equal(await page.locator('#home-shortcuts a:not([hidden])').count(),7);
+ const [navY,recapY]=await page.evaluate(()=>[document.getElementById('home-shortcuts').getBoundingClientRect().top,document.getElementById('month-recap').getBoundingClientRect().top]);
+ assert.ok(navY<recapY,'shortcuts sit above the summary');
+ await page.locator('#home-shortcuts a[data-jump="suggestion-card"]').click();
+ await page.waitForFunction(()=>Math.abs(document.getElementById('suggestion-card').getBoundingClientRect().top-16)<4||innerHeight+scrollY>=document.documentElement.scrollHeight-2);
+ assert.equal(await page.evaluate(()=>document.activeElement.id),'suggestion-card');
+ await page.evaluate(()=>scrollTo(0,0));
+ console.log(`CU1b_${tag}_SHORTCUTS PASS`);
  // 2 · tap-only: today's recorded dose is locked, two past days set by tapping, nothing saved before Save
  await page.locator('#med-update-open').click();
  await page.waitForSelector('#med-update-dialog[open]');

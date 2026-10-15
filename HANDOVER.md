@@ -310,6 +310,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-15 — Claude — Home icon shortcuts (user request)
+- User: calendar was hard to find at the bottom and every card needed scrolling. Added `#home-shortcuts` under the home heading: Dose, Medicine, Coming up, Ideas (jump to the card, focus it, reduced-motion aware; hidden when the card is hidden, e.g. safety state) and Calendar, Appointment, My data (open the page). One row on laptop, 4+3 grid on phone. `features.js` now places the summary after the shortcuts.
+- Verified: `catchup_calendar.cjs` 14 checks (new CU1b) plus welcome, landing, tour, companion, cards, dual_view, impression, final_dash, plain_language, milestone7 PASS; live check after deploy.
+
 ### 2026-10-15 — Claude — Review 2 consolidated, fixes merged and deployed
 - Merged Codex's and Gemini's review branches (docs + handover entries). Dispositions in `docs/BACKLOG_AND_CALENDAR_SPEC.md` §9.8. Fixed: save race and same-key changed answer (one transaction, 409), described/report days in review snapshot, review items, appointment list and clinician strip; patient-local report day; held input returned as HELD; gap's actual last record day; Gemini's focus retention/announcement, window-load failure, chosen-day focus, retry wording, reduced motion. R5 coverage resolved as a documented contract (signals this record has a source for).
 - Verified: full Python suite **387 OK** (713 s); 15 hosted browser suites PASS (catchup_calendar 12, companion 10, milestone7 7, workflows 5, agent 5, plain_language 2, dual_view 12, welcome 3, landing 2, tour 5, cards 4, impression 5, qa_display 2, final_dash 3, story_charts 3); Codex's probes show R1–R4 and the gap fixed.
