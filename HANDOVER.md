@@ -32,6 +32,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (documentation updated 2026-10-14; implementation evidence dated below)
 
+- **Private pitch deliberation (Codex, 2026-10-16):** completed the requested dated §12 entry in the owner's external, ignored pitch file. Existing text preserved; no pitch content copied into this repo. Reviewed selected source at locked tag `final-demo-day` (`d043803`) without merging it into this branch. This was discussion only, not product/clinical/commercial approval or a deployment check.
+
 - **Judging availability planning (user, 2026-10-15):** unused Proxmox host available, no VM yet; user asks whether a load balancer/working-server failover is best while Claude fixes bugs. Proposal in `docs/JUDGING_AVAILABILITY_PLAN.md`: running standby VM, then external health-based primary/standby routing with separate tunnels/sticky sessions. Current process-local sessions/local SQLite prevent seamless failover; topology and acceptable session restart are pending user answers. No provisioning/code/routing/settings changes or purchase authorized/performed.
 
 - **Catch-up/calendar backend review (Codex, 2026-10-15):** user relayed Claude's assigned review after implementation. Reviewed immutable main `ab1dd09` (feature `1dbcd0c`) against approved spec §9 in an isolated `/tmp` source export; local runtime remains unchanged, no merge/deploy/model calls. Changes requested in `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md`: P1 save transaction/conflict race and lost late-report provenance in appointment/clinician consumers; P2 held-save success response, local report date in agent facts and coverage denominator. Synthetic reproduction harness included. Claude owns fixes/final gate; Gemini owns UI/browser review. Earlier brainstorming-only direction applied to the proposal review, not this newly assigned implementation review.
@@ -104,6 +106,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 - **Signal-registry foundation implemented (DECISIONS §41):** sponsor-editable/versioned `aura_longitudinal/signal_registry.json` and `AURA_SIGNAL_REGISTRY` override; `GET /signals`, typed scalar ingestion, source-linked research/display-only charts and agent evidence. Original four parameter values/rules retained; HRV/respiratory rate/skin deviation enabled E3_RESEARCH; SpO2/BP/thermometer/weight display-only. Calendar coverage is not cadence-discounted or interpolated. New-channel anchors require calendar coverage; configurable absolute spread floor handles zero-centered skin deviation (0.1 °C provisional default). No safety changes, DB schema/dependencies, real intake, simulator agent or flu generator in this step. Details: [`docs/SIGNAL_REGISTRY_IMPLEMENTATION.md`](docs/SIGNAL_REGISTRY_IMPLEMENTATION.md).
 
 ## Open decisions
+
+- **Private pitch:** owner/editor decisions remain pending in the external deliberation document. Keep that document ignored and untracked; do not import its contents into public documentation.
 
 - **Tencent CVM credentials (2026-10-15):** user favors CVM for judging and asks about LLM-key storage; no rollout instruction yet. Current source uses owner-only plaintext JSON, not application-level encryption. Options: retain private store on persistent/encrypted disk for minimal change, or add Tencent SSM retrieval via scoped CVM role. SSM integration is unimplemented; see availability plan. User's expectation of more judging points was not independently verified.
 
@@ -217,6 +221,8 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
+- **Private pitch owner/editor:** review the new Codex §12 entry in the external file and decide any body changes there. No runtime or public pitch edits are authorized by this deliberation task.
+
 - **Availability discussion:** resolve topology/session-continuity choices in `docs/JUDGING_AVAILABILITY_PLAN.md`, then agree VM/standby/routing scope. Claude's bug-fix work remains separate; no automatic infrastructure rollout inferred.
 
 - **Claude final gate:** read `docs/BACKLOG_AND_CALENDAR_REVIEW2_CODEX.md` and its synthetic probes, fix the save race and retrospective appointment/review dates first, then the smaller confirmed findings; compare Gemini's UI/browser review and rerun targeted regressions before final integration. Codex's current assignment is backend review, not the superseded build task.
@@ -308,6 +314,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-16 — Codex — Private pitch deliberation
+- Added the requested dated entry only to §12 of the external ignored pitch; preserved all pre-existing text. Discussed the five opening questions using selected locked-tag source and identified claims needing qualification. No pitch copy/content added to the repo; this handover is the only tracked change.
+- Verified: fetched origin; clean starting status/history; tag `final-demo-day` resolves to `d043803`; external file ignored/untracked before writing; insertion preservation check PASS. Local `test_ui_media.py`: 2 PASS/0.141s (existing Starlette/httpx warning); no full-suite, browser, live/model or deployment verification. Original brief PDF extraction unavailable with installed tools; scoring-list reconciliation explicitly marked [to verify].
+- Left: owner/editor choices and unresolved evidence in the private document. No body edits, implementation, merge or deployment.
 
 ### 2026-10-15 — Codex — Explain current key storage and Tencent CVM options
 - User favors Tencent CVM and asks how LLM keys will be stored. Verified `SystemSettings` and settings UI source: private0700 directory/0600 plaintext JSON, token-protected writes, no saved-key readback/browser persistence. Documented minimal-change private file vs unimplemented SSM/KMS + scoped CVM-role retrieval. No secrets inspected/copied or deployment changes.
