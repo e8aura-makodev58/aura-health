@@ -310,6 +310,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-16 — Claude — Tencent Hy4 preview trial on green (not adopted)
+- User's TokenHub key (file `~/hy.token`, tightened to 0600) stored on green only. TokenHub needed the Hy4 free trial claimed first (HTTP 402 "service ID does not exist" until then).
+- Transport fixes for TokenHub (`aura_communication/vendor.py`, tests in `test_reasoning_setting.py`): thinking off on short wording calls (5 s deadline); agent calls send thinking off for reasoning "none", else `reasoning_effort`; no JSON mode when tools are offered (Hy4 ignores native tools in JSON mode). Legacy Hunyuan endpoint and other providers unchanged.
+- Result: not usable for AURA's agent without prompt/format rework. Medium reasoning: ~30 s per small task, page requests queued behind them, stories stalled. Reasoning none: past-days sentence failed every time (~41 s, tap fallback); clinician agent 0/6 (first never called tools in JSON mode, then plain-text replies → MALFORMED_JSON). Green restored to OpenAI gpt-6-luna medium (connection PASS, story OK). Blue/public never touched. Pitch line: AURA supports Tencent TokenHub (tested with Hy4 preview); production model choice is the institution's.
+
 ### 2026-10-15 — Claude — Switch script help (for the owner and the Telegram agent)
 - `deploy/SWITCH_HELP.md` (also `deploy/switch.sh help`): purpose of blue/green, commands, how to read the output, when to switch, rules for bots (only `status|blue|green|--force|help`; confirm before switching; `--force` only on explicit "force"; never touch containers/tunnel/.env directly), and the manual Lighthouse command if green is down. The user's Telegram agent (Hermes, on the green machine) will call the script.
 
