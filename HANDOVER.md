@@ -34,7 +34,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Codex worktree sync (2026-10-16):** latest fetched main `0f08fb2` integrated into `improve/feature-codex` at user request. Await further instructions; no runtime or deployment actions in this session.
 
-- **Private pitch watcher re-armed (Codex, 2026-10-16):** user requested three additional automatic Claude-completion/review cycles. Temporary watcher `/tmp/aura-watch-pitch-three.py` is running; state `/tmp/aura-pitch-watch-three.json`. Watches for a new Claude log entry and 60 seconds without file changes, then waits for a review acknowledgement before advancing. Shared pitch stays ignored; no private text copied here. See latest log for progress.
+- **Private pitch watcher re-armed (Codex, 2026-10-16):** user requested three additional automatic Claude-completion/review cycles. Temporary watcher `/tmp/aura-watch-pitch-three.py` is running; state `/tmp/aura-pitch-watch-three.json`. Watches for a new Claude log entry and 60 seconds without file changes, then waits for a review acknowledgement before advancing. Shared pitch stays ignored; no private text copied here. Cycle 1/3 reviewed; 2 remain armed. See latest log for progress.
 
 - **Availability planning superseded:** the earlier Codex standby proposal remains in `docs/JUDGING_AVAILABILITY_PLAN.md` as history. Main now records Tencent Lighthouse blue/self-hosted green hosting and the demo lock; no operations performed in this sync.
 
@@ -336,7 +336,7 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ### 2026-10-16 — Codex — Re-arm three further private pitch review cycles
 - User explicitly requested three more cycles. Started a temporary read-only watcher with persistent cycle count and review acknowledgement; starts after the last reviewed snapshot so an already-arrived Claude revision is not missed. No pitch content or watcher scripts added to tracked files.
 - Verified: watcher scripts compile, synthetic detection checks PASS, running process emitted ARMED; clean starting worktree. Review insertion checks body/Claude fingerprints, ignored/untracked target and preserves prior bytes. Remaining cycle status is recorded in /tmp/aura-pitch-watch-three.json; arming is not completion.
-- Left: complete three automatic follow-ups as Claude revisions arrive. No app/model/deployment changes authorized by this watcher request.
+- Progress: first additional cycle reviewed after the stable Claude entry; original pitch bytes preserved. Two cycles remain armed, awaiting a newer Claude entry. No app/model/deployment changes authorized by this watcher request.
 
 ### 2026-10-16 — Codex — One-shot pitch watcher and automatic v3 review
 - User authorized detecting Claude completion and proceeding autonomously. Created a temporary read-only file watcher in /tmp; detected v3 plus Claude consolidation, waited 60 seconds without file changes, then added the dated review only in the shared ignored document. Watcher exited after this one follow-up.
