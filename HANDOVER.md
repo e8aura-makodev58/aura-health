@@ -34,7 +34,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Codex worktree sync (2026-10-16):** latest fetched main `0f08fb2` integrated into `improve/feature-codex` at user request. Await further instructions; no runtime or deployment actions in this session.
 
-- **Private pitch v2 review (Codex, 2026-10-16):** reviewed the shared version 2 at the owner-provided external path and added a dated §12 comment at user request. Existing body/comments preserved byte-for-byte; file remains ignored/untracked. Checked selected main source and cited primary references. No private pitch content copied into this repo; editor decides body changes.
+- **Private pitch automatic follow-up (Codex, 2026-10-16):** user authorized watching for Claude completion and reviewing without a new prompt. A temporary read-only watcher detected v3 plus a new Claude consolidation entry and 60 seconds without changes; added a dated §12 follow-up review. Existing bytes preserved; pitch stays ignored/untracked, no private content copied here. One-shot watcher completed and exited; editor decides body changes.
 
 - **Availability planning superseded:** the earlier Codex standby proposal remains in `docs/JUDGING_AVAILABILITY_PLAN.md` as history. Main now records Tencent Lighthouse blue/self-hosted green hosting and the demo lock; no operations performed in this sync.
 
@@ -122,7 +122,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Current scope (2026-10-16):** requested main sync and private pitch v2 review complete. No new implementation or operations assigned.
+- **Current scope (2026-10-16):** main sync, private pitch v2 review and authorized automatic v3 follow-up complete. One-shot watcher has exited. No new implementation or operations assigned.
 
 - **Private pitch:** owner/editor to consider the latest v2 review in the external deliberation document. Keep that document ignored and untracked; do not import its contents into public documentation.
 
@@ -238,7 +238,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
-- **Private pitch owner/editor:** review the latest Codex v2 §12 entry in the external file and decide body changes there. No runtime or public pitch edits authorized by this task.
+- **Private pitch owner/editor:** review the latest Codex v3 §12 entry in the external file and decide body changes there. No runtime or public pitch edits authorized by this task.
 
 - **Codex:** wait for further user instructions after this requested main sync; respect the recorded demo lock.
 
@@ -332,6 +332,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-16 — Codex — One-shot pitch watcher and automatic v3 review
+- User authorized detecting Claude completion and proceeding autonomously. Created a temporary read-only file watcher in /tmp; detected v3 plus Claude consolidation, waited 60 seconds without file changes, then added the dated review only in the shared ignored document. Watcher exited after this one follow-up.
+- Verified: watcher synthetic self-check PASS (unchanged/other-agent-only edits ignored; Claude body revision detected), scripts compile, ready signal emitted, main still `0f08fb2`, ignored/untracked target and insertion byte-preservation PASS. Reviewed selected source and primary references; no app/model/deployment run. Private review and watcher scripts remain outside tracked files.
+- Left: owner/editor decisions and rehearsal; no ongoing watcher or automatic publication. This handover is the only tracked change.
 
 ### 2026-10-16 — Codex — Private pitch version 2 review
 - Reviewed the owner-provided shared v2 and added only a dated §12 comment. Existing body and earlier comments preserved; no private text or review copied to the public repo. Main checkout and fetched origin/main both `0f08fb2`; no further main merge needed.
