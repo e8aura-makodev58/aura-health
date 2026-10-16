@@ -34,7 +34,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Codex worktree sync (2026-10-16):** latest fetched main `0f08fb2` integrated into `improve/feature-codex` at user request. Await further instructions; no runtime or deployment actions in this session.
 
-- **Private pitch deliberation (Codex, 2026-10-16):** completed the requested dated §12 entry in the owner's external, ignored pitch file. Existing text preserved; no pitch content copied into this repo. Reviewed selected source at locked tag `final-demo-day` (`d043803`) without merging it into this branch. This was discussion only, not product/clinical/commercial approval or a deployment check.
+- **Private pitch v2 review (Codex, 2026-10-16):** reviewed the shared version 2 at the owner-provided external path and added a dated §12 comment at user request. Existing body/comments preserved byte-for-byte; file remains ignored/untracked. Checked selected main source and cited primary references. No private pitch content copied into this repo; editor decides body changes.
 
 - **Availability planning superseded:** the earlier Codex standby proposal remains in `docs/JUDGING_AVAILABILITY_PLAN.md` as history. Main now records Tencent Lighthouse blue/self-hosted green hosting and the demo lock; no operations performed in this sync.
 
@@ -122,9 +122,9 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Sync scope (2026-10-16):** user requested latest main in the Codex worktree, then wait; no new implementation or operations assigned.
+- **Current scope (2026-10-16):** requested main sync and private pitch v2 review complete. No new implementation or operations assigned.
 
-- **Private pitch:** owner/editor decisions remain pending in the external deliberation document. Keep that document ignored and untracked; do not import its contents into public documentation.
+- **Private pitch:** owner/editor to consider the latest v2 review in the external deliberation document. Keep that document ignored and untracked; do not import its contents into public documentation.
 
 - **Credential planning:** earlier CVM/SSM options remain historical; main records Lighthouse setup. SSM retrieval remains unimplemented. No credentials or host configuration inspected during this sync.
 
@@ -238,7 +238,7 @@ engineering choices are configuration, not clinical claims. Safety doctrine is u
 
 ## Next steps
 
-- **Private pitch owner/editor:** review the new Codex §12 entry in the external file and decide any body changes there. No runtime or public pitch edits are authorized by this deliberation task.
+- **Private pitch owner/editor:** review the latest Codex v2 §12 entry in the external file and decide body changes there. No runtime or public pitch edits authorized by this task.
 
 - **Codex:** wait for further user instructions after this requested main sync; respect the recorded demo lock.
 
@@ -332,6 +332,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-16 — Codex — Private pitch version 2 review
+- Reviewed the owner-provided shared v2 and added only a dated §12 comment. Existing body and earlier comments preserved; no private text or review copied to the public repo. Main checkout and fetched origin/main both `0f08fb2`; no further main merge needed.
+- Verified: selected tour/sharing source, primary external references, ignored/untracked target, byte-preservation insertion check; UI media smoke 2 PASS/0.164s (existing Starlette/httpx warning). No full suite/browser/live-model/deployment check. Updated this handover only in the tracked worktree.
+- Left: editor/owner to decide body changes; no app changes, model calls, publication or deployment.
 
 ### 2026-10-16 — Codex — Sync latest main and wait
 - User requested latest main in this worktree, then wait. Merged `origin/main` at `0f08fb2` into `improve/feature-codex`; resolved only HANDOVER.md conflicts, preserving both histories and main's newer lock/completed-review status. Older logs archived to keep this note readable.
