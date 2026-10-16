@@ -66,8 +66,11 @@
        await pause(1600); if (!live()) return "";
        $("med-update-interpret").click();
        // AURA reads the sentence (about 10 seconds live); if it can't, the days are tapped instead.
-       await wait(() => !$("med-update-preview").hidden || (!$("med-update-interpret").disabled && !/reading that/.test($("med-update-message").textContent)), 60000, run);
+       // Never tap while an answer may still arrive: a late answer would change the days under us.
+       const reading = () => $("med-update-interpret").disabled || /reading that/.test($("med-update-message").textContent);
+       await wait(() => !reading(), 100000, run);
        if (!live()) return "";
+       if (reading()) { $("med-update-dialog").close(); return "AURA is taking longer than usual right now. You can continue, and try this step again later."; }
        const typed = !$("med-update-preview").hidden && Boolean(document.querySelector('#med-update-preview .med-day[data-basis="explicit"], #med-update-preview .med-day[data-basis="from_most_days"]'));
        if (typed) {
          await pause(2600); if (!live()) return "";
@@ -81,8 +84,12 @@
          await pause(1500);
        }
        if (!live()) return "";
+       // A confirming question must be answered before Save unlocks.
+       if (visible($("med-update-question"))) { $("med-update-yes").click(); await pause(1200); }
+       await wait(() => !$("med-update-save").disabled, 5000, run);
+       if (!live()) return "";
        $("med-update-save").click();
-       await wait(() => !$("med-update-result").hidden, 20000, run);
+       await wait(() => !$("med-update-result").hidden, 30000, run);
        if (!live()) return "";
        const saved = /^Saved/.test($("med-update-result").textContent);
        await pause(1800); if (!live()) return "";

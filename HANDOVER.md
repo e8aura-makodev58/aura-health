@@ -310,6 +310,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-16 — Claude — Guided story step 5 robust to slow AI replies (user report)
+- User saw "This couldn't be saved just now" after a long wait on step 5. Blue's session showed the typed sentence safety-cleared (normal) but no days saved. Cause: the step waited 60 s for the interpret reply, then tapped days while the reply was still in flight; the late reply added the confirming question, which disables Save, so Save did nothing. Interpret on blue measured 6 s afterwards (transient provider slowness).
+- `aura_ui/tour.js`: wait up to 100 s and never tap while a reply may still arrive; if still reading, close the dialog and say "AURA is taking longer than usual right now…"; answer a visible confirming question before saving and wait for Save to unlock.
+- Verified: simulated 70 s reply → saved via the typed path; 110 s → clean "taking longer" message; tour.cjs 5 PASS.
+
 ### 2026-10-16 — Claude — Guided story: visible "AURA agent is working" state (user request)
 - `aura_ui/tour.js` + styles: while a step's real work runs, the status line shows a spinner and "AURA agent is working…" (or "…asking again…"); hovering the button row while Next waits shows a dark overlay "AURA agent is working, please wait…" covering only the Back/Next row (click-through, so Back still works); Next shows a progress cursor. Spinner is still under reduced motion.
 - Verified: tour.cjs 5 PASS incl. a new check on step 8 (record_qa slowed 5 s in the test): busy status text and hover overlay visible (opacity > 0.9); screenshot reviewed at 390 px (no text covered).
