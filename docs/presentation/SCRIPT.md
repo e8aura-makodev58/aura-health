@@ -126,3 +126,22 @@ Then *My medication* → *What if I miss a dose?*
 - **Video:** see the note at the top: first half with voice-over (`video/SONG_CUT_PLAN.md`), second half a live landscape take under the song. The user records the voice-over; Claude records and assembles the picture.
 - **Tour:** the in-app "Play the 3-minute story" follows scenes 3–8 in the same order; the video
   records that guided story itself.
+
+---
+
+## Q&A talking points
+
+**"Why OpenAI and not a Tencent model?"** (the model name shows in the agent light's tooltip and the
+admin settings; keep it visible: being open about the model is part of responsible AI)
+
+> "AURA is model-agnostic by design: the model is a setting, because a hospital will run its own
+> approved model, on-premises or in its private cloud. We built it with CodeBuddy, designed it with
+> Miora and host it on Tencent Cloud Lighthouse. We tested Tencent's Hy4 and Kimi K3 through TokenHub
+> against the same safety and grounding checks. For the demo we use the model that currently passes
+> all of them fastest. Switching to a Tencent model is a settings change, once its answers pass those
+> checks."
+
+Facts behind it (2026-10-16, see HANDOVER): Hy4 preview tagged everyday activities about as well as
+gpt-6-luna (34 vs 36 of 40 notes) but did not work with the agent's tool loop without prompt changes;
+Kimi K3 called tools correctly but was too slow for the agent's time limit. The live site runs on
+Tencent Cloud Lighthouse (Singapore), shown in the "AURA agent live" light.
