@@ -38,8 +38,19 @@ class ReasoningSettingTests(unittest.TestCase):
         self.assertEqual(capture("tencent", "none", "singapore")["thinking"], {"type": "disabled"})
         self.assertEqual(capture("tencent", "medium", "singapore")["reasoning_effort"], "medium")
         self.assertNotIn("thinking", capture("tencent", "medium", "singapore"))
+        self.assertEqual(capture("tencent", "medium", "singapore")["response_format"], {"type": "json_object"})  # no tools offered
         legacy = capture("tencent", "medium", "hunyuan")
         self.assertNotIn("thinking", legacy); self.assertNotIn("reasoning_effort", legacy)
+
+    def test_rs1b_tokenhub_drops_json_mode_when_tools_are_offered(self):
+        sent = {}
+        def handler(request):
+            sent.update(json.loads(request.content))
+            return httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": "{}"}}]})
+        VendorProvider("tencent", "hy4-preview", "fixture-key", reasoning="none", variant="singapore",
+                       transport=httpx.MockTransport(handler)).agent_step([{"role": "user", "content": "json"}], [TOOL])
+        self.assertNotIn("response_format", sent)
+        self.assertEqual(sent["tools"][0]["function"]["name"], "get_x")
 
     def test_rs2_settings_default_medium_validate_and_persist(self):
         with TemporaryDirectory() as root:

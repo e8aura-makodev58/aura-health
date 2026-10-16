@@ -115,7 +115,9 @@ class VendorProvider:
             payload.update(tools=tools, tool_choice="auto")
             if self.provider == "openai":
                 payload["parallel_tool_calls"] = True
-        if not (self.provider=='tencent' and self.base.endswith('hunyuan.cloud.tencent.com/v1')):
+        # TokenHub models ignore native tools in JSON mode (they answer or fake tool calls as text),
+        # so JSON mode is only requested there when no tools are offered; the prompt still asks for JSON.
+        if not (self.provider=='tencent' and self.base.endswith('hunyuan.cloud.tencent.com/v1')) and not (self._tokenhub() and tools):
             payload["response_format"] = {"type": "json_object"}
             # JSON mode providers (DeepSeek) reject a request whose prompt never says "json".
             if not any("json" in str(m.get("content") or "").lower() for m in messages):
