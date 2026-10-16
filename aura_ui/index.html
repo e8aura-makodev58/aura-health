@@ -12,6 +12,7 @@
   <script src="/assets/agent.js" defer></script>
   <script src="/assets/features.js" defer></script>
   <script src="/assets/companion.js" defer></script>
+<script src="/assets/catchup.js" defer></script>
   <script src="/assets/tour.js" defer></script>
 </head>
 <body>
@@ -24,11 +25,17 @@
     <p>No real patient data. Structured taps and labelled message fixtures have resolved safety outputs. Other text is held for evaluation.</p>
     <p id="hosted-notice" hidden>Demo examples only. Your demo is separate from other visitors.</p>
     <button id="reset-demo" hidden>Reset this synthetic session</button>
+    <div class="demo-sharing">Patient sharing: <button type="button" id="share-all">Everything</button> <button type="button" id="share-minimum">Minimum only</button></div>
     <div id="connect-form"><label for="patient-id">Or open a development patient</label><input id="patient-id" autocomplete="off"><button id="connect">Open patient</button></div>
   </section>
-  <header class="masthead"><a class="brand" href="#home" aria-label="AURA home"><img src="/assets/media/aura-mark.svg" width="32" height="32" alt="" aria-hidden="true"><span>AURA</span></a><div class="header-controls"><a href="#about" data-page="about" class="info-link" aria-label="About AURA and privacy">About AURA</a><button id="system-settings" aria-label="System settings" aria-haspopup="dialog"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 3 2 3-1 2 3 3-1 1-3 3-1 2-3-2-2 1-3-3-2-3 1-2-3Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div></header>
+  <header class="masthead"><a class="brand" href="#home" aria-label="AURA home"><img src="/assets/media/aura-mark.svg" width="32" height="32" alt="" aria-hidden="true"><span>AURA</span></a><span id="agent-live" class="agent-live" data-state="checking" role="status" aria-live="polite" title="Checking the AURA agent…"><span class="agent-dot" aria-hidden="true"></span><span id="agent-live-text" class="agent-long">AURA agent</span><span id="agent-live-short" class="agent-short" aria-hidden="true">Agent</span></span><div class="header-controls"><div class="language-picker"><button id="language-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="language-menu" aria-label="Language: English"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span aria-hidden="true">EN</span></button><div id="language-menu" class="language-menu" role="menu" aria-label="Language" hidden><button type="button" role="menuitemradio" aria-checked="true" data-lang="en" lang="en"><span>English</span><span class="language-tick" aria-hidden="true">✓</span></button><button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true" data-lang="zh" lang="zh-Hans"><span>中文</span><span class="language-soon">即将推出</span></button><button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true" data-lang="ms" lang="ms"><span>Bahasa Melayu</span><span class="language-soon">Akan datang</span></button><button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true" data-lang="ta" lang="ta"><span>தமிழ்</span><span class="language-soon">விரைவில்</span></button><p class="language-note" lang="en">Chinese, Malay and Tamil are coming in a future release. Each will be safety-tested before it is switched on.</p></div></div><a href="#about" data-page="about" class="info-link" aria-label="About AURA and privacy">About AURA</a><button id="system-settings" aria-label="System settings" aria-haspopup="dialog"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button></div></header>
   <aside id="safety-panel" class="safety-panel" hidden tabindex="0" aria-labelledby="safety-heading" aria-describedby="safety-message">
-    <div class="safety-inner"><p class="eyebrow">Safety policy · development content</p><h2 id="safety-heading">Safety check pending</h2><p id="safety-message"></p>
+    <div class="safety-inner">
+      <div id="safety-demo-reset" class="safety-demo-reset" hidden>
+        <p><strong>Demo only:</strong> a real patient couldn't dismiss this. Here you can start fresh.</p>
+        <button id="safety-reset-demo" type="button">Reset the demo</button>
+      </div>
+      <p class="eyebrow">Safety policy · development content</p><h2 id="safety-heading">Safety check pending</h2><p id="safety-message"></p>
       <div id="safety-resources" class="resources" aria-label="Safety resources"></div>
       <button id="retry-connection" hidden>Retry connection</button>
       <p class="fine">This prototype is not an emergency monitoring service. Safety content and contacts are not yet clinically reviewed.</p>
@@ -58,6 +65,16 @@
     </section>
     <section id="home-view" class="view" hidden aria-labelledby="home-heading">
       <div class="page-intro"><p id="patient-label" hidden></p><p id="home-greeting" class="home-greeting"></p><h1 id="home-heading">Your day, with AURA</h1></div>
+      <nav id="home-shortcuts" class="home-shortcuts" aria-label="Jump to">
+        <a href="#dose-card" data-jump="dose-card"><span class="shortcut-icon" aria-hidden="true">✓</span><span>Dose</span></a>
+        <a href="#medication-card" data-jump="medication-card"><span class="shortcut-icon" aria-hidden="true">℞</span><span>Medicine</span></a>
+        <a href="#coming-up-card" data-jump="coming-up-card"><span class="shortcut-icon" aria-hidden="true">◷</span><span>Coming up</span></a>
+        <a href="#suggestion-card" data-jump="suggestion-card"><span class="shortcut-icon" aria-hidden="true">✧</span><span>Ideas</span></a>
+        <a href="#calendar" data-page="calendar" id="shortcut-calendar"><span class="shortcut-icon" aria-hidden="true">▦</span><span>Calendar</span></a>
+        <a href="#review" data-page="review" id="shortcut-review"><span class="shortcut-icon" aria-hidden="true">▤</span><span>Appointment</span></a>
+        <a href="#patterns" data-page="patterns" id="shortcut-data"><span class="shortcut-icon" aria-hidden="true">≋</span><span>My data</span></a>
+      </nav>
+      <p id="welcome-back" class="welcome-back card" hidden></p>
       <section id="breath-welcome" class="breath-welcome" hidden aria-labelledby="breath-heading">
         <img src="/assets/media/breathing-circle.svg" alt="" aria-hidden="true" class="breath-welcome-art">
         <h2 id="breath-heading">Take a breath.</h2>
@@ -93,6 +110,7 @@
             </div>
           </div>
           <p class="fine" id="dose-saved"></p>
+          <div id="med-update-line" class="med-update-line" hidden><p id="med-update-text-line"></p><button id="med-update-open" type="button" class="text-button">Update past records</button><button id="med-update-dismiss" type="button" class="text-button" aria-label="Not now">Not now</button></div>
         </section>
         <section id="medication-card" class="card companion-card medication-card" hidden aria-labelledby="medication-heading">
           <div class="card-top"><h2 id="medication-heading">My medication</h2></div>
@@ -117,6 +135,12 @@
           <h2 id="coming-up-heading">Coming up</h2>
           <ul class="coming-up-list" id="coming-up-list"></ul>
         </section>
+        <section id="activities-card" class="card companion-card activities-card" hidden aria-labelledby="activities-heading">
+          <h2 id="activities-heading">Things you've mentioned</h2>
+          <p class="companion-detail">From your notes in the last two weeks. Only you see these words.</p>
+          <ul class="activity-list" id="activity-list"></ul>
+          <p class="fine">Picked out by AURA (AI) from what you wrote; durations only when you gave one.</p>
+        </section>
         <section id="suggestion-card" class="card companion-card suggestion-card" hidden aria-labelledby="suggestion-heading">
           <h2 id="suggestion-heading">A small idea for today</h2>
           <p class="companion-detail" id="suggestion-reason"></p>
@@ -131,6 +155,7 @@
       <div id="communication-card" class="card communication-card" hidden><p class="eyebrow" id="communication-eyebrow">A small question</p><p id="communication-message"></p><p id="wording-origin" class="fine"></p><button id="clarify" class="text-button">Add context</button><button id="why-home" class="text-button">Why AURA asked</button></div>
       <div class="patient-links">
         <a id="appointment-card" class="appointment-link card" href="#review" data-page="review"><span aria-hidden="true">▤</span><span class="appointment-link-copy"><strong>Prepare for my appointment</strong><span id="appointment-ready" class="fine">0 items ready · Not sent</span></span><span aria-hidden="true">→</span></a>
+        <a id="calendar-link" href="#calendar" data-page="calendar" class="patient-link-tile"><span aria-hidden="true">▦</span><span>My calendar</span><span aria-hidden="true">→</span></a>
         <a href="#patterns" data-page="patterns" class="patient-link-tile"><span aria-hidden="true">≋</span><span>See my full data</span><span aria-hidden="true">→</span></a>
       </div>
       <details id="records-panel" class="optional-records"><summary>Record a check-in or medication</summary><div class="home-grid">
@@ -140,10 +165,20 @@
     </section>
     <section id="patterns-view" class="view" hidden aria-labelledby="patterns-heading">
       <div id="clinician-disclosure" class="clinician-disclosure" hidden><strong>Synthetic clinician demonstration — not a shared patient record</strong><p>Demo shows the full synthetic record. In real use you would see only what the patient approves.</p></div>
+      <p id="sharing-status" class="sharing-status" role="status" hidden></p>
+      <p id="record-coverage" class="record-coverage" hidden></p>
+      <a id="clinician-calendar-link" class="text-button clinician-calendar-link" href="#calendar">Open the calendar →</a>
       <div class="workspace-heading"><div class="page-intro"><p class="eyebrow" id="workspace-label">Your information</p><h1 id="patterns-heading">Between appointments</h1><p id="workspace-patient"></p></div><img src="/assets/media/empty-clinician.svg" alt="" aria-hidden="true" class="clinician-hero-img"><label class="range-control" for="chart-range">Chart dates<select id="chart-range"><option value="56">Last 8 weeks</option><option value="all">All recorded dates</option></select></label></div>
       <section class="findings-overview"><p class="eyebrow">What changed · when</p><div id="changes-overview"></div><p id="workspace-decision" class="fine"></p></section>
       <section id="agent-workspace" class="card agent-card"><p class="eyebrow">Read-only record assistant</p><h2>A short brief, with the evidence behind it</h2><p>Investigate these synthetic records across signals and context. Drafts do not change policy or send information.</p><button data-agent-role="clinician_brief">Draft a brief</button><div id="agent-clinician_brief" aria-live="polite"></div><details><summary>Ask about this record</summary><div class="details-body"><label for="agent-query">Record question</label><select id="agent-query"><option value="sleep_change">When did sleep timing change?</option><option value="recorded_context">What context was recorded?</option><option value="wearable_gaps">Where are the wearable gaps?</option><option value="routine">What was recorded about check-ins and routine?</option></select><button data-agent-role="record_qa">Investigate the record</button><div id="agent-record_qa" aria-live="polite"></div><p class="fine">Selected record questions only. Arbitrary notes still need safety evaluation.</p></div></details><details><summary>Suggested questions from the approved set</summary><button data-agent-role="question_ranker">Suggest an order</button><div id="agent-question_ranker" aria-live="polite"></div></details></section>
       <div class="chart-legend"><span class="observed-key">● Readings</span><span class="rolling-key">━ Recent average</span><span class="anchor-key">┄ <span id="baseline-legend">Baseline</span></span><span>No connecting line across missing days</span></div>
+      <section id="activity-summary" class="card activity-summary" hidden aria-labelledby="activity-summary-heading">
+        <p class="eyebrow">Patient-reported · from notes</p>
+        <h2 id="activity-summary-heading">Everyday activity the patient mentioned</h2>
+        <p class="fine" id="activity-summary-window"></p>
+        <table class="activity-table"><thead><tr><th>Type</th><th>Last 2 weeks</th><th>2 weeks before</th></tr></thead><tbody id="activity-summary-rows"></tbody></table>
+        <p class="fine">Totals only; the patient's own words stay on their side. Counts what the patient chose to write, not everything they did. A conversation starter, not a measure of wellbeing.</p>
+      </section>
       <div id="evidence-charts" class="evidence-charts" aria-label="Recorded signals and personal references"></div>
       <details class="card reports-card"><summary><h2>What was reported</h2></summary><div id="evidence-strip"></div></details>
       <details id="workspace-review" class="card"><summary>Questions &amp; review preparation <span class="summary-caption">Prepared information — not sent</span></summary><div id="evidence-review" class="details-body"></div></details>
@@ -157,12 +192,43 @@
   <h2>Missed doses to discuss</h2>
   <p id="missed-dose-summary" class="fine"></p>
   <ul id="missed-dose-list" class="missed-dose-list"></ul>
-</section><details id="review-details"><summary>Inspect records &amp; explore a temporary selection</summary><div id="review-list"></div></details><button id="add-question" class="text-button">Add a question for your clinician <span aria-hidden="true">↗</span></button><p class="fine">Questions pass through the safety boundary. Unresolved text may be held and omitted.</p></section>
+</section><details id="review-details"><summary>Inspect records &amp; explore a temporary selection</summary><div id="review-list"></div></details><button id="add-question" class="text-button">Add a question for your clinician <span aria-hidden="true">↗</span></button><p class="fine">Questions pass through the safety boundary. Unresolved text may be held and omitted.</p><section id="sharing-card" class="card sharing-card" aria-labelledby="sharing-heading">
+        <h2 id="sharing-heading">What your clinician can see</h2>
+        <p class="companion-detail">Always shared, as you agreed when you started using AURA:</p>
+        <ul class="sharing-minimum" id="sharing-minimum"></ul>
+        <p class="companion-detail">You choose whether to also share:</p>
+        <div class="sharing-options" id="sharing-options"></div>
+        <p class="fine" id="sharing-source"></p>
+      </section>
+    </section>
+    <section id="calendar-view" class="view" hidden aria-labelledby="calendar-heading">
+      <div class="page-intro"><p class="eyebrow">Day by day</p><h1 id="calendar-heading">Calendar</h1>
+        <p class="fine">Tap a day to see what was recorded. A blank day means nothing was recorded, not that all was well.</p></div>
+      <a id="calendar-back" class="text-button" href="#patterns" hidden>← Back to the record</a>
+      <div class="calendar-head"><button id="calendar-prev" type="button" aria-label="Previous month">‹</button><h2 id="calendar-month"></h2><button id="calendar-next" type="button" aria-label="Next month">›</button></div>
+      <div class="calendar-weekdays" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+      <div id="calendar-grid" class="calendar-grid" role="grid" aria-labelledby="calendar-month"></div>
+      <div id="calendar-legend" class="calendar-legend"></div>
+      <section id="calendar-detail" class="card calendar-detail" hidden aria-live="polite"></section>
+    </section>
     <section id="about-view" class="view" hidden aria-labelledby="about-heading"><div class="page-intro"><p class="eyebrow">Honest about its limits</p><h1 id="about-heading">Your context. Your choice.</h1></div><section class="card"><h2>A research-informed prototype</h2><p>For adults aged 25–60 on stable, clinician-managed antidepressant maintenance treatment. AURA organizes information; it does not replace a clinician.</p><h2>AI wording and synthetic data</h2><p id="privacy-notice"></p><p>Only synthetic fixtures are used here; no real wearable API is connected. For future institutional use, AURA is intended to connect to an institution-managed on-premises or private-cloud model, subject to review—not a validated deployment capability.</p><p>Synthetic fixtures demonstrate engineering behavior, not clinical efficacy. Safety resources and wording need review before real use.</p><h2>Missing data is just missing data</h2><p>Wearable availability and trust in a baseline are separate. There is currently no governed automatic exit from “Re-establishing”.</p><h2>This is not a secure clinical system</h2><p>There is no production patient authentication or automatic clinician sharing. Use synthetic data only.</p></section></section>
   </main>
   <div class="help-dock" id="patient-help"><button id="talk" class="primary"><span aria-hidden="true">✳</span> I want to mention something <span aria-hidden="true">↗</span></button></div>
   <nav class="bottom-nav" aria-label="Main navigation"><a href="#home" data-page="home">← My day</a></nav>
   <dialog id="input-dialog" aria-labelledby="dialog-heading"><form id="input-form"><div class="dialog-top"><p class="eyebrow" id="dialog-label">A note for AURA</p><button type="button" id="close-dialog" aria-label="Close dialog">×</button></div><h2 id="dialog-heading">What would you like AURA to know?</h2><p id="dialog-copy"></p><div id="explanation-fields" hidden><label for="explanation-context">Previously linked context</label><select id="explanation-context"></select><fieldset><legend>Associated observations</legend><div id="explanation-signals"></div></fieldset><p class="fine">Association is explicit in this prototype. AURA does not judge whether arbitrary text is a credible benign explanation.</p></div><label for="input-text" id="input-text-label">Your note</label><textarea id="input-text" rows="4" maxlength="1000" required></textarea><div id="fixture-buttons" class="fixture-buttons"><p class="fine">Or try an example:</p><button type="button" data-fixture="fixture ordinary message" data-sample="Work has been busy this week, but I'm sleeping okay." data-purpose="text">An everyday note</button><button type="button" data-fixture="fixture safety concern" data-sample="I w*** t* k*** m****** (sensitive message masked)" data-purpose="text">A worrying message</button><button type="button" data-fixture="fixture review question" data-sample="Could we talk about my sleep at my next review?" data-purpose="question">A question for my doctor</button></div><p class="fine" id="dialog-privacy">Every note is checked for safety first. If that check can't run, the note waits until it can.</p><button type="submit" class="primary" id="send-input">Send to AURA</button></form></dialog>
+  <dialog id="med-update-dialog" aria-labelledby="med-update-heading"><div class="dialog-top"><p class="eyebrow">Medication records</p><button type="button" id="med-update-close" aria-label="Close">×</button></div>
+    <h2 id="med-update-heading">Update past medication records</h2>
+    <p class="fine">Tell AURA in your own words, or tap the days. Nothing is saved until you press Save.</p>
+    <label for="med-update-text">What happened on these days?</label>
+    <textarea id="med-update-text" rows="3" maxlength="500" placeholder="For example: I took it every day except Friday"></textarea>
+    <div class="med-update-actions"><button id="med-update-interpret" type="button" class="primary">Show me</button><button id="med-update-tap" type="button" class="text-button">Tap the days instead</button></div>
+    <p id="med-update-message" class="fine" role="status"></p>
+    <div id="med-update-preview" class="med-update-preview" hidden></div>
+    <p class="fine med-update-key" id="med-update-key" hidden>Tap a day to change it: Taken → Missed → Not sure → no record. Greyed days already have a record. Dashed days were filled in from "most days".</p>
+    <div id="med-update-question" class="med-update-question" hidden><p id="med-update-question-text"></p><button id="med-update-yes" type="button">Yes</button><button id="med-update-no" type="button">No</button></div>
+    <button id="med-update-save" type="button" class="primary" disabled>Save these days</button>
+    <p id="med-update-result" class="fine" role="status" hidden></p>
+  </dialog>
   <dialog id="why-dialog" aria-labelledby="why-heading"><div class="dialog-top"><p class="eyebrow">Why AURA asked</p><button id="close-why" aria-label="Close explanation">×</button></div><h2 id="why-heading">Why AURA asked</h2><div id="why-content"></div></dialog>
   <dialog id="settings-dialog" aria-labelledby="settings-heading">
     <div class="dialog-top"><p class="eyebrow">System · administrator only</p><button id="close-settings" aria-label="Close settings">×</button></div>

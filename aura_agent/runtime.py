@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from copy import deepcopy
 import json
+import re
 from pathlib import Path
 from math import isfinite
 from time import monotonic
@@ -41,6 +42,48 @@ class AgentConfig:
 
 def load_config():
     return AgentConfig(**json.loads(Path(__file__).with_name("engineering_config.json").read_text()))
+
+
+def fill_findings(raw, tools):
+    """Copy each cited fact's structured finding (signal/direction/since) from the server's own record.
+
+    The model used to copy this metadata by hand and a slip rejected a correct answer. Claim wording is
+    still checked against the same facts by the independent verifier. Returns (draft, changed)."""
+    if not isinstance(raw, dict) or not isinstance(raw.get('claims'), list):
+        return raw, False
+    claims, changed = [], False
+    for claim in raw['claims']:
+        ids = claim.get('fact_ids') if isinstance(claim, dict) else None
+        if isinstance(ids, list) and ids and all(isinstance(fid, str) and fid in tools.delivered for fid in ids):
+            findings = [{'fact_id': fid, **tools.delivered[fid]['finding']} for fid in ids if tools.delivered[fid].get('finding')]
+            changed |= claim.get('findings') != findings
+            claim = {**claim, 'findings': findings}
+        claims.append(claim)
+    return {**raw, 'claims': claims}, changed
+
+
+def rephrase_neutral(provider, raw):
+    """Restate a draft's sentences without causal or evaluative wording (texts only; facts and IDs unchanged)."""
+    claims = raw.get('claims') if isinstance(raw, dict) else None
+    if not isinstance(claims, list) or not all(isinstance(c, dict) and isinstance(c.get('text'), str) for c in claims):
+        raise ValueError('PROHIBITED_CLAIM')
+    headline = raw.get('headline') if isinstance(raw.get('headline'), str) else ''
+    texts = [claim['text'] for claim in claims] + ([headline] if headline else [])
+    result = structured_task(provider, 'rephrase_neutral', {'texts': texts}, reasoning='low')
+    new = result.get('texts') if isinstance(result, dict) and set(result) == {'texts'} else None
+    if (not isinstance(new, list) or len(new) != len(texts)
+            or not all(isinstance(text, str) and 0 < len(text.strip()) <= 600 for text in new)):
+        raise ValueError('PROHIBITED_CLAIM')
+    rewritten = {**raw, 'claims': [{**claim, 'text': new[index].strip()} for index, claim in enumerate(claims)]}
+    if headline:
+        rewritten['headline'] = new[-1].strip()
+    return rewritten
+
+
+# Grounding failures in a well-formed draft the model may correct once. Prohibited content and
+# malformed/empty/wrong-shape replies are never repaired: they fall back (existing contract).
+REPAIRABLE = frozenset({'FINDING_MISMATCH', 'UNSUPPORTED_SIGNAL', 'UNDELIVERED_FACT', 'FABRICATED_NUMBER_OR_DATE',
+                        'HEADLINE_BUDGET', 'UNSUPPORTED_CATEGORY'})
 
 
 def run(role, query, tools, provider, config=None, *, presentation=False):
@@ -188,8 +231,42 @@ def run(role, query, tools, provider, config=None, *, presentation=False):
                     messages.append({'role':'assistant','content':reply.get('content')})
                     messages.append({'role':'user','content':f'Server contract: retrieve {needed} before finalizing. Read all keys for retained history; use {{}} for this retrieval. No retrieved evidence is not evidence of no change. This does not relax output grounding.'})
                     continue
-                raw = json.loads(reply['content'])
-                if role.value == 'record_qa':
+                try:
+                    raw = json.loads(reply['content'])
+                    if not presentation:
+                        raw, filled = fill_findings(raw, tools)
+                        if filled:
+                            trace.append({'action': 'FINDINGS_FROM_RECORD'})
+                        try:
+                            validate(raw, tools, role)  # early check; the real validation below runs again
+                        except ValueError as exc:
+                            # Wording rejected: a small separate task restates the sentences neutrally,
+                            # once. The checker stays the authority: the result must pass it again.
+                            if str(exc) != 'PROHIBITED_CLAIM' or any(item.get('action') in {'DRAFT_REPHRASED', 'DRAFT_REPAIR_REQUESTED'} for item in trace):
+                                raise
+                            stage = 'REPHRASE'
+                            raw = rephrase_neutral(provider, raw)
+                            trace.append({'action': 'DRAFT_REPHRASED', 'code': 'PROHIBITED_CLAIM'})
+                            stage = 'DRAFT_VALIDATION'
+                            validate(raw, tools, role)
+                except ValueError as exc:
+                    # One bounded repair: tell the model which grounding check failed and let it correct
+                    # its draft. The corrected draft goes through every check again (and the verifier).
+                    code = str(exc)
+                    if isinstance(exc, json.JSONDecodeError) or code not in REPAIRABLE or any(item.get('action') == 'DRAFT_REPAIR_REQUESTED' for item in trace):
+                        raise
+                    trace.append({'action': 'DRAFT_REPAIR_REQUESTED', 'code': code})
+                    messages.append({'role': 'assistant', 'content': reply.get('content')})
+                    messages.append({'role': 'user', 'content': f'The server rejected this draft ({code}). Return a corrected draft in exactly the same JSON format, '
+                        'using only facts you have retrieved: each claim\'s text, signal, direction and dates must match its cited facts exactly, '
+                        'and anything you cannot support must be removed. This does not relax any check; remaining budgets still apply.'})
+                    continue
+                # Exact calculated answers are required only when the question asks for a number; a
+                # calculation the agent ran on its own while exploring must not sink a grounded answer.
+                asks_number = bool(re.search(r"%|\bper ?cent|\bpercentage|\bproportion|\bhow many\b|\bhow often\b|"
+                                             r"\bshare of\b|\bfraction\b|\bratio\b|\brate\b|\bnumber of\b|\bcount\b",
+                                             str(query), re.IGNORECASE))
+                if role.value == 'record_qa' and asks_number:
                     calculated = {fid for fid, fact in tools.delivered.items()
                                   if fact.get('analysis', {}).get('kind') == 'checkin_proportion'}
                     cited = {fid for claim in raw.get('claims', []) for fid in claim.get('fact_ids', [])

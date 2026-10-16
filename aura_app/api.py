@@ -93,6 +93,29 @@ class MedicationAskIn(BaseModel):
     topic_id: str | None = None
     question: str | None = Field(default=None, min_length=1, max_length=500)
 
+class MedicationUpdateTextIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    request_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    text: str = Field(min_length=1, max_length=500)
+
+class MedicationDayIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    status: Literal["ACKNOWLEDGED", "MISSED", "UNKNOWN"]
+    reason: str | None = None
+
+class MedicationUpdateIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    request_id: str = Field(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    days: list[MedicationDayIn] = Field(min_length=1, max_length=14)
+
+class SharingIn(BaseModel):
+    model_config = {"extra": "forbid", "strict": True}
+    notes: bool | None = None
+    readings: bool | None = None
+    checkin_history: bool | None = None
+    activity_details: bool | None = None
+
 class SuggestionChoiceIn(BaseModel):
     model_config = {"extra": "forbid", "strict": True}
     option_id: str = Field(min_length=1, max_length=40, pattern=r"^[a-z_]+$")
@@ -171,6 +194,8 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
 
     @app.post("/patients/{patient_id}/events")
     def ingest(patient_id: str, body: EventIn):
+        if body.event_type == EventType.MEDICATION_EVENT and "reported_later" in body.payload:
+            raise AppError("INVALID_EVENT", "Past days are updated through the medication update path")
         return service.process(envelope(patient_id, body))
 
     @app.post("/patients/{patient_id}/events/{event_id}/communication")
@@ -194,6 +219,25 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def companion(patient_id: str):
         return companion_service.get(patient_id)
 
+    from .activities import ActivityService
+    activity_service = ActivityService(service, agent_service.provider)
+
+    @app.post("/patients/{patient_id}/activities/extract")
+    def activities_extract(patient_id: str):
+        return activity_service.extract_pending(patient_id)
+
+    @app.get("/patients/{patient_id}/activities")
+    def activities_patient(patient_id: str):
+        return activity_service.for_patient(patient_id)
+
+    @app.get("/patients/{patient_id}/activities/summary")
+    def activities_summary(patient_id: str):
+        summary = activity_service.summary(patient_id)
+        # Activity phrases reach the clinician only if the patient shares them.
+        if "activity_details" not in sharing_service.withheld(patient_id):
+            summary["details"] = activity_service.for_patient(patient_id)["items"]
+        return summary
+
     @app.post("/patients/{patient_id}/companion/suggestions/personalize")
     def companion_personalize(patient_id: str):
         return companion_service.personalize(patient_id)
@@ -202,9 +246,21 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def companion_choose(patient_id: str, body: SuggestionChoiceIn):
         return companion_service.choose(patient_id, body.option_id)
 
+    from .sharing import SharingService, filter_evidence
+    sharing_service = SharingService(service, default_all=agent_service.sharing_default_all)
+
     @app.get("/patients/{patient_id}/evidence")
-    def evidence_view(patient_id: str):
-        return evidence_service.get(patient_id)
+    def evidence_view(patient_id: str, viewer: Literal["patient", "clinician"] = "patient"):
+        evidence = evidence_service.get(patient_id)
+        return filter_evidence(evidence, sharing_service.withheld(patient_id)) if viewer == "clinician" else evidence
+
+    @app.get("/patients/{patient_id}/sharing")
+    def sharing_get(patient_id: str):
+        return sharing_service.get(patient_id)
+
+    @app.post("/patients/{patient_id}/sharing")
+    def sharing_set(patient_id: str, body: SharingIn):
+        return sharing_service.set(patient_id, {key: value for key, value in body.model_dump().items() if value is not None})
 
     @app.post("/patients/{patient_id}/agent/{role}")
     def agent_run(patient_id: str, role: AgentRole, body: AgentIn):
@@ -216,6 +272,35 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     @app.post("/patients/{patient_id}/medication/ask")
     def medication_ask(patient_id: str, body: MedicationAskIn):
         return medication_service.ask(patient_id, **body.model_dump())
+
+    from .record_calendar import RecordCalendarService
+    calendar_service = RecordCalendarService(service, sharing_service)
+    from .medication_update import MedicationUpdateService
+    medication_update = MedicationUpdateService(service, agent_service.provider, window=calendar_service.window_with_now)
+
+    @app.get("/patients/{patient_id}/medication/update-window")
+    def medication_update_window(patient_id: str):
+        return calendar_service.update_window(patient_id)
+
+    @app.post("/patients/{patient_id}/medication/update")
+    def medication_update_save(patient_id: str, body: MedicationUpdateIn):
+        return calendar_service.save(patient_id, request_id=body.request_id, days=[day.model_dump(exclude_none=True) for day in body.days])
+
+    @app.get("/patients/{patient_id}/coverage")
+    def record_coverage(patient_id: str):
+        return calendar_service.coverage(patient_id)
+
+    @app.get("/patients/{patient_id}/calendar")
+    def record_calendar(patient_id: str, month: str | None = None, viewer: Literal["patient", "clinician"] = "patient"):
+        return calendar_service.calendar(patient_id, month, viewer)
+
+    @app.get("/patients/{patient_id}/calendar/{day}")
+    def record_calendar_day(patient_id: str, day: str, viewer: Literal["patient", "clinician"] = "patient"):
+        return calendar_service.day(patient_id, day, viewer)
+
+    @app.post("/patients/{patient_id}/medication/update/interpret")
+    def medication_update_interpret(patient_id: str, body: MedicationUpdateTextIn):
+        return medication_update.interpret(patient_id, request_id=body.request_id, text=body.text)
 
     @app.get("/patients/{patient_id}/agent-runs/{run_id}")
     def agent_trace(patient_id: str, run_id: str):
@@ -284,7 +369,7 @@ def create_app(db_path: str | Path | None = None, service: PatientEventService |
     def patient_asset(asset_name: str):
         if asset_name == "plain_terms.json":
             return FileResponse(ui.parent / "aura_agent" / "plain_terms.json")
-        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "evidence.css", "agent.js", "features.js", "companion.js", "tour.js"}:
+        if asset_name not in {"app.js", "styles.css", "settings.js", "evidence.js", "evidence.css", "agent.js", "features.js", "companion.js", "tour.js", "catchup.js"}:
             raise HTTPException(404)
         return FileResponse(ui / asset_name)
 

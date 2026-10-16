@@ -87,3 +87,13 @@ with LibreOffice and fixed three presentation issues, then re-ran `reconcile_arc
 Checked: 18 slides, 18 connectors glued to existing boxes, audit notes on slides 11–13, cover
 unchanged, 5-page PDF. Video voice-over section E reworded to "loop budgets" and "safety resources
 are shown without any AI model".
+
+## Update after this review — 2026-10-14 (Claude)
+
+Two rows above describe the code as it was at `90e31ea` and are superseded on `main`:
+- *Companion inventory / suggestions*: suggestions are no longer only deterministic.
+  With a live provider the agent may choose ideas from the curated pool and write a
+  checked line; the rule-based ideas remain the fallback (ARCHITECTURE_DOCUMENT §6.2).
+- *Clinician view, "no … saved approval workflow"*: patient-controlled sharing now
+  exists and is recorded (ARCHITECTURE_DOCUMENT §12.1). Still no alerts and no
+  automatic sharing. Slide 11 and the reviewed PDF were regenerated to show it.

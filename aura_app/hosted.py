@@ -82,7 +82,7 @@ class SyntheticOnlyService(PatientEventService):
             from zoneinfo import ZoneInfo
             with self.repositories.transaction() as repo:
                 tz = ZoneInfo(self._patient(repo, event.patient_id)["timezone"])
-            permitted = (valid_medication_payload(payload)
+            permitted = (valid_medication_payload(payload) and "reported_later" not in payload
                          and datetime.fromisoformat(payload["scheduled_time"]).astimezone(tz).date() == at.astimezone(tz).date())
         elif event.event_type == EventType.CONTEXT_EXPLANATION:
             context = contexts.get(payload.get("context_event_id"), {}) if isinstance(payload.get("context_event_id"),str) else {}
@@ -141,7 +141,9 @@ class SyntheticOnlyService(PatientEventService):
         if self.open_input and (occurred.tzinfo is None or abs((occurred - at).total_seconds()) > 365 * 86400):
             raise AppError("INVALID_EVENT", "Demo input date is outside the supported year")
         return super().process(replace(event, event_id=identifiers[0], idempotency_key=identifiers[1],
-                                       correlation_id=identifiers[2], occurred_at=occurred, source="synthetic_patient_ui"))
+                                       correlation_id=identifiers[2], occurred_at=occurred,
+                                       # The medication-update source keeps its text out of replies, ideas and activity tags.
+                                       source=event.source if event.source == "patient_medication_update" else "synthetic_patient_ui"))
 
 
 class HostedDemo:
@@ -223,6 +225,13 @@ class HostedDemo:
                     await send({"type":"lifespan.shutdown.complete"}); return
         if scope["type"] != "http":
             return
+        # Which server answered (blue/green deployment): a name, never infrastructure detail.
+        node = os.environ.get("AURA_NODE_NAME", "local")
+        outer_send = send
+        async def send(message):
+            if message["type"] == "http.response.start":
+                message = {**message, "headers": [*message.get("headers", []), (b"x-aura-node", node.encode("latin1", "replace"))]}
+            await outer_send(message)
         headers = {key.lower():value for key,value in scope["headers"]}
         secure_cookie = self.secure_cookie
         if secure_cookie and scope.get("scheme") == "http":
@@ -234,7 +243,8 @@ class HostedDemo:
             except (ValueError, TypeError):
                 pass  # Malformed/non-IP hosts never weaken the public cookie.
         if scope["path"] == "/health":
-            await JSONResponse({"status":"ok", "synthetic_only":True, "seed":self.seed})(scope, receive, send)
+            await JSONResponse({"status":"ok", "synthetic_only":True, "seed":self.seed, "node":node,
+                                "node_label":os.environ.get("AURA_NODE_LABEL", "")})(scope, receive, send)
             return
         if scope["path"] in {"/", "/signals"} or scope["path"].startswith("/assets/"):
             await self.presentation_app(scope, receive, send)

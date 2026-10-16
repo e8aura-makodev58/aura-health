@@ -34,7 +34,7 @@ class PatientViewService:
                         "start": event["payload"]["start"], "end": event["payload"].get("end")}
                         for event in contexts],
                     "latest_medication": next((event["payload"] for event in reversed(events)
-                        if event["event_type"] == "MEDICATION_EVENT"), None),
+                        if event["event_type"] == "MEDICATION_EVENT" and not event["payload"].get("reported_later")), None),
                     "wording_provider_id": provider_id,
                     "synthetic_only":self.synthetic_only,
                     "privacy_notice": (("Live AI wording is enabled for synthetic demo data only. Safety policy remains deterministic. "

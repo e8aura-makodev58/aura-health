@@ -31,6 +31,14 @@
   font-family:"Nunito"; font-style:normal; font-weight:400 700;
   font-display:swap; src:url("/assets/media/nunito.woff2") format("woff2");
 }
+@font-face {
+  font-family:"Aura Han"; font-style:normal; font-weight:400; font-display:swap;
+  src:url("/assets/media/aura-zh.woff2") format("woff2"); unicode-range:U+4E2D, U+6587, U+5373, U+5C06, U+63A8, U+51FA;
+}
+@font-face {
+  font-family:"Aura Tamil"; font-style:normal; font-weight:400; font-display:swap;
+  src:url("/assets/media/aura-ta.woff2") format("woff2"); unicode-range:U+0B80-0BFF;
+}
 * {box-sizing:border-box}
 body {margin:0;padding-bottom:calc(164px + env(safe-area-inset-bottom))}
 h1,h2,h3,p {margin:0 0 12px}
@@ -500,3 +508,182 @@ body.on-landing .landing-tile {background:rgba(255,255,255,.9);backdrop-filter:b
 .tour-intro .tour-title {font-size:1.3rem}
 @media (min-width:900px) {.tour-card {left:auto;right:28px;bottom:110px;width:420px}}
 @media (prefers-reduced-motion:reduce) {.tour-hole {transition:none}}
+
+/* Patient visit note: plain lines first, exact sentence + sources behind Details */
+.visit-line .visit-plain {font-size:1.05rem;color:var(--ink);margin:0 0 4px}
+.visit-actions {display:flex;gap:18px}
+.visit-more {margin-top:10px}
+.visit-more>summary {cursor:pointer;color:var(--ink-soft, #6b6258);font-size:.9rem}
+.visit-questions-heading {margin:16px 0 6px;font-size:.95rem}
+
+/* Patient-reported activities */
+.activity-list {list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.activity-list li {display:flex;flex-direction:column;gap:2px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white)}
+.activity-phrase {font-size:.98rem;color:var(--ink)}
+.activity-meta {font-size:.82rem;color:var(--ink-soft, #6b6258)}
+.activity-summary {margin:18px 0}
+.activity-table {width:100%;border-collapse:collapse;margin:8px 0}
+.activity-table th,.activity-table td {text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:.92rem}
+
+/* Sharing with the clinician */
+.sharing-minimum {margin:6px 0 12px;padding-left:1.2rem}
+.sharing-options {display:flex;flex-direction:column;gap:10px;margin:8px 0}
+.sharing-option {display:flex;align-items:center;gap:10px;font-size:.95rem}
+.sharing-status {margin:0 0 14px;padding:10px 14px;border-radius:var(--radius-md);background:var(--surface-soft);font-size:.92rem}
+.demo-sharing button {margin:4px 6px 0 0}
+body[data-role="clinician"][data-share-readings="no"] #chart-range,
+body[data-role="clinician"][data-share-readings="no"] label[for="chart-range"],
+body[data-role="clinician"][data-share-readings="no"] #evidence-charts,
+body[data-role="clinician"][data-share-readings="no"] #record-comparison-toggle,
+body[data-role="clinician"][data-share-readings="no"] #record-comparison,
+body[data-role="clinician"][data-share-checkin-history="no"] .reports-card {display:none !important}
+
+/* Past medication records, calendar, welcome back, coverage (spec §9.3) */
+.med-update-line {margin-top:12px;padding:12px 14px;border-radius:var(--radius-md);background:var(--surface-soft);display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.med-update-line p {margin:0;flex:1 1 100%;font-size:.92rem}
+.med-update-actions {display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:10px 0}
+#med-update-dialog textarea {width:100%;box-sizing:border-box}
+.med-update-preview {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:12px 0 6px}
+.med-day {display:flex;flex-direction:column;align-items:center;gap:2px;min-height:64px;padding:6px 2px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white);color:var(--ink);font-size:.78rem;cursor:pointer}
+.med-day-num {font-weight:700;font-size:.95rem}
+.med-day-mark {font-size:1.05rem;line-height:1.2;color:var(--muted)}
+.med-day[data-status="ACKNOWLEDGED"] .med-day-mark {color:#2f7a45}
+.med-day[data-status="MISSED"] .med-day-mark {color:#b2412e}
+.med-day[data-status="UNKNOWN"] .med-day-mark {color:var(--accent-ink)}
+.med-day[data-basis="explicit"] {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.med-day[data-basis="from_most_days"] {border:2px dashed var(--accent-sunny);background:var(--warning-bg)}
+.med-day[data-locked="true"] {background:var(--surface-soft);color:var(--muted);cursor:default;opacity:.75}
+.med-update-question {margin:12px 0;padding:12px 14px;border-radius:var(--radius-md);background:var(--warning-bg);border:1px solid var(--warning-border)}
+.med-update-question p {margin:0 0 10px;font-weight:600}
+.med-update-question button {margin-right:8px;min-width:72px}
+#med-update-save {margin-top:12px;width:100%}
+#med-update-result {margin-top:12px;font-weight:600;color:var(--ink)}
+.welcome-back {margin:0 0 16px;padding:14px 16px;border-radius:var(--radius-lg);background:var(--surface-soft);font-size:.98rem}
+.relearning-line {margin:6px 0 0;font-size:.9rem;color:var(--ink-soft)}
+.record-coverage {margin:0 0 10px;padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--line);font-size:.9rem;color:var(--ink-soft)}
+.clinician-calendar-link {display:inline-block;margin:0 0 14px}
+body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #record-coverage {display:none}
+/* calendar */
+.calendar-head {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 8px}
+.calendar-head h2 {margin:0;font-size:1.25rem;text-align:center;flex:1}
+.calendar-head button {width:44px;height:44px;border-radius:var(--radius-pill);font-size:1.4rem;padding:0}
+.calendar-head button:disabled {opacity:.35}
+.calendar-weekdays, .calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calendar-weekdays span {text-align:center;font-size:.75rem;color:var(--muted);padding:4px 0}
+.cal-day {position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;min-height:58px;padding:6px 2px 8px;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:var(--white);color:var(--ink);font:inherit;cursor:pointer;overflow:hidden}
+.cal-day:disabled {background:transparent;color:var(--muted);cursor:default;opacity:.55}
+.cal-day.today {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.cal-day[aria-pressed="true"] {background:var(--surface-soft);border-color:var(--ink-soft)}
+.cal-num {font-size:.85rem;font-weight:700}
+.cal-marks {display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;min-height:18px}
+.cal-med {display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:.7rem;font-weight:800;color:var(--white);background:#2f7a45}
+.cal-med[data-status="MISSED"] {background:#b2412e}
+.cal-med[data-status="UNKNOWN"] {background:var(--accent-ink)}
+.cal-med[data-reported-later="true"] {background:var(--white);color:#2f7a45;box-shadow:inset 0 0 0 2px #2f7a45}
+.cal-med[data-reported-later="true"][data-status="MISSED"] {color:#b2412e;box-shadow:inset 0 0 0 2px #b2412e}
+.cal-med[data-reported-later="true"][data-status="UNKNOWN"] {color:var(--accent-ink);box-shadow:inset 0 0 0 2px var(--accent-ink)}
+.cal-checkin {display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent-leaf)}
+.cal-checkin[data-state="Okay"] {background:var(--accent-ink)}
+.cal-checkin[data-state="Rough"] {background:var(--accent-coral)}
+.cal-note {font-size:.75rem;color:var(--ink-soft);display:none}
+.cal-cover {position:absolute;left:8px;right:8px;bottom:3px;height:3px;border-radius:2px;background:var(--accent-blue);display:none}
+.cal-cover[data-coverage="partial"] {right:50%}
+.cal-cover[data-coverage="none"] {background:var(--line)}
+.cal-blank {min-height:58px}
+.calendar-legend {margin-top:16px}
+#calendar-view {max-width:920px}
+.calendar-legend li.cal-cover-legend {display:none}
+.calendar-legend h2 {font-size:1rem;margin:0 0 8px}
+.calendar-legend ul {list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 12px;font-size:.85rem}
+.calendar-legend li {display:flex;align-items:center;gap:8px}
+.calendar-legend .cal-cover.sample {position:static;display:inline-block;width:18px}
+.calendar-detail {margin-top:16px}
+.calendar-detail h2 {margin-top:0}
+.cal-section h3 {font-size:.95rem;margin:14px 0 4px}
+.cal-section p, .cal-section ul {margin:0;font-size:.92rem}
+.cal-section ul {padding-left:18px}
+.not-shared {color:var(--muted)}
+@media (min-width:700px) {
+  .cal-day {min-height:76px}
+  .cal-note {display:inline}
+  .cal-cover {display:block}
+  .calendar-legend li.cal-cover-legend {display:flex}
+}
+
+/* Home shortcuts: small icon jumps to each card and page */
+.home-shortcuts {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px;margin:0 0 18px}
+.home-shortcuts a {display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 2px;border-radius:var(--radius-md);color:var(--ink);text-decoration:none;font-size:.75rem;font-weight:600;line-height:1.15;text-align:center;min-height:44px}
+.home-shortcuts a[hidden] {display:none}
+.home-shortcuts a:hover .shortcut-icon {background:var(--surface-soft);box-shadow:var(--shadow-md)}
+.home-shortcuts a:focus-visible {outline:3px solid var(--focus);outline-offset:2px}
+.shortcut-icon {display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--white);border:1px solid var(--line);box-shadow:var(--shadow-sm);font-size:1.15rem;color:var(--accent-ink);transition:box-shadow var(--dur-fast) var(--ease-out)}
+#home-view .card, #home-view .companion-card, #home-view .appointment-link {scroll-margin-top:16px}
+@media (min-width:700px) {
+  .home-shortcuts {grid-template-columns:repeat(7,minmax(0,1fr));max-width:640px}
+}
+
+/* Demo-only reset at the top of the safety panel (hosted synthetic sessions) */
+.safety-demo-reset {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin:0 0 10px;padding:8px 12px;border:1px dashed var(--warning-border);border-radius:var(--radius-md);background:rgba(255,255,255,.6);font-size:.85rem}
+.safety-demo-reset[hidden] {display:none}
+.safety-demo-reset p {margin:0;flex:1 1 220px}
+.safety-demo-reset button {min-height:40px;padding:8px 16px;font-size:.85rem;font-weight:700}
+
+/* "AURA agent live" light: blue/green = which server answers, red = offline */
+.agent-live {display:inline-flex;align-items:center;gap:6px;margin-left:12px;margin-right:auto;padding:4px 10px 4px 8px;border-radius:var(--radius-pill);border:1px solid var(--line);background:var(--white);font-size:.72rem;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);white-space:nowrap;cursor:default}
+.agent-dot {width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.agent-live[data-state="live"][data-node="blue"] .agent-dot {background:#2f6fd6;box-shadow:0 0 0 3px rgba(47,111,214,.18)}
+.agent-live[data-state="live"][data-node="green"] .agent-dot,
+.agent-live[data-state="live"][data-node="other"] .agent-dot {background:#2f9a55;box-shadow:0 0 0 3px rgba(47,154,85,.18)}
+.agent-live[data-state="offline"] .agent-dot {background:#c8372d;box-shadow:0 0 0 3px rgba(200,55,45,.18)}
+.agent-live[data-state="offline"] {color:#9d2a22}
+@media (prefers-reduced-motion: no-preference) {
+  .agent-live[data-state="live"] .agent-dot {animation:agent-pulse 2.4s ease-in-out infinite}
+}
+@keyframes agent-pulse {50% {opacity:.45}}
+.agent-short {display:none}
+@media (max-width:420px) {
+  .agent-live {margin-left:6px;padding:3px 8px 3px 6px;font-size:.66rem}
+  .agent-long {display:none}
+  .agent-short {display:inline}
+}
+
+/* Settings dialog: breathing room between fields, buttons and notes */
+#settings-dialog label {display:block;margin-top:14px}
+#settings-dialog input + button, #settings-dialog select + button, #settings-dialog datalist + button, #settings-dialog form > button {margin-top:12px}
+#settings-dialog form .fine {margin-top:12px}
+@media (max-width:400px) {
+  /* Very narrow phones: the light alone; the status stays in its label and tooltip. */
+  .agent-short {display:none}
+  .agent-live {padding:6px;margin-left:4px}
+}
+
+.visually-hidden {position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Language picker in the header (Singapore's four languages; English only for now) */
+.language-picker {position:relative}
+#language-button {display:flex;align-items:center;gap:4px;min-height:44px;padding:8px;border:0;background:transparent;box-shadow:none;font-size:.78rem;font-weight:700;color:var(--ink-soft)}
+.language-menu {position:fixed;z-index:30;width:250px;max-width:calc(100vw - 24px);padding:8px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white);box-shadow:var(--shadow-lg)}
+.language-menu button {display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 12px;border:0;border-radius:var(--radius-sm);background:transparent;box-shadow:none;font-size:.95rem;color:var(--ink);text-align:left}
+.language-menu button[aria-checked="true"] {background:var(--surface-soft);font-weight:700}
+.language-menu button[aria-disabled="true"] {color:var(--muted);cursor:not-allowed}
+.language-tick {color:var(--accent)}
+.language-soon {font-size:.75rem;color:var(--muted)}
+.language-note {margin:6px 4px 2px;font-size:.75rem;color:var(--ink-soft);line-height:1.4}
+[lang="zh-Hans"] {font-family:"Aura Han","Nunito","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+[lang="ta"] {font-family:"Aura Tamil","Nunito","Noto Sans Tamil","Tamil MN","Nirmala UI",sans-serif}
+@media (max-width:420px) {
+  /* Phones: the disclaimer link becomes an "i" icon (its accessible name is unchanged). */
+  .info-link {font-size:0;padding:8px 6px}
+  .info-link::before {content:"i";display:grid;place-items:center;width:20px;height:20px;border:1.6px solid currentColor;border-radius:50%;
+    font-size:.8rem;font-weight:800;font-family:Georgia,"Times New Roman",serif;line-height:1}
+}
+
+/* Guided story: while a step's real work runs, say so (hover tooltip on Next; spinner on the status line) */
+.tour-actions {position:relative}
+.tour-next:disabled {cursor:progress}
+.tour-wait {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 16px;border-radius:var(--radius-pill);background:var(--ink);color:var(--white);font-size:.85rem;font-weight:600;text-align:center;opacity:0;pointer-events:none;transition:opacity var(--dur-fast) var(--ease-out)}
+.tour-actions:has(.tour-next:disabled):hover .tour-wait {opacity:.94}
+.tour-status.busy {display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink)}
+.tour-status.busy::before {content:"";flex:none;width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:tour-spin 0.9s linear infinite}
+@keyframes tour-spin {to {transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce) {.tour-status.busy::before {animation:none;border-top-color:var(--line);border-right-color:var(--accent)}}

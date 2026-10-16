@@ -108,6 +108,7 @@ function renderCompanion(data) {
 
   // Missed-dose items on the review page
   renderMissedDoses(data);
+  loadActivities();
 }
 
 function buildSuggestionChips(options) {
@@ -347,3 +348,114 @@ window.addEventListener("aura-record-view", () => {
   }
   loadCompanion(ctx.patientId);
 });
+
+
+// Patient side: what the person mentioned (their own words). Hidden when empty or unavailable.
+async function loadActivities() {
+  const card = document.getElementById("activities-card");
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) { card.hidden = true; return; }
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patient)}/activities`, {cache:"no-store"});
+    if (!response.ok) throw new Error("unavailable");
+    const data = await response.json();
+    if (window.auraAgentContext?.()?.patientId !== patient) return;
+    const list = document.getElementById("activity-list");
+    list.replaceChildren();
+    for (const item of (data.items || []).slice(0, 8)) {
+      const li = document.createElement("li");
+      const what = document.createElement("span"); what.className = "activity-phrase"; what.textContent = `“${item.phrase}”`;
+      const meta = document.createElement("span"); meta.className = "activity-meta";
+      meta.textContent = [companionDateLabel(item.at), ...item.labels, item.minutes ? (item.minutes % 60 === 0 || item.minutes >= 60 ? `${item.minutes / 60} h` : `${item.minutes} min`) : null].filter(Boolean).join(" · ");
+      li.append(what, meta); list.append(li);
+    }
+    card.hidden = !data.available || !(data.items || []).length;
+  } catch { card.hidden = true; }
+}
+window.auraLoadActivities = loadActivities;
+
+// Called after a note is sent: tag activities, then refresh the patient card.
+window.auraExtractActivities = async function () {
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) return;
+  try { await fetch(`/patients/${encodeURIComponent(patient)}/activities/extract`, {method:"POST"}); } catch { return; }
+  await loadActivities();
+};
+
+// Clinician side: totals only, no phrases.
+window.auraLoadActivitySummary = async function () {
+  const card = document.getElementById("activity-summary");
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!card || !patient) return;
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patient)}/activities/summary`, {cache:"no-store"});
+    if (!response.ok) throw new Error("unavailable");
+    const data = await response.json();
+    if (window.auraAgentContext?.()?.patientId !== patient) return;
+    const rows = document.getElementById("activity-summary-rows");
+    rows.replaceChildren();
+    const cell = (text) => { const td = document.createElement("td"); td.textContent = text; return td; };
+    const span = (row) => `${row.days === 1 ? "1 day" : row.days + " days"}${row.minutes ? ` · ${row.minutes % 60 === 0 || row.minutes >= 60 ? row.minutes / 60 + " h" : row.minutes + " min"} stated` : ""}`;
+    for (const row of data.categories || []) {
+      const tr = document.createElement("tr");
+      tr.append(cell(row.label), cell(span(row.recent)), cell(span(row.earlier)));
+      rows.append(tr);
+    }
+    document.getElementById("activity-summary-window").textContent =
+      `${companionDateLabel(data.recent.start)}–${companionDateLabel(data.recent.end)} vs ${companionDateLabel(data.earlier.start)}–${companionDateLabel(data.earlier.end)} · days on which an activity was mentioned`;
+    let list = document.getElementById("activity-summary-details");
+    if (!list) { list = document.createElement("ul"); list.id = "activity-summary-details"; list.className = "activity-list"; document.getElementById("activity-summary-rows").closest("table").after(list); }
+    list.replaceChildren(...(data.details || []).slice(0, 6).map(item => { const li = document.createElement("li"); li.textContent = `“${item.phrase}” · ${companionDateLabel(item.at)}`; return li; }));
+    list.hidden = !(data.details || []).length;
+    card.hidden = !(data.categories || []).length;
+  } catch { card.hidden = true; }
+};
+
+
+// Sharing with the clinician (patient consent). The server filters clinician data; the page
+// mirrors it: switches on the patient side, a status line and hidden charts on the clinician side.
+const SHARE_NAMES = {notes: "notes", readings: "detailed readings", checkin_history: "daily check-ins", activity_details: "activity details"};
+window.auraLoadSharing = async function () {
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) return;
+  let data;
+  try {
+    const response = await fetch(`/patients/${encodeURIComponent(patient)}/sharing`, {cache:"no-store"});
+    if (!response.ok) return;
+    data = await response.json();
+  } catch { return; }
+  if (window.auraAgentContext?.()?.patientId !== patient) return;
+  window.auraSharing = data;
+  const shared = Object.fromEntries(data.optional.map(row => [row.id, row.shared]));
+  for (const [id, value] of Object.entries(shared)) document.body.dataset["share" + id.replace(/(^|_)(\w)/g, (_, __, c) => c.toUpperCase())] = value ? "yes" : "no";
+  const minimum = document.getElementById("sharing-minimum");
+  minimum.replaceChildren(...data.minimum.map(text => { const li = document.createElement("li"); li.textContent = text; return li; }));
+  const options = document.getElementById("sharing-options");
+  options.replaceChildren();
+  for (const row of data.optional) {
+    const label = document.createElement("label"); label.className = "sharing-option";
+    const box = document.createElement("input"); box.type = "checkbox"; box.checked = row.shared; box.dataset.share = row.id;
+    box.addEventListener("change", () => saveSharing({[row.id]: box.checked}));
+    label.append(box, document.createTextNode(" " + row.label)); options.append(label);
+  }
+  document.getElementById("sharing-source").textContent = data.source === "demo_default_all"
+    ? "Demo: everything is shared until you change it. Changes are recorded with the date."
+    : `Your choice${data.updated_at ? `, recorded ${companionDateLabel(data.updated_at)}` : ""}. You can change it any time.`;
+  const hidden = data.optional.filter(row => !row.shared).map(row => SHARE_NAMES[row.id]);
+  const status = document.getElementById("sharing-status");
+  status.textContent = hidden.length
+    ? `Shared by the patient: the agreed minimum. Not shared: ${hidden.join(", ")}. Ask the patient if it matters.`
+    : "The patient shares everything in this record, including notes and detailed readings.";
+  status.hidden = false;
+};
+async function saveSharing(choices) {
+  const patient = window.auraAgentContext?.()?.patientId;
+  if (!patient) return;
+  try {
+    await fetch(`/patients/${encodeURIComponent(patient)}/sharing`, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(choices)});
+  } finally { await window.auraLoadSharing(); window.auraLoadActivitySummary?.(); }
+}
+window.auraSaveSharing = saveSharing;
+for (const [id, value] of [["share-all", true], ["share-minimum", false]]) {
+  document.getElementById(id)?.addEventListener("click", () => saveSharing({notes:value, readings:value, checkin_history:value, activity_details:value}));
+}

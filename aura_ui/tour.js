@@ -5,7 +5,7 @@
 (function () {
   const $ = id => document.getElementById(id);
   const QUESTION = "When did sleep timing change, and was anything reported around then?";
-  const MED_QUESTION = "Can I take ibuprofen with it?";
+  const CATCH_UP = "I took it on most days except last Friday and yesterday";
   let tour = null; // {run, index, done:Set, card, hole}
 
   const visible = el => Boolean(el && el.offsetParent !== null && !el.hidden);
@@ -51,16 +51,54 @@
        const shown = await wait(() => !$("medication-answer").hidden && $("answer-text").textContent.trim(), 20000, run);
        return shown ? "This is what the leaflet says about a missed dose." : "The answer isn't available just now. You can still continue.";
      }},
-    {chapter: "Your day", title: "Honest when it can't answer", text: `Asked: "${MED_QUESTION}"`,
-     enter: async () => { patientHome(); await wait(() => visible($("medication-card")), 20000); },
-     target: () => $("medication-card"),
+    {chapter: "Your day", title: "Missed a few days? Just say so", text: `The patient writes: "${CATCH_UP}"`,
+     enter: async () => { patientHome(); await wait(() => visible($("dose-card")), 20000); },
+     // On the calendar, point at the latest day filled in later (yesterday's missed dose): small enough to stay above the card on a phone.
+     target: () => visible($("calendar-view"))
+       ? ([...document.querySelectorAll('#calendar-grid .cal-med[data-reported-later="true"]')].pop()?.closest(".cal-day") || $("calendar-grid"))
+       : visible($("med-update-line")) ? $("med-update-line") : $("dose-card"),
      action: async run => {
-       const details = document.querySelector(".medication-ask"); if (details) details.open = true;
-       $("medication-question").value = MED_QUESTION;
-       $("answer-text").textContent = "";
-       $("medication-ask-btn").click();
-       const shown = await wait(() => !$("medication-answer").hidden && $("answer-text").textContent.trim(), 30000, run);
-       return shown ? "AURA says it can't identify that medication, and points to the pharmacist." : "The answer isn't available just now. You can still continue.";
+       const live = () => tour && tour.run === run;
+       $("med-update-open").click();
+       if (!await wait(() => $("med-update-dialog").open, 15000, run)) return live() ? "This isn't available just now. You can still continue." : "";
+       await pause(900); if (!live()) return "";
+       $("med-update-text").value = CATCH_UP;
+       await pause(1600); if (!live()) return "";
+       $("med-update-interpret").click();
+       // AURA reads the sentence (about 10 seconds live); if it can't, the days are tapped instead.
+       // Never tap while an answer may still arrive: a late answer would change the days under us.
+       const reading = () => $("med-update-interpret").disabled || /reading that/.test($("med-update-message").textContent);
+       await wait(() => !reading(), 100000, run);
+       if (!live()) return "";
+       if (reading()) { $("med-update-dialog").close(); return "AURA is taking longer than usual right now. You can continue, and try this step again later."; }
+       const typed = !$("med-update-preview").hidden && Boolean(document.querySelector('#med-update-preview .med-day[data-basis="explicit"], #med-update-preview .med-day[data-basis="from_most_days"]'));
+       if (typed) {
+         await pause(2600); if (!live()) return "";
+         if (visible($("med-update-question"))) { $("med-update-yes").click(); await pause(1500); }
+       } else {
+         $("med-update-tap").click(); await pause(900);
+         const open = [...document.querySelectorAll('#med-update-preview .med-day[data-locked="false"]')].slice(-2).map(day => day.dataset.date);
+         const tap = date => document.querySelector(`#med-update-preview .med-day[data-date="${date}"]`)?.click();
+         if (open[0]) tap(open[0]);
+         if (open[1]) { tap(open[1]); await pause(400); tap(open[1]); }
+         await pause(1500);
+       }
+       if (!live()) return "";
+       // A confirming question must be answered before Save unlocks.
+       if (visible($("med-update-question"))) { $("med-update-yes").click(); await pause(1200); }
+       await wait(() => !$("med-update-save").disabled, 5000, run);
+       if (!live()) return "";
+       $("med-update-save").click();
+       await wait(() => !$("med-update-result").hidden, 30000, run);
+       if (!live()) return "";
+       const saved = /^Saved/.test($("med-update-result").textContent);
+       await pause(1800); if (!live()) return "";
+       $("med-update-dialog").close();
+       if (!saved) return "This couldn't be saved just now. You can still continue.";
+       location.hash = "calendar";
+       await wait(() => document.querySelector('#calendar-grid .cal-med[data-reported-later="true"]'), 15000, run);
+       return typed ? "AURA turned the sentence into days, asked one question, and saved them. Ringed marks mean filled in later."
+                    : "Saved by tapping the days. Ringed marks mean filled in later.";
      }},
     {chapter: "Getting ready for a visit", title: "Ready for the appointment", text: "The skipped dose and its reason are ready to discuss. Nothing is sent until the patient decides.",
      enter: async () => { $("patient-role").click(); location.hash = "review"; await wait(() => visible($("review-view")), 10000); await pause(600); },
@@ -85,7 +123,7 @@
      }},
     {chapter: "When things change", title: "When life changes", text: "Three days of flu, simulated. AURA describes what changed in this person's own records.",
      enter: async () => { patientHome(); await wait(() => visible($("month-recap")), 20000); },
-     target: () => visible($("suggestion-card")) && tour?.done.has(8) ? $("suggestion-card") : $("month-recap"),
+     target: () => visible($("suggestion-card")) && tour?.done.has(STEPS.length - 1) ? $("suggestion-card") : $("month-recap"),
      action: async run => {
        const id = record().patientId;
        const response = await fetch(`/patients/${encodeURIComponent(id)}/workflows/advance`, {method: "POST", headers: {"Content-Type": "application/json"},
@@ -109,7 +147,10 @@
     const dots = el("div", "tour-dots"); dots.setAttribute("aria-hidden", "true");
     const title = el("h2", "tour-title"); const text = el("p", "tour-text"); const status = el("p", "tour-status");
     const actions = el("div", "tour-actions"); const back = el("button", "tour-back", "Back"); const next = el("button", "tour-next primary", "Next →");
-    back.addEventListener("click", () => go(tour.index - 1)); next.addEventListener("click", onNext); actions.append(back, next);
+    back.addEventListener("click", () => go(tour.index - 1)); next.addEventListener("click", onNext);
+    // Shown on hover while Next waits for a step's real work (the status line says the same for touch).
+    const wait = el("span", "tour-wait", "AURA agent is working, please wait…"); wait.setAttribute("aria-hidden", "true");
+    actions.append(back, next, wait);
     card.append(top, dots, title, text, status, actions);
     return {card, chapter, dots, title, text, status, back, next};
   }
@@ -216,14 +257,14 @@
     spotlight(step.target());
     if (step.action && !tour.done.has(index)) {
       tour.done.add(index); // Back and double taps never repeat a real action.
-      ui.status.textContent = "Working…";
+      ui.status.textContent = "AURA agent is working…"; ui.status.classList.add("busy");
       let message;
       try { message = await step.action(run); } catch { message = "This part isn't available just now. You can still continue."; }
       if (!tour || tour.run !== run || tour.index !== index) return;
       tour.messages[index] = message;
       spotlight(step.target());
     }
-    ui.status.textContent = tour.messages[index] || "";
+    ui.status.classList.remove("busy"); ui.status.textContent = tour.messages[index] || "";
     showRetry(index, run);
     ui.next.disabled = false; ui.next.focus({preventScroll: true});
   }
@@ -234,11 +275,11 @@
     tour.retry = false;
     const again = el("button", "tour-retry", "Ask again");
     again.addEventListener("click", async () => {
-      again.disabled = true; tour.ui.next.disabled = true; tour.ui.status.textContent = "Asking again…";
+      again.disabled = true; tour.ui.next.disabled = true; tour.ui.status.textContent = "AURA agent is asking again…"; tour.ui.status.classList.add("busy");
       let message;
       try { message = await STEPS[index].action(run); } catch { message = "This part isn't available just now. You can still continue."; }
       if (!tour || tour.run !== run || tour.index !== index) return;
-      tour.messages[index] = message; tour.ui.status.textContent = message; again.remove();
+      tour.messages[index] = message; tour.ui.status.classList.remove("busy"); tour.ui.status.textContent = message; again.remove();
       showRetry(index, run); spotlight(STEPS[index].target()); tour.ui.next.disabled = false;
     });
     tour.ui.card.querySelector(".tour-actions").prepend(again);

@@ -1,0 +1,100 @@
+1
+00:00:02,000 --> 00:00:06,500
+A real session, start to finish
+Synthetic patient, live AI
+
+2
+00:00:07,735 --> 00:00:12,235
+The patient's home, as they see it each day
+
+3
+00:00:17,268 --> 00:00:22,768
+Today's picture, in a few calm words
+
+4
+00:00:23,722 --> 00:00:27,722
+Taken. Done for today.
+
+5
+00:00:30,830 --> 00:00:36,330
+Curious about a missed dose? Just ask.
+
+6
+00:00:41,463 --> 00:00:46,963
+A good day deserves a note
+
+7
+00:00:53,667 --> 00:01:00,167
+AURA answers the person,
+not with a template
+
+8
+00:01:02,656 --> 00:01:09,156
+Painting, 3 hours:
+kept in their own words, for their eyes
+
+9
+00:01:11,276 --> 00:01:16,276
+Ideas shaped by what they enjoy
+
+10
+00:01:17,933 --> 00:01:22,933
+Pick one. AURA cheers it on.
+
+11
+00:01:34,660 --> 00:01:38,660
+Before the visit
+
+12
+00:01:39,636 --> 00:01:46,136
+The changes, in everyday words
+
+13
+00:01:49,611 --> 00:01:56,111
+Their data, their call
+on who gets to see it
+
+14
+00:02:01,385 --> 00:02:06,885
+Same record, the clinician's side
+
+15
+00:02:12,236 --> 00:02:18,736
+More creative time lately:
+a gentle opening for the visit
+
+16
+00:02:21,847 --> 00:02:26,847
+Ask in plain English
+
+17
+00:02:32,578 --> 00:02:39,578
+Answers arrive with their sources attached
+
+18
+00:02:48,954 --> 00:02:51,354
+Need a number?
+
+19
+00:02:54,754 --> 00:03:01,254
+Worked out exactly,
+missing days included
+
+20
+00:03:07,350 --> 00:03:12,850
+Privacy, one tap away
+
+21
+00:03:14,650 --> 00:03:21,150
+Minimum shared:
+the details step back
+
+22
+00:03:32,139 --> 00:03:39,139
+No access, no guessing:
+the agent says so
+
+23
+00:03:43,059 --> 00:03:50,559
+AURA Health
+Room for your day

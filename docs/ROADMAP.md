@@ -93,6 +93,14 @@ Target: 2026-10-13 through 2026-10-15. Freeze, document, rehearse, and submit: f
 
 When schedule pressure appears, preserve in order: (1) safety boundaries, (2) deterministic longitudinal behavior, (3) coherent patient experience, (4) reproducible demo, (5) submission completeness, then (6) optional integrations. Do not sacrifice the first four to add wearable brands, production cloud services, or extra AI features. The simple hosted demo is part of (4), not (6).
 
+## After the hackathon
+
+- **Singapore's four official languages for patients** (English, 中文, Bahasa Melayu, தமிழ்). The demo
+  shows a header Language menu with English active and the other three marked as coming; design in
+  [architecture document §15.1](submission/ARCHITECTURE_DOCUMENT.md): per-language safety validation first,
+  reviewed interface translations, AI text checked in English then translated with a back-translation
+  check, clinician side in English.
+
 ## Known non-blocking open issues
 
 - Governed exit from `REESTABLISHING` is undefined.

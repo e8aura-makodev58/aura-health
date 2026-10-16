@@ -26,6 +26,12 @@ answers. These are application projections/content services, not a new domain
 engine or an autonomous medication agent. See §6.1 and
 `docs/PATIENT_COMPANION_BACKEND.md`; final release checks are separately versioned.
 
+**Update 2026-10-14 (Claude, implemented on `main`):** the agent now also replies to
+safety-cleared patient notes, chooses the day's ideas from a curated pool, and tags
+everyday activities a patient mentions (§6.2); record Q&A gains Codex's
+`summarize_checkins` calculation tool (§9); and what the clinician side may read is
+controlled by the patient (§12.1).
+
 ## 1. Architecture in one paragraph
 
 AURA connects a quiet patient interface and an analytical clinician interface to
@@ -51,8 +57,8 @@ The current hosted application operates on synthetic data only.
 
 | Actor | Implemented interaction | Boundary to show |
 |---|---|---|
-| Patient demo user | Calm recap; medication information; today's dose and reasons; coming-up dates; optional suggestions; check-ins, questions/explanations and appointment preparation | Inputs go through application services; the browser owns presentation, not domain policy |
-| Clinician demo user | Source-linked findings, historical charts, record Q&A, comparisons and review preparation | The demo toggle exposes the synthetic record; it is not authenticated clinical access |
+| Patient demo user | Calm recap; medication information; today's dose and reasons; coming-up dates; agent-picked optional ideas from a curated pool; agent replies to notes; things they mentioned (activity tags); sharing choices; check-ins, questions/explanations and appointment preparation | Inputs go through application services; the browser owns presentation, not domain policy |
+| Clinician demo user | Source-linked findings, historical charts (if readings are shared), record Q&A with deterministic check-in calculations, comparisons, activity totals and review preparation | Sees the patient-agreed minimum plus opted-in categories (§12.1); the demo actor is self-declared, not authenticated clinical access |
 | Demo operator | Provider/model configuration and synthetic scenario controls | Operator settings are separate from ordinary patient interactions |
 | Sponsor / future institution | Intended owner of clinical parameters, content and deployment decisions | Future governance and institutional authorization are not supplied by the demo |
 
@@ -270,7 +276,9 @@ content before content callbacks run.
   medication-review/refill dates. No push notifications, booking, refill orders
   or invented appointment item exist.
 - **Suggestions:** `suggestions.py` selects optional curated choices from committed
-  descriptive changes. It neither assigns a tier nor creates treatment instructions.
+  descriptive changes (the rule-based default). With a live provider, the agent may
+  re-pick up to three ideas from the 14-item curated pool for this person (§6.2). It
+  neither assigns a tier nor creates treatment instructions.
 - **Medication ask:** `aura_app/medication_ask.py` commits and safety-assesses a typed
   patient question before matching a topic. Topic chips read curated content only
   under the current safety guard. Deterministic keywords, or optional structured
@@ -289,6 +297,30 @@ the same medication-question run ID can reuse the prior safety-event result. The
 ordinary UI creates fresh IDs, but the API needs question-bound identity or a
 conflict rejection. See `EVIDENCE_LEDGER.md`; the diagram describes the intended
 implemented route, not certification that every retry edge is safe.
+
+### 6.2 Agent on the patient side (2026-10-14)
+
+All three tasks run only in the normal safety state, after the safety gate has passed,
+with a live synthetic-demo provider and low reasoning; otherwise the fixed or
+rule-based behaviour stays. None writes anchors, safety state or treatment.
+
+- **Note reply** (`aura_app/communication.py`, `NORMAL_SUPPORT`): a short reply to what
+  the patient wrote. `patient_text_problems` (`aura_communication/validation.py`)
+  rejects medicine or care-team talk, numbers, links, claims that anything was sent or
+  shared, instructions, crisis words and long replies; any failure keeps the approved
+  fixed sentence.
+- **Ideas** (`aura_agent/suggestions.py`, `aura_app/companion.py`): the agent chooses
+  up to three ids from the curated pool and writes a checked "why" line; unknown ids
+  or failed checks keep the rule-based ideas. A chosen idea is recorded as a
+  `SUGGESTION_CHOSEN` timeline row and acknowledged in a checked sentence (fixed
+  fallback).
+- **Activities** (`aura_agent/activities.py`, `aura_app/activities.py`): the agent
+  proposes tags; deterministic checks keep only fixed categories (physical, social,
+  creative, restful, outdoors), phrases that appear verbatim in the note, and
+  durations stated in the note. One `PATIENT_ACTIVITY` row per note. Details are
+  patient-side; the clinician side receives per-category totals (days mentioned,
+  stated hours; last 14 record days vs the 14 before) as a conversation starter, not
+  a score.
 
 ### Ordered ingestion flow
 
@@ -416,7 +448,9 @@ are record evidence, not instructions granting new authority.
 
 `get_status`, `get_series`, `get_context`, `get_decisions`,
 `get_review_snapshot`, `get_gaps`, `compare_windows`, `day_of_week`,
-`summarize_gaps`.
+`summarize_gaps`, and for record Q&A `summarize_checkins` (deterministic check-in
+counts/percentages with denominator, dates and missing-day coverage; see
+`docs/CLINICIAN_QA_CALCULATIONS.md`).
 
 These are local, patient-scoped tools over committed evidence. Check-ins,
 medication-routine records and retained items are facts available through these
@@ -556,8 +590,24 @@ record and sources remain inspectable.
 
 The current appointment selection/print preview is temporary and marked **Not
 sent**. Do not draw a delivery arrow to a hospital, clinician inbox or EHR. The
-demo clinician sees the synthetic record directly; future patient-approved access,
-persisted approval and institutional authorization are separate work.
+demo clinician sees the patient-agreed minimum plus opted-in categories (§12.1);
+authenticated clinician access and institutional authorization are separate work.
+
+### 12.1 Patient-controlled sharing (2026-10-14)
+
+`aura_app/sharing.py`. A curated minimum is always shared (agreed at sign-up):
+AURA's findings and their summary numbers, check-in summaries and runs, medication
+routine records, activity totals and the safety state. Optional, patient-controlled:
+notes (including typed context explanations), detailed readings, daily check-in
+entries and activity phrases. Choices are `SHARING_CONSENT` timeline rows (audit).
+Clinician-serving agent runs (`clinician_brief`, `question_ranker`, `record_qa` with
+`asker=clinician`) build `RecordTools(withheld=…)`: withheld facts are never created,
+and a "not shared by the patient; ask the patient" fact sits where the data would be.
+Consent is part of the agent cache fingerprint, so answers never replay across a
+change. `GET /evidence?viewer=clinician` filters the record view. The hosted demo
+defaults to everything shared; the Demo guide switches to minimum-only. Without
+authentication the clinician actor remains self-declared; in production, login would
+decide which requests are clinician-serving.
 
 ## 13. Simulation and auxiliary model uses
 
@@ -616,13 +666,44 @@ Use dotted outlines labelled **Planned — not implemented in this demo**:
 
 - Consented real wearable connectors and institutional data intake.
 - Institution-operated on-premises/private-cloud model gateway and deployment.
-- Production identity, clinician authorization and durable patient-approved sharing.
+- Production identity and clinician authorization (patient-controlled sharing exists
+  in the demo, §12.1; binding it to authenticated clinician access is future work).
 - Sponsor-reviewed clinical configuration, resources, question wording and governance.
 - Agent-drafted, human-approved follow-up workflows and other governed actions.
 - Production persistence, operational monitoring and scalable processing.
+- Singapore's four official languages for patients (English, 中文, Bahasa Melayu, தமிழ்), §15.1.
 
 Do not connect these as if they are active dependencies. No future item changes the
 standing intended-use boundary or grants the model ownership of safety/treatment.
+
+### 15.1 Multilingual support for Singapore (planned; 2026-10-16)
+
+**In the demo today:** a globe "EN" button in the app header opens a **Language** menu listing English,
+中文, Bahasa Melayu and தமிழ் in their own scripts. English is selected; the other three are visible but
+disabled, each marked "coming soon" in its own language (即将推出, Akan datang, விரைவில்), with the note "Chinese, Malay and Tamil are coming in a future release. Each will be safety-tested before
+it is switched on." Tiny self-hosted font subsets (Noto Sans SC / Noto Sans Tamil, SIL OFL, about
+1 KB each) make the names render on any device. Nothing else is translated yet.
+
+**Why:** many patients and family carers in Singapore are most at ease in Mandarin, Malay or Tamil,
+and public-health materials are routinely published in all four languages. Scope is limited to these
+four.
+
+**Design (safety first, no check bypassed):**
+1. **Patient input in any of the four languages passes the safety gate first.** The gate is
+   validated per language (fixed rules plus the AI safety layer) before that language is switched on;
+   the fixed English rules alone are not enough.
+2. **Fixed interface text** comes from reviewed translation files, checked by native speakers.
+   Safety contacts and medication information use approved or official multilingual versions only,
+   never machine translation alone.
+3. **AI-written patient text is still produced and checked in English** (wording, prohibited claims,
+   grounding, verifier), then translated, with a back-translation check before display. Every
+   existing check keeps working unchanged.
+4. **Translation engine:** Tencent's TokenHub translation models (`hy-mt2-pro/plus/lite`) are the
+   intended candidates, evaluated against reviewed reference translations before use.
+5. **The clinician side stays in English**, showing the patient's own words alongside a translation
+   labelled as such.
+6. Layout and fonts are checked on phone and laptop for each language (longer Malay and Tamil labels,
+   Chinese and Tamil fonts).
 
 ## 16. Diagram generation prompt
 

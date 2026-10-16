@@ -7,6 +7,7 @@ This service is not clinician authorization or a patient sharing workflow.
 
 from datetime import datetime
 
+from .models import medication_day_fields
 from .service import PatientEventService
 
 
@@ -127,6 +128,7 @@ class EvidenceViewService:
                     "state": row["detail"]["state"], "deferred": row["event_id"] in deferred}
                     for row in timeline if row["record_type"] == "PATIENT_CHECKIN"],
                 "medication": [{"event_id": row["event_id"], "at": row["occurred_at"],
+                    **medication_day_fields(row["detail"], row["occurred_at"], patient["timezone"]),
                     "status": row["detail"]["status"], "deferred": row["event_id"] in deferred}
                     for row in timeline if row["record_type"] == "MEDICATION_EVENT"],
                 "held": repo.held(patient_id), "review_items": repo.review_items(patient_id),

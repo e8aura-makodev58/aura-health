@@ -10,6 +10,7 @@ const recordLabels = {SUGGESTION_CHOSEN: "Idea chosen", PATIENT_CHECKIN: "Check-
 const offlineBundle = {version: "fixture-unverified-v1", stale: true, notice: "Development fixture: verified Singapore safety contacts pending", resources: [{label: "Development fixture: verified Singapore safety contacts pending", contact_method: null}]};
 const offlineText = "AURA cannot assess this input while offline. Hold it for server safety evaluation. The built-in resource panel remains available.";
 let patientId = null, catalog = [], current = null, communication = null;
+let canReset = false; // hosted synthetic sessions may be reset by the visitor
 let epoch = 0, busy = false, pending = null, offline = false, dialogKind = "text", lastCheckin = null;
 let hosted = false, presentationRole = "patient";
 window.auraAgentContext = () => ({patientId, record: current?.evidence,
@@ -95,12 +96,15 @@ function showSafety(output) {
   setText("safety-heading", offline ? "Connection unavailable — input not assessed" : "Safety policy takes priority");
   setText("safety-message", offline ? `${offlineText}${output?.pinned_resources ? " " + output.message : ""}` : output.message);
   renderResources(offline ? offlineBundle : output.pinned_resources);
+  // Visible demo reset (hosted synthetic sessions only); never offered for a lost connection.
+  // The guided story offers its own reset in its safety example, so only one shows.
+  $("safety-demo-reset").hidden = !canReset || offline || Boolean(window.auraTour?.active());
 }
 
 function goPage() {
   const requested = location.hash.slice(1) || "home";
-  let page = requested==='disclaimer'?'about':["home", "patterns", "review", "about"].includes(requested) ? requested : "home";
-  if (presentationRole === "clinician" && page !== "about") page = "patterns";
+  let page = requested==='disclaimer'?'about':["home", "patterns", "review", "calendar", "about"].includes(requested) ? requested : "home";
+  if (presentationRole === "clinician" && !["about", "calendar"].includes(page)) page = "patterns";
   document.body.dataset.role = presentationRole;
   $('baseline-legend').textContent=presentationRole==='patient'?'Your usual':'Baseline';
   $('agent-workspace').hidden=presentationRole==='patient';
@@ -183,6 +187,8 @@ function render() {
   setText("quiet-heading",communication?.pinned_resources ? "The safety pathway is active." : "No question from AURA right now.");
   setText("home-subtitle", communication?.pinned_resources ? "The policy message and separate resources remain above, on every page." : "You can check in whenever it feels useful.");
   $("talk").disabled = busy;
+  window.auraLoadActivitySummary?.();
+  window.auraLoadSharing?.();
   setText("communication-eyebrow", communication?.mode === "NORMAL_SUPPORT" && communication?.generation_used ? "From AURA" : "A small question");
   setText("communication-message", communication?.message);
   setText("wording-origin",communication?.generation_used?"AI-written":"Fixed wording");
@@ -300,7 +306,7 @@ function renderReview() {
   reviewGroup("Reference & data availability", current.status.signals.map(signal => `${signalLabel(signal)} · ${sensingLabels[signal.sensing_state]} · ${trustLabels[signal.trust_state]} · coverage ${number(signal.rolling.coverage_ratio)}`));
   reviewGroup("Meaningful observations", snapshot.meaningful_longitudinal_changes.map(change => change.latest.description));
   reviewGroup("Your recent check-ins", snapshot.patient_checkin_trend.slice(-7).map(checkin => `${dateLabel(checkin.at)} · ${checkin.state}`));
-  reviewGroup("Medication-routine records", snapshot.medication_routine_events.map(event => `${dateLabel(event.at)} · ${event.status}`));
+  reviewGroup("Medication-routine records", snapshot.medication_routine_events.map(event => `${dateLabel(event.day || event.at)} · ${event.status}${event.reported_later ? ` · filled in later (${dateLabel(event.reported_on)})` : ""}`));
   reviewGroup("Active context", snapshot.active_context.map(context => context.patient_explanation || context.explanation || "Recorded context"));
   reviewGroup("Explained & held for review", snapshot.explained_held_for_review.map(row => { const held = row.record || row; return `${held.detected_drift.description} Explanation: ${held.explanation}. Anchored reference retained.`; }));
   reviewGroup("Unresolved review items", snapshot.unresolved_items.map(item => item.summary));
@@ -352,6 +358,7 @@ async function submitEvent(type, payload, special = false) {
 }
 // Exposed for companion.js dose recording — uses the same path, idempotency and refresh cycle.
 window.auraSubmitEvent = submitEvent;
+window.auraRefresh = () => refresh();
 async function sendPending() {
   if (busy || !pending) return; busy = true; toggleBusy(true);
   try {
@@ -410,6 +417,7 @@ $("input-form").addEventListener("submit", async (event) => {
   } else if (dialogKind === "question") await submitEvent("REVIEW_COMMAND", {action:"ADD_QUESTION", question:text});
   else {
     await submitEvent("PATIENT_FREE_TEXT", {text});
+    window.auraExtractActivities?.();
     // Show AURA's reply where the person is looking (not under the cards below the fold).
     const reply = $("communication-card");
     if (!reply.hidden && reply.offsetParent) reply.scrollIntoView({behavior:"smooth", block:"center"});
@@ -422,18 +430,23 @@ $("retry-connection").addEventListener("click", async () => {
   else if (patientId && current) { try { await refresh(); tell("Server state reloaded."); } catch (error) { offline = true; showSafety(communication); tell(error.message, true); } }
   else await start();
 });
-$("reset-demo").addEventListener("click", async () => {
+// Demo tooling, not a patient safety transition: restores this visitor's synthetic session only.
+async function resetDemo(patient, question) {
   if (busy || pending) { tell("Finish the pending input before resetting the synthetic session.",true); return; }
-  if (!window.confirm("Restore this synthetic session to seed 7? This is demo tooling, not a patient safety transition.")) return;
+  if (!window.confirm(question)) return;
   busy = true; toggleBusy(true);
   try {
     await api("/demo/reset",{confirm:"RESET_SYNTHETIC_SESSION"});
-    await loadPatient(catalog[0].patient_id);
-    $("scenario").value = catalog[0].patient_id;
+    try { sessionStorage.clear(); } catch { /* storage unavailable */ }
+    await loadPatient(patient);
+    $("scenario").value = patient;
     tell("Synthetic session restored. Other visitors were not changed.");
+    window.scrollTo(0, 0);
   } catch(error) { tell(error.message,true); }
   finally { busy = false; toggleBusy(false); }
-});
+}
+$("reset-demo").addEventListener("click", () => resetDemo(catalog[0].patient_id, "Restore this synthetic session to seed 7? This is demo tooling, not a patient safety transition."));
+$("safety-reset-demo").addEventListener("click", () => resetDemo(patientId || catalog[0].patient_id, "Start this demo again from the beginning? Everything you did in this demo session is cleared. Other visitors are not affected."));
 window.addEventListener("offline", () => { offline = true; showSafety(communication); tell("Connection unavailable. No input is assessed locally. Resources remain visible.", true); });
 window.addEventListener("online", async () => { if (pending) await sendPending(); else if (current) { try { await refresh(); tell("Connection restored; server state reloaded."); } catch { offline = true; showSafety(communication); } } });
 window.addEventListener("beforeunload", (event) => { if (pending) { event.preventDefault(); event.returnValue = "Unconfirmed input is held in memory only."; } });
@@ -444,7 +457,7 @@ async function start() {
   try {
     const result = await api("/demo/scenarios"); catalog = result.scenarios; hosted = Boolean(result.hosted);
     presentationRole = "clinician"; $("role-switch").hidden = false;
-    $("hosted-notice").hidden = true; $("reset-demo").hidden = !result.can_reset;
+    $("hosted-notice").hidden = true; $("reset-demo").hidden = !result.can_reset; canReset = Boolean(result.can_reset);
     $("connect-form").hidden = hosted;
     $("scenario").replaceChildren();
     $("scenario").disabled = false;

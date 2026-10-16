@@ -90,8 +90,9 @@ def investigation_trail(trace, keys, generation_used):
 
 
 class AgentService:
-    def __init__(self, events, *, provider=None, config=None, synthetic_only=False, clock=None):
+    def __init__(self, events, *, provider=None, config=None, synthetic_only=False, clock=None, sharing_default_all=True):
         self.events = events
+        self.sharing_default_all = sharing_default_all  # demo: everything shared until the patient chooses
         self.provider = provider or ScriptedAgentProvider()
         self.config = config or load_config()
         self.synthetic_only = synthetic_only
@@ -122,7 +123,11 @@ class AgentService:
                             "signal_registry": self.events.signal_registry.fingerprint,
                             'question_catalog': QUESTION_CATALOG,
                             'prompt_version': PROMPT_VERSION,
-                            "references": references, "model": self.provider.model_id, "blocked": reason})
+                            "references": references, "model": self.provider.model_id, "blocked": reason,
+                            # Consent and activity tags change what clinician runs may read: never replay across them.
+                            "sharing_and_activities": [[r["record_type"], r["detail"]] for r in repo.timeline(patient_id)
+                                                       if r["record_type"] in {"SHARING_CONSENT", "PATIENT_ACTIVITY"}],
+                            "sharing_default_all": self.sharing_default_all})
         return signature, reason, (rows[-1] if rows else None), state
 
     def execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False,
@@ -135,17 +140,38 @@ class AgentService:
         except Exception:
             raise AppError("AGENT_UNAVAILABLE", "Assistant could not complete this read-only request", 503) from None
 
-    def record_tools(self, patient_id, role, window_days):
+    def record_tools(self, patient_id, role, window_days, *, asker="patient"):
         """Shared, safety-assessed fact preparation for preview and checked generation."""
         evidence = EvidenceViewService(self.events).get(patient_id)
+        # Patient consent: clinician-serving runs never see categories the patient has not shared.
+        from .sharing import SharingService, clinician_view
+        withheld = (SharingService(self.events, default_all=self.sharing_default_all).withheld(patient_id)
+                    if clinician_view(getattr(role, "value", role), asker) else frozenset())
         with self.events.repositories.transaction() as repo:
             assessed = {ref['event_id'] for ref in repo.safety_references(patient_id)
                 if not ref['state']['degraded'] and ref['outcome'] not in {'DEFER_EVENT', 'REJECT_EVENT', 'SET_DEGRADED'}}
             evidence['agent_assessed_context_ids'] = sorted(assessed)
             evidence['assessed_notes'] = [{'event_id': row['event_id'], 'at': row['occurred_at'], 'text': row['payload']['text']}
                 for row in repo.events(patient_id) if row['event_type'] == 'PATIENT_FREE_TEXT'
-                and row['event_id'] in assessed and not row['longitudinal_deferred']]
-        return RecordTools(evidence, role, window_days=window_days, recent_readings_days=self.config.recent_readings_days,
+                and row['event_id'] in assessed and not row['longitudinal_deferred']
+                and row['source'] != 'patient_medication_update']
+            # Patient-reported activities reach the agent as aggregates only (no phrases).
+            notes = {row['event_id'] for row in evidence['assessed_notes']}
+            activity_rows = [{'at': row['occurred_at'], 'items': row['detail']['items']} for row in repo.timeline(patient_id)
+                             if row['record_type'] == 'PATIENT_ACTIVITY' and row['detail'].get('note_event_id') in notes]
+            if activity_rows and evidence.get('period', {}).get('end'):
+                from datetime import datetime as _dt
+                from aura_agent.activities import summarize, summary_text
+                summary = summarize(activity_rows, _dt.fromisoformat(evidence['period']['end']).date())
+                evidence['activity_summary'] = {'text': summary_text(summary), 'summary': summary,
+                                                'ref': 'activity-summary:' + summary['recent']['end']}
+        # Record coverage is metadata (minimum-shared): when things were last recorded, not what they said.
+        try:
+            from .record_calendar import RecordCalendarService
+            evidence['record_coverage'] = RecordCalendarService(self.events, None).coverage(patient_id)
+        except AppError:
+            pass
+        return RecordTools(evidence, role, window_days=window_days, recent_readings_days=self.config.recent_readings_days, withheld=withheld,
                            checkin_days=self.config.checkin_days), evidence
 
     def _execute(self, patient_id, role, *, run_id, query_id=None, question=None, window_days=56, client_offline=False,
@@ -206,7 +232,7 @@ class AgentService:
                       "reason": blocked, "generation_used": False, "elapsed_ms": 0,
                       "prompt_version": "aura-agent-v1", "config_version": self.config.version}
             if not blocked:
-                tools, evidence = self.record_tools(patient_id, role, window_days)
+                tools, evidence = self.record_tools(patient_id, role, window_days, asker=asker)
                 with self.events.repositories.transaction() as repo:
                     if self._approval(repo, patient_id, client_offline)[0] != signature:
                         blocked = "STATE_CHANGED_BEFORE_GENERATION"

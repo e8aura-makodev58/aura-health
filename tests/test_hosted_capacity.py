@@ -45,6 +45,15 @@ class HostedCapacity(unittest.TestCase):
         self.assertEqual(len(self.host.sessions), 0)
         self.workspace.assert_not_called()
 
+    def test_capacity1b_every_response_names_the_serving_node(self):
+        # Blue/green: the public URL must reveal which server answered, and nothing more.
+        with patch.dict("os.environ", {"AURA_NODE_NAME": "blue", "AURA_NODE_LABEL": "Tencent Cloud Lighthouse"}):
+            health = self.client.get("/health")
+            self.assertEqual((health.json()["node"], health.json()["node_label"]), ("blue", "Tencent Cloud Lighthouse"))
+            for path in ("/health", "/", "/demo/scenarios", "/nowhere"):
+                self.assertEqual(self.client.get(path).headers.get("x-aura-node"), "blue", path)
+        self.assertEqual(self.client.get("/health").json()["node"], "local")
+
     def test_capacity2_only_bootstrap_allocates_and_cookie_reuses(self):
         self.assertEqual(self.client.get("/demo/scenarios").status_code, 200)
         for _ in range(10):

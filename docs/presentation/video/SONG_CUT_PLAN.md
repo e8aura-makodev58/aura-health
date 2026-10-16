@@ -13,13 +13,39 @@ This replaces the earlier plan (song–voice–song); the total stays inside the
 Built by `tools/assemble_short.py` (with `FIRST_HALF=1`) and `tools/assemble_landscape.py`; the
 landscape take comes from `tools/record_tour.cjs <url> <dir> deskfull`.
 
+## Option B (2026-10-14): real usage demo instead of the guided story
+
+`aura-health-usage-demo-novoice.mp4` (3:51) is one live take of actual use in landscape (recorded at
+1440×810, scaled to 1920×1080), with no guided story and no safety example. Only AI waiting time was
+trimmed (each wait kept to 3 s; the appointment-note draft lost ~32 s). Built by
+`tools/record_usage.cjs` + `tools/assemble_usage.py`. Content, in order: patient home and summary,
+Taken, a medication topic, the note **"I enjoyed painting today for 3 hours"** with AURA's reply,
+"Things you've mentioned" (painting · Creative · 3 h), agent-picked ideas and an acknowledged choice,
+plain appointment notes, "What your clinician can see", the clinician findings and activity totals,
+"Has the patient mentioned spending more time on hobbies recently?", the 30-day Rough check-in
+percentage, then Demo guide → Minimum only → sharing line and "Do we have access to the patient's
+notes?" ("not shared"). All three clinician answers passed first time in this take (the recorder
+re-asks once if an answer falls back).
+
+**Captions (2026-10-15):** `aura-health-usage-demo-captioned-novoice.mp4` has 23 burned-in captions
+(Nunito, rounded semi-transparent cards at the bottom left of the screen, left-aligned text, short fades) so this half needs only music; the
+same text is in `aura-health-usage-demo.srt` for YouTube subtitles. Wording deliberately does not
+repeat the first half's voice-over and ends on the song hook "AURA Health / Room for your day".
+Built by `tools/caption_usage.py` (captions anchored to recorded markers, mapped through the trims).
+`aura-health-combined-usage-captioned-novoice.mp4` = first half + captioned demo (7:18).
+
+`aura-health-combined-usage-draft-novoice.mp4` = first half (3:26) + usage demo (3:51) = **7:18**;
+with the two 8-s Miora clips about **7:34**, inside the 8-minute limit. The song (about 2:37–2:43 at
+100–104 BPM) is shorter than this half: start the sung version with the demo and continue with the
+instrumental version (or loop the chorus) to the end, letting the outro land on the Miora clip.
+
 ## Cue sheet (final-video times, intro clip included)
 
 | Final video | On screen | Audio |
 |---|---|---|
 | 0:00–0:08 | Miora intro | Soft instrumental (optional), or silence |
 | 0:08–3:34 | First half (part 1; file 0:00–3:26) | **Your voice-over 1–10** below; optional instrumental bed very low |
-| 3:34–6:15 | Landscape live demo (file 0:00–2:40) | **Song (v5)** from the start; the guided story's own cards explain each step |
+| 3:34–6:15 | Landscape live demo (file 0:00–2:40) | **Song (v7)** from the start; the guided story's own cards explain each step |
 | 6:15–6:23 | Miora outro | Song outro ("…Aura Health, room for your day"); hold or fade to fit |
 
 The song runs about 2:37–2:57 (92–104 BPM); the landscape demo plus the outro clip is 2:48. If the
@@ -69,8 +95,8 @@ starts were checked against frames of the actual file.
 
 **8 · Architecture and agent loop (file 2:31–2:55 · final 2:39–3:03, ~24 s)**
 > Our rule: signals propose, rules decide, AI words it. Deterministic engines own the baselines
-> and the safety state. The agent uses read-only tools within loop budgets, and every draft is
-> grounded, verified and rechecked before it's shown.
+> and the safety state. The patient decides what their clinician sees, and the agent reads only
+> what's shared, then grounds, verifies and rechecks every draft.
 
 **9 · Fit with the challenge (file 2:55–3:11 · final 3:03–3:19, ~16 s)**
 > Medication understanding, adherence, health tracking, follow-up dates and appointment

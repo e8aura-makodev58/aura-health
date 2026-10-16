@@ -143,8 +143,8 @@ def system_overview(slide):
     web = node(slide, 80, 190, 360, 500, "Web experience", fill="white", dashed=True, title_size=28)
     app = node(slide, 520, 190, 600, 500, "Python app · owns the state", fill="white", dashed=True, title_size=28)
     ai = node(slide, 1200, 190, 640, 500, "Bounded AI · read-only", fill="white", dashed=True, title_size=28)
-    node(slide, 104, 256, 312, 200, "Patient companion", ["Recap, dose + reasons", "Medication, dates", "Optional small ideas"], fill="sand", title_size=25, body_size=20)
-    node(slide, 104, 472, 312, 150, "Clinician view", ["Findings with sources", "Ask about the record"], fill="sand", title_size=25, body_size=20)
+    node(slide, 104, 256, 312, 200, "Patient companion", ["Recap, dose + reasons", "Replies, ideas, activities", "Sharing choices"], fill="sand", title_size=25, body_size=20)
+    node(slide, 104, 472, 312, 150, "Clinician view", ["Findings, Ask the record", "Only what is shared"], fill="sand", title_size=25, body_size=20)
     text(slide, 104, 640, 312, 40, [("Presentation, not policy", 21, False, MUTED)])
     node(slide, 544, 256, 552, 112, "FastAPI application services", ["Atomic + idempotent events · SQLite + audit"], fill="blue", body_size=21)
     node(slide, 544, 384, 552, 112, "Curated medication content", ["Typed questions: safety first, fixed answers"], fill="blue", body_size=21)
@@ -165,9 +165,10 @@ def system_overview(slide):
     text(slide, 1122, 388, 76, 64, [("request", 16, False, MUTED), ("result", 16, False, MUTED)], align=PP_ALIGN.CENTER)
     text(slide, 1124, 700, 230, 58, [("Observable events", 18, False, MUTED), ("via app ingestion", 18, False, MUTED)])
     text(slide, 80, 760, 380, 180, [("Signals propose. Rules decide. AI words it.", 30, True, INK)])
-    text(slide, 1360, 760, 480, 250, [("One application · synthetic workspaces · development storage", 21, False, MUTED),
-                                      ("Demo roles, no clinical authentication. Visit preview: Not sent.", 21, False, MUTED),
-                                      ("Institutional hosting is future work", 21, False, MUTED)])
+    sharing = node(slide, 1340, 760, 360, 200, "Patient-controlled sharing", ["Minimum always; notes, readings,", "daily check-ins opt-in"], fill="sun", title_size=25, body_size=20)
+    arrow(slide, sharing, TOP, ai, BOTTOM)
+    text(slide, 1530, 700, 300, 58, [("limits what clinician", 16, False, MUTED), ("runs can read", 16, False, MUTED)])
+    text(slide, 80, 985, 1760, 40, [("One application · synthetic workspaces · development storage · demo roles, no clinical authentication · visit preview Not sent · institutional hosting is future work", 19, False, MUTED)])
 
 
 def agent_investigation(slide):

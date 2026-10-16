@@ -127,6 +127,26 @@ class CheckinAnalysisTests(unittest.TestCase):
         self.assertEqual(provider.calls, 3)
         self.assertTrue(any(row.get('code') == 'CALCULATION_ANSWER_INCOMPLETE' for row in result['trace']))
 
+    def test_exploratory_calculation_does_not_reject_a_non_numeric_question(self):
+        # The agent may tally check-ins while exploring; only a question asking for a number must quote it.
+        class Explorer:
+            live = True
+            model_id = 'mock-explorer'
+            calls = 0
+            def step(self, messages, specs):
+                self.calls += 1
+                if self.calls == 1:
+                    return {'tool_calls': [{'id': 'c1', 'type': 'function', 'function': {'name': 'summarize_checkins', 'arguments': json.dumps(ARGS)}}]}
+                result = next(json.loads(m['content']) for m in messages if m['role'] == 'tool')
+                return {'content': json.dumps(draft(result['facts'][0], '20 days were recorded as Rough.'))}
+        provider = Explorer()
+        result = run(AgentRole.RECORD_QA, 'When did sleep timing change, and was anything reported around then?',
+                     RecordTools(evidence(), AgentRole.RECORD_QA), provider)
+        # The draft passes validation and goes on to the independent verifier (a third model call).
+        self.assertFalse(any(row.get('stage') == 'DRAFT_VALIDATION' for row in result['trace']))
+        self.assertFalse(any(row.get('code') == 'CALCULATION_ANSWER_INCOMPLETE' or row.get('action') == 'CALCULATION_ANSWER_REQUIRED'
+                             for row in result['trace']))
+
     def test_tool_loop_answers_calculation_and_verifier_sees_method(self):
         class Provider:
             live = True
@@ -146,6 +166,100 @@ class CheckinAnalysisTests(unittest.TestCase):
         self.assertIn('66.7%', str(result))
         self.assertTrue(result['generation_used'])
         self.assertEqual(provider.checked[0]['facts'][0]['analysis']['denominator'], 30)
+
+    def _repairing(self, bad_drafts):
+        class Provider:
+            live = True
+            model_id = 'mock-repair'
+            drafts = 0
+            def step(self, messages, specs):
+                if not specs:
+                    checks = json.loads(messages[1]['content'])
+                    return {'content': json.dumps({'verdicts': [{'index': i, 'supported': True} for i in range(len(checks))]})}
+                results = [json.loads(m['content']) for m in messages if m['role'] == 'tool']
+                if not results:
+                    return {'tool_calls': [{'id': 'c1', 'type': 'function', 'function': {'name': 'summarize_checkins', 'arguments': json.dumps(ARGS)}}]}
+                fact = results[0]['facts'][0]
+                self.drafts += 1
+                if self.drafts <= len(bad_drafts):
+                    return {'content': json.dumps(bad_drafts[self.drafts - 1](fact))}
+                return {'content': json.dumps(draft(fact))}
+        provider = Provider()
+        return provider, run(AgentRole.RECORD_QA, 'What percentage of the past 30 days was Rough?',
+                             RecordTools(evidence(), AgentRole.RECORD_QA), provider, AgentConfig())
+
+    def test_one_grounding_repair_turns_a_rejected_draft_into_a_checked_answer(self):
+        made_up = lambda fact: draft(fact, 'Rough on 99 of 30 recorded days.')
+        provider, result = self._repairing([made_up])
+        self.assertTrue(result['generation_used'])
+        self.assertIn('66.7%', str(result))
+        self.assertEqual([row['code'] for row in result['trace'] if row.get('action') == 'DRAFT_REPAIR_REQUESTED'], ['FABRICATED_NUMBER_OR_DATE'])
+
+    def test_repair_is_attempted_once_only(self):
+        made_up = lambda fact: draft(fact, 'Rough on 99 of 30 recorded days.')
+        provider, result = self._repairing([made_up, made_up])
+        self.assertFalse(result['generation_used'])
+        self.assertEqual(sum(row.get('action') == 'DRAFT_REPAIR_REQUESTED' for row in result['trace']), 1)
+        self.assertTrue(any(row.get('code') == 'FABRICATED_NUMBER_OR_DATE' and row.get('result') == 'REJECT' for row in result['trace']))
+
+    def test_prohibited_content_is_never_repaired(self):
+        advice = lambda fact: draft(fact, 'You should stop your medication and increase the dose.')
+        provider, result = self._repairing([advice])
+        self.assertFalse(result['generation_used'])
+        self.assertFalse(any(row.get('action') == 'DRAFT_REPAIR_REQUESTED' for row in result['trace']))
+
+    def _rephrasing(self, rewrite):
+        class Provider:
+            live = True
+            model_id = 'mock-rephrase'
+            rephrased = 0
+            def step(self, messages, specs, reasoning=None):
+                if not specs and 'wording check rejected' in messages[0]['content']:
+                    self.rephrased += 1
+                    self.reasoning = reasoning
+                    texts = json.loads(messages[1]['content'])['texts']
+                    return {'content': json.dumps({'texts': [rewrite(text) for text in texts]})}
+                if not specs:
+                    checks = json.loads(messages[1]['content'])
+                    return {'content': json.dumps({'verdicts': [{'index': i, 'supported': True} for i in range(len(checks))]})}
+                results = [json.loads(m['content']) for m in messages if m['role'] == 'tool']
+                if not results:
+                    return {'tool_calls': [{'id': 'c1', 'type': 'function', 'function': {'name': 'summarize_checkins', 'arguments': json.dumps(ARGS)}}]}
+                fact = results[0]['facts'][0]
+                return {'content': json.dumps(draft(fact, fact['text'] + ' This was caused by stress.'))}
+        provider = Provider()
+        return provider, run(AgentRole.RECORD_QA, 'Was anything reported around the change?',
+                             RecordTools(evidence(), AgentRole.RECORD_QA), provider, AgentConfig())
+
+    def test_rejected_wording_is_rephrased_once_and_checked_again(self):
+        provider, result = self._rephrasing(lambda text: text.replace(' This was caused by stress.', ''))
+        self.assertTrue(result['generation_used'])
+        self.assertEqual(provider.rephrased, 1)
+        self.assertEqual(provider.reasoning, 'low')
+        self.assertNotIn('caused', json.dumps(result['draft']))
+        self.assertTrue(any(row.get('action') == 'DRAFT_REPHRASED' for row in result['trace']))
+
+    def test_a_rephrase_that_still_breaks_the_rule_falls_back(self):
+        provider, result = self._rephrasing(lambda text: text)  # unchanged: still "caused"
+        self.assertFalse(result['generation_used'])
+        self.assertEqual(provider.rephrased, 1)
+        self.assertTrue(any(row.get('code') == 'PROHIBITED_CLAIM' and row.get('result') == 'REJECT' for row in result['trace']))
+
+    def test_finding_metadata_comes_from_the_record_not_the_model(self):
+        from aura_agent.runtime import fill_findings
+        class Tools:
+            delivered = {'f1': {'text': 'Sleep later since 2026-02-23.', 'finding': {'signal': 'SLEEP_MIDPOINT', 'direction': 'LATER', 'since': '2026-02-23'}},
+                         'f2': {'text': 'Rough on 7 of 7 days.'}}
+        wrong = {'headline': '', 'question_ids': [], 'claims': [
+            {'text': 'Sleep later.', 'fact_ids': ['f1'], 'findings': [{'fact_id': 'f1', 'signal': 'SLEEP_MIDPOINT', 'direction': 'EARLIER', 'since': '2026-02-21'}], 'section': 'changes'},
+            {'text': 'Rough days.', 'fact_ids': ['f2'], 'findings': [{'fact_id': 'f2', 'signal': 'X', 'direction': 'Y', 'since': 'Z'}], 'section': 'routine'},
+            {'text': 'Unknown.', 'fact_ids': ['f9'], 'findings': [], 'section': 'routine'}]}
+        fixed, changed = fill_findings(wrong, Tools())
+        self.assertTrue(changed)
+        self.assertEqual(fixed['claims'][0]['findings'], [{'fact_id': 'f1', 'signal': 'SLEEP_MIDPOINT', 'direction': 'LATER', 'since': '2026-02-23'}])
+        self.assertEqual(fixed['claims'][1]['findings'], [])
+        self.assertEqual(fixed['claims'][2], wrong['claims'][2], 'undelivered citations are left for the checker to reject')
+        self.assertEqual(fill_findings(fixed, Tools()), (fixed, False))
 
 
 if __name__ == '__main__':
