@@ -140,7 +140,10 @@
     const dots = el("div", "tour-dots"); dots.setAttribute("aria-hidden", "true");
     const title = el("h2", "tour-title"); const text = el("p", "tour-text"); const status = el("p", "tour-status");
     const actions = el("div", "tour-actions"); const back = el("button", "tour-back", "Back"); const next = el("button", "tour-next primary", "Next →");
-    back.addEventListener("click", () => go(tour.index - 1)); next.addEventListener("click", onNext); actions.append(back, next);
+    back.addEventListener("click", () => go(tour.index - 1)); next.addEventListener("click", onNext);
+    // Shown on hover while Next waits for a step's real work (the status line says the same for touch).
+    const wait = el("span", "tour-wait", "AURA agent is working, please wait…"); wait.setAttribute("aria-hidden", "true");
+    actions.append(back, next, wait);
     card.append(top, dots, title, text, status, actions);
     return {card, chapter, dots, title, text, status, back, next};
   }
@@ -247,14 +250,14 @@
     spotlight(step.target());
     if (step.action && !tour.done.has(index)) {
       tour.done.add(index); // Back and double taps never repeat a real action.
-      ui.status.textContent = "Working…";
+      ui.status.textContent = "AURA agent is working…"; ui.status.classList.add("busy");
       let message;
       try { message = await step.action(run); } catch { message = "This part isn't available just now. You can still continue."; }
       if (!tour || tour.run !== run || tour.index !== index) return;
       tour.messages[index] = message;
       spotlight(step.target());
     }
-    ui.status.textContent = tour.messages[index] || "";
+    ui.status.classList.remove("busy"); ui.status.textContent = tour.messages[index] || "";
     showRetry(index, run);
     ui.next.disabled = false; ui.next.focus({preventScroll: true});
   }
@@ -265,11 +268,11 @@
     tour.retry = false;
     const again = el("button", "tour-retry", "Ask again");
     again.addEventListener("click", async () => {
-      again.disabled = true; tour.ui.next.disabled = true; tour.ui.status.textContent = "Asking again…";
+      again.disabled = true; tour.ui.next.disabled = true; tour.ui.status.textContent = "AURA agent is asking again…"; tour.ui.status.classList.add("busy");
       let message;
       try { message = await STEPS[index].action(run); } catch { message = "This part isn't available just now. You can still continue."; }
       if (!tour || tour.run !== run || tour.index !== index) return;
-      tour.messages[index] = message; tour.ui.status.textContent = message; again.remove();
+      tour.messages[index] = message; tour.ui.status.classList.remove("busy"); tour.ui.status.textContent = message; again.remove();
       showRetry(index, run); spotlight(STEPS[index].target()); tour.ui.next.disabled = false;
     });
     tour.ui.card.querySelector(".tour-actions").prepend(again);

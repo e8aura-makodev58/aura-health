@@ -677,3 +677,13 @@ body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #r
   .info-link::before {content:"i";display:grid;place-items:center;width:20px;height:20px;border:1.6px solid currentColor;border-radius:50%;
     font-size:.8rem;font-weight:800;font-family:Georgia,"Times New Roman",serif;line-height:1}
 }
+
+/* Guided story: while a step's real work runs, say so (hover tooltip on Next; spinner on the status line) */
+.tour-actions {position:relative}
+.tour-next:disabled {cursor:progress}
+.tour-wait {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 16px;border-radius:var(--radius-pill);background:var(--ink);color:var(--white);font-size:.85rem;font-weight:600;text-align:center;opacity:0;pointer-events:none;transition:opacity var(--dur-fast) var(--ease-out)}
+.tour-actions:has(.tour-next:disabled):hover .tour-wait {opacity:.94}
+.tour-status.busy {display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink)}
+.tour-status.busy::before {content:"";flex:none;width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:tour-spin 0.9s linear infinite}
+@keyframes tour-spin {to {transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce) {.tour-status.busy::before {animation:none;border-top-color:var(--line);border-right-color:var(--accent)}}

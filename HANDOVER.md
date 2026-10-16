@@ -310,6 +310,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-16 — Claude — Guided story: visible "AURA agent is working" state (user request)
+- `aura_ui/tour.js` + styles: while a step's real work runs, the status line shows a spinner and "AURA agent is working…" (or "…asking again…"); hovering the button row while Next waits shows a dark overlay "AURA agent is working, please wait…" covering only the Back/Next row (click-through, so Back still works); Next shows a progress cursor. Spinner is still under reduced motion.
+- Verified: tour.cjs 5 PASS incl. a new check on step 8 (record_qa slowed 5 s in the test): busy status text and hover overlay visible (opacity > 0.9); screenshot reviewed at 390 px (no text covered).
+
 ### 2026-10-16 — Claude — Language moved to a header menu (user request)
 - The home Language card is replaced by a globe "EN" button in the header (`#language-button` / `#language-menu`, in `aura_ui/catchup.js`): English ticked; 中文, Bahasa Melayu, தமிழ் greyed, each with "coming soon" in its own language (即将推出 / Akan datang / விரைவில்), plus the future-release note. Menu is placed under the button but clamped on-screen; closes on outside click, Escape, scroll or resize.
 - Header fit on phones: at ≤420 px "Disclaimer" becomes a drawn "i" icon (accessible name unchanged); the agent light is dot-only at ≤400 px. Font subsets rebuilt to include the "coming soon" words (~1.5–2 KB each, renamed Aura Han / Aura Tamil). Docs (§15.1, roadmap) updated to "header menu".
