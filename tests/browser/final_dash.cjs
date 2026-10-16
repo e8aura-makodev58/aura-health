@@ -55,7 +55,9 @@ if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loca
   assert.match(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/What we looked at.*What we saw.*Where it comes from/s);
   assert.doesNotMatch(await page.locator('#agent-patient_insight .patient-summary-sources').innerText(),/demo-B-|\d{4}-\d{2}-\d{2}/);
   await page.locator('#agent-patient_insight .patient-summary-sources > [data-technical] > summary').click();
-  await page.waitForFunction(()=>/Source:/.test(document.querySelector('#agent-patient_insight .patient-summary-sources > [data-technical]')?.innerText||''),null,{timeout:5000});
+  // The summary may re-render once after the flu refresh (replacing the open folds), so reopen and read.
+  await page.waitForFunction(()=>{const why=document.querySelector('#agent-patient_insight .patient-summary-sources');if(!why)return false;why.open=true;
+   const tech=why.querySelector(':scope > [data-technical]');if(!tech)return false;tech.open=true;return /Source:/.test(tech.innerText);},null,{timeout:15000});
   assert.match(await page.locator('#agent-patient_insight .patient-summary-sources > [data-technical]').innerText(),/Source:/);
   await page.screenshot({path:`${out}/final-dash-flu-patient-390.png`,fullPage:true});
   console.log('FD_BROWSER3_PATIENT_CALM_RECAP_AND_FULL_DISCLOSURES PASS');

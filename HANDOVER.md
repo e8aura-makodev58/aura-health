@@ -310,6 +310,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-16 — Claude — Full test round before the lock (user request)
+- Python: **396 OK** (708 s). Browser (local hosted): catchup_calendar 18, companion 10, milestone7 7, workflows 5, agent 5, plain_language 2, dual_view 12, welcome 3, landing 2, tour 5, cards 4, impression 5, qa_display 2, story_charts 3, settings 1 PASS; final_dash failed intermittently (3 of 5 at one point): the patient summary re-renders once after the flu refresh and the test read a freshly closed fold. Test now reopens the folds before reading; 5/5 PASS after (test-only change, no app change).
+- Live (public, blue): 5/5 full guided stories, every step successful (step 5 saved in 17–19 s, clinician answer checked in 24–34 s, ~61–69 s per story); typed past-days update (question shown, 13 days saved, calendar marks); safety-panel reset; language menu and agent light (blue, Tencent Cloud Lighthouse, gpt-6-luna). Green (standby, direct): full story OK.
+
 ### 2026-10-16 — Claude — Guided story step 5 robust to slow AI replies (user report)
 - User saw "This couldn't be saved just now" after a long wait on step 5. Blue's session showed the typed sentence safety-cleared (normal) but no days saved. Cause: the step waited 60 s for the interpret reply, then tapped days while the reply was still in flight; the late reply added the confirming question, which disables Save, so Save did nothing. Interpret on blue measured 6 s afterwards (transient provider slowness).
 - `aura_ui/tour.js`: wait up to 100 s and never tap while a reply may still arrive; if still reading, close the dialog and say "AURA is taking longer than usual right now…"; answer a visible confirming question before saving and wait for Save to unlock.
