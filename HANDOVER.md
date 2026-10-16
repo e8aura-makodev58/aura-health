@@ -310,6 +310,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-16 — Claude — Tencent models dropped for now (user decision)
+- User: drop Tencent models for now; they would need prompt tuning and burned more tokens than gpt-6-luna. Live model stays OpenAI gpt-6-luna medium on both servers (green restored, connection PASS; blue never changed).
+- Findings kept for later: TokenHub key reaches 88 listed models; only those with an activated trial answer (others HTTP 402). Hy4 preview: fine for short JSON tasks without tools (activity tagging 34/40 vs luna 36/40 on a 40-note set, ~2.5 s), but ignores tools in JSON mode and fails AURA's agent; with thinking on it can spend 8,000 tokens without answering. Kimi K3: calls tools correctly, but slow (17–29 s per tool step with thinking; 2 of 2 stories timed out on the clinician question even with thinking off; summary 17–23 s).
+- Code kept (Tencent-only, tested): TokenHub thinking controls and no JSON mode when tools are offered (`aura_communication/vendor.py`). The user's TokenHub key remains stored on green (unused); `~/hy.token` is 0600.
+
 ### 2026-10-16 — Claude — Tencent Hy4 preview trial on green (not adopted)
 - User's TokenHub key (file `~/hy.token`, tightened to 0600) stored on green only. TokenHub needed the Hy4 free trial claimed first (HTTP 402 "service ID does not exist" until then).
 - Transport fixes for TokenHub (`aura_communication/vendor.py`, tests in `test_reasoning_setting.py`): thinking off on short wording calls (5 s deadline); agent calls send thinking off for reasoning "none", else `reasoning_effort`; no JSON mode when tools are offered (Hy4 ignores native tools in JSON mode). Legacy Hunyuan endpoint and other providers unchanged.
