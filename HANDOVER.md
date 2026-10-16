@@ -34,7 +34,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Codex worktree sync (2026-10-16):** latest fetched main `0f08fb2` integrated into `improve/feature-codex` at user request. Await further instructions; no runtime or deployment actions in this session.
 
-- **Private pitch watcher re-armed (Codex, 2026-10-16):** user requested three additional automatic Claude-completion/review cycles. Temporary watcher `/tmp/aura-watch-pitch-three.py` is running; state `/tmp/aura-pitch-watch-three.json`. Watches for a new Claude log entry and 60 seconds without file changes, then waits for a review acknowledgement before advancing. Shared pitch stays ignored; no private text copied here. Cycle 1/3 reviewed; 2 remain armed. See latest log for progress.
+- **Private pitch watcher disabled (user, 2026-10-16):** stopped the temporary watcher at user request. Two of three additional review cycles completed; final cycle cancelled. No automatic reviews remain armed. Shared pitch remains ignored/untracked; owner/editor controls further changes.
 
 - **Availability planning superseded:** the earlier Codex standby proposal remains in `docs/JUDGING_AVAILABILITY_PLAN.md` as history. Main now records Tencent Lighthouse blue/self-hosted green hosting and the demo lock; no operations performed in this sync.
 
@@ -122,7 +122,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Current scope (2026-10-16):** user authorized three more automatic private pitch watch/review cycles. Watcher is active; no product implementation or operations assigned.
+- **Current scope (2026-10-16):** watcher disabled at user request after two additional review cycles; no further automatic work assigned.
 
 - **Private pitch:** owner/editor to consider the latest v2 review in the external deliberation document. Keep that document ignored and untracked; do not import its contents into public documentation.
 
@@ -332,6 +332,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-16 — Codex — Disable private pitch watcher at user request
+- Stopped the sole remaining Codex watcher process and marked local state disabled. Two of three additional cycles completed: first added a review; second verified Claude's no-body-change completion without adding a duplicate comment. Final cycle cancelled; no automatic review remains armed.
+- Verified: process termination and local state; no app or private pitch changes in this stop task. Runtime tests not rerun for process shutdown/documentation only.
+- Left: await user instructions. Earlier arming/progress entries are historical.
 
 ### 2026-10-16 — Codex — Re-arm three further private pitch review cycles
 - User explicitly requested three more cycles. Started a temporary read-only watcher with persistent cycle count and review acknowledgement; starts after the last reviewed snapshot so an already-arrived Claude revision is not missed. No pitch content or watcher scripts added to tracked files.
