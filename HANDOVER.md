@@ -34,7 +34,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 - **Codex worktree sync (2026-10-16):** latest fetched main `0f08fb2` integrated into `improve/feature-codex` at user request. Await further instructions; no runtime or deployment actions in this session.
 
-- **Private pitch automatic follow-up (Codex, 2026-10-16):** user authorized watching for Claude completion and reviewing without a new prompt. A temporary read-only watcher detected v3 plus a new Claude consolidation entry and 60 seconds without changes; added a dated §12 follow-up review. Existing bytes preserved; pitch stays ignored/untracked, no private content copied here. One-shot watcher completed and exited; editor decides body changes.
+- **Private pitch watcher re-armed (Codex, 2026-10-16):** user requested three additional automatic Claude-completion/review cycles. Temporary watcher `/tmp/aura-watch-pitch-three.py` is running; state `/tmp/aura-pitch-watch-three.json`. Watches for a new Claude log entry and 60 seconds without file changes, then waits for a review acknowledgement before advancing. Shared pitch stays ignored; no private text copied here. See latest log for progress.
 
 - **Availability planning superseded:** the earlier Codex standby proposal remains in `docs/JUDGING_AVAILABILITY_PLAN.md` as history. Main now records Tencent Lighthouse blue/self-hosted green hosting and the demo lock; no operations performed in this sync.
 
@@ -122,7 +122,7 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Open decisions
 
-- **Current scope (2026-10-16):** main sync, private pitch v2 review and authorized automatic v3 follow-up complete. One-shot watcher has exited. No new implementation or operations assigned.
+- **Current scope (2026-10-16):** user authorized three more automatic private pitch watch/review cycles. Watcher is active; no product implementation or operations assigned.
 
 - **Private pitch:** owner/editor to consider the latest v2 review in the external deliberation document. Keep that document ignored and untracked; do not import its contents into public documentation.
 
@@ -332,6 +332,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-16 — Codex — Re-arm three further private pitch review cycles
+- User explicitly requested three more cycles. Started a temporary read-only watcher with persistent cycle count and review acknowledgement; starts after the last reviewed snapshot so an already-arrived Claude revision is not missed. No pitch content or watcher scripts added to tracked files.
+- Verified: watcher scripts compile, synthetic detection checks PASS, running process emitted ARMED; clean starting worktree. Review insertion checks body/Claude fingerprints, ignored/untracked target and preserves prior bytes. Remaining cycle status is recorded in /tmp/aura-pitch-watch-three.json; arming is not completion.
+- Left: complete three automatic follow-ups as Claude revisions arrive. No app/model/deployment changes authorized by this watcher request.
 
 ### 2026-10-16 — Codex — One-shot pitch watcher and automatic v3 review
 - User authorized detecting Claude completion and proceeding autonomously. Created a temporary read-only file watcher in /tmp; detected v3 plus Claude consolidation, waited 60 seconds without file changes, then added the dated review only in the shared ignored document. Watcher exited after this one follow-up.
