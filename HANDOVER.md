@@ -32,6 +32,8 @@ The shared handoff note for any agent (Claude, Sol, or others) working on this r
 
 ## Current state (documentation updated 2026-10-14; implementation evidence dated below)
 
+- **LOCKED for demo day (2026-10-16, user-approved):** tag `final-demo-day`. No code changes after this; operations only (`deploy/switch.sh status|blue|green`, see `deploy/SWITCH_HELP.md`). Public site served by **blue** (Tencent Cloud Lighthouse, Singapore), **green** (self-hosted) on standby; both run the same app build (from `73a762a`; later commits are tests/docs only). Live model OpenAI gpt-6-luna, reasoning medium, on both. The owner's Telegram agent (on a separate machine) watches `switch.sh status` and never switches. After judging: rotate/disable the AI keys and the TokenHub key.
+
 - **Catch-up + calendar built (2026-10-15, Claude, final gate):** spec `docs/BACKLOG_AND_CALENDAR_SPEC.md` §9. Codex and Gemini had no commits on their branches by the deadline eve, so Claude built §9.2 (backend) and §9.4 (browser suite) too. Backend `aura_app/record_calendar.py` (update window, save past days as `reported_later` medication events, coverage, calendar + day detail with sharing filters) and `aura_app/medication_update.py` (interpret typed text: safety first, `medication_backfill` agent task, checked proposal). UI `aura_ui/catchup.js` (dose-card prompt, update dialog + preview, calendar page for patient and clinician, welcome back, coverage strip) plus a relearning line in `evidence.js`. Tests `tests/test_record_calendar.py`, `tests/test_medication_update.py`, browser `tests/browser/catchup_calendar.cjs` (phone + laptop).
 
 - **Codex Q&A calculations (2026-10-14, branch delivery):** from main `eac0334`, added read-only `summarize_checkins` for arbitrary supported windows/categories, deterministic percentages/counts/coverage, cited derived facts and a bounded missing-answer repair. Prompt v12; exact calculated display sentences preserve denominator/dates/missingness. Existing engines and shared patient percentage restrictions unchanged. See `docs/CLINICIAN_QA_CALCULATIONS.md`. Full355 tests PASS/492.432s plus final focused10 PASS; Claude merges/deploys later, no live-model calls in this task.
@@ -309,6 +311,10 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 ---
 
 ## Log
+
+### 2026-10-16 — Claude — LOCK: final-demo-day
+- User approved the lock after their testing. Final state verified: 396 Python tests OK; 16 hosted browser suites PASS (final_dash 5/5 after the test fix); live on blue 5/5 full guided stories plus past-days update, safety reset, language menu and agent light; green standby full story OK; both servers healthy, AI live, one connector (blue), 10/10 public answers from blue.
+- Tagged `final-demo-day` and pushed. Untracked local files left out on purpose (Tencent ADP guide must never be committed; cover/Miora reference images not requested).
 
 ### 2026-10-16 — Claude — Full test round before the lock (user request)
 - Python: **396 OK** (708 s). Browser (local hosted): catchup_calendar 18, companion 10, milestone7 7, workflows 5, agent 5, plain_language 2, dual_view 12, welcome 3, landing 2, tour 5, cards 4, impression 5, qa_display 2, story_charts 3, settings 1 PASS; final_dash failed intermittently (3 of 5 at one point): the patient summary re-renders once after the flu refresh and the test read a freshly closed fold. Test now reopens the folds before reading; 5/5 PASS after (test-only change, no app change).
