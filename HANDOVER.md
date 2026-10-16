@@ -310,6 +310,12 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-16 — Claude — Language card (Singapore's four languages, English only for now) + multilingual design
+- User: show multi-language support for Singapore, greyed out, English default. Patient home `#language-card`: English (selected), 中文, Bahasa Melayu, தமிழ் (disabled, own scripts), note "Chinese, Malay and Tamil are coming in a future release. Each will be safety-tested before it is switched on." No behaviour change; nothing else translated.
+- Fonts: `aura_ui/media/aura-zh.woff2` / `aura-ta.woff2` (~1 KB subsets of Noto Sans SC / Noto Sans Tamil, regular, renamed Aura Han / Aura Tamil; SIL OFL licences beside them; rebuild notes in `aura_ui/media/README.md`) so the names render without system CJK/Tamil fonts.
+- Docs: architecture document §15 item + §15.1 (safety-first multilingual design: per-language safety validation, reviewed translations, AI text checked in English then translated with back-translation, Tencent hy-mt2 candidates, clinician side English); `docs/ROADMAP.md` "After the hackathon".
+- Verified: catchup_calendar (18 incl. CU1c language card), welcome, landing, tour, companion, cards PASS; ui_media OK; no horizontal scroll at 320/390/1280.
+
 ### 2026-10-16 — Claude — Tencent models dropped for now (user decision)
 - User: drop Tencent models for now; they would need prompt tuning and burned more tokens than gpt-6-luna. Live model stays OpenAI gpt-6-luna medium on both servers (green restored, connection PASS; blue never changed).
 - Findings kept for later: TokenHub key reaches 88 listed models; only those with an activated trial answer (others HTTP 402). Hy4 preview: fine for short JSON tasks without tools (activity tagging 34/40 vs luna 36/40 on a 40-note set, ~2.5 s), but ignores tools in JSON mode and fails AURA's agent; with thinking on it can spend 8,000 tokens without answering. Kimi K3: calls tools correctly, but slow (17–29 s per tool step with thinking; 2 of 2 stories timed out on the clinician question even with thinking off; summary 17–23 s).

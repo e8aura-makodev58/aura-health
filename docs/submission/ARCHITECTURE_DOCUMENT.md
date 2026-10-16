@@ -671,9 +671,39 @@ Use dotted outlines labelled **Planned — not implemented in this demo**:
 - Sponsor-reviewed clinical configuration, resources, question wording and governance.
 - Agent-drafted, human-approved follow-up workflows and other governed actions.
 - Production persistence, operational monitoring and scalable processing.
+- Singapore's four official languages for patients (English, 中文, Bahasa Melayu, தமிழ்), §15.1.
 
 Do not connect these as if they are active dependencies. No future item changes the
 standing intended-use boundary or grants the model ownership of safety/treatment.
+
+### 15.1 Multilingual support for Singapore (planned; 2026-10-16)
+
+**In the demo today:** the patient home has a **Language** card listing English, 中文, Bahasa Melayu
+and தமிழ் in their own scripts. English is selected; the other three are visible but disabled, with
+the note "Chinese, Malay and Tamil are coming in a future release. Each will be safety-tested before
+it is switched on." Tiny self-hosted font subsets (Noto Sans SC / Noto Sans Tamil, SIL OFL, about
+1 KB each) make the names render on any device. Nothing else is translated yet.
+
+**Why:** many patients and family carers in Singapore are most at ease in Mandarin, Malay or Tamil,
+and public-health materials are routinely published in all four languages. Scope is limited to these
+four.
+
+**Design (safety first, no check bypassed):**
+1. **Patient input in any of the four languages passes the safety gate first.** The gate is
+   validated per language (fixed rules plus the AI safety layer) before that language is switched on;
+   the fixed English rules alone are not enough.
+2. **Fixed interface text** comes from reviewed translation files, checked by native speakers.
+   Safety contacts and medication information use approved or official multilingual versions only,
+   never machine translation alone.
+3. **AI-written patient text is still produced and checked in English** (wording, prohibited claims,
+   grounding, verifier), then translated, with a back-translation check before display. Every
+   existing check keeps working unchanged.
+4. **Translation engine:** Tencent's TokenHub translation models (`hy-mt2-pro/plus/lite`) are the
+   intended candidates, evaluated against reviewed reference translations before use.
+5. **The clinician side stays in English**, showing the patient's own words alongside a translation
+   labelled as such.
+6. Layout and fonts are checked on phone and laptop for each language (longer Malay and Tamil labels,
+   Chinese and Tamil fonts).
 
 ## 16. Diagram generation prompt
 
