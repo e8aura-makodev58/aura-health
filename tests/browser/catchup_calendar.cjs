@@ -33,11 +33,18 @@ async function run(browser,width){
  assert.equal(await page.evaluate(()=>document.activeElement.id),'suggestion-card');
  await page.evaluate(()=>scrollTo(0,0));
  console.log(`CU1b_${tag}_SHORTCUTS PASS`);
- // 1c · Language card: four Singapore languages in their own scripts; English only for now
- const langs=await page.$$eval('#language-card [name=app-language]',inputs=>inputs.map(i=>[i.value,i.checked,i.disabled]));
- assert.deepEqual(langs,[['en',true,false],['zh',false,true],['ms',false,true],['ta',false,true]]);
- assert.match(await page.locator('#language-card').innerText(),/中文[\s\S]*Bahasa Melayu[\s\S]*தமிழ்[\s\S]*future release/);
- console.log(`CU1c_${tag}_LANGUAGE_CARD PASS`);
+ // 1c · Language menu in the header: four Singapore languages in their own scripts; English only for now
+ assert.equal(await page.locator('#language-card').count(),0,'no card on the home page');
+ await page.evaluate(()=>scrollTo(0,0));await page.locator('#language-button').click();
+ await page.waitForSelector('#language-menu:not([hidden])');
+ const langs=await page.$$eval('#language-menu [data-lang]',items=>items.map(i=>[i.dataset.lang,i.getAttribute('aria-checked'),i.getAttribute('aria-disabled')]));
+ assert.deepEqual(langs,[['en','true',null],['zh','false','true'],['ms','false','true'],['ta','false','true']]);
+ assert.match(await page.locator('#language-menu').innerText(),/中文[\s\S]*Bahasa Melayu[\s\S]*தமிழ்[\s\S]*future release/);
+ await page.locator('#language-menu [data-lang="zh"]').click({force:true});
+ assert.equal(await page.locator('#language-menu').isVisible(),true,'a greyed language does nothing');
+ assert.equal(await noScroll(page),true);
+ await page.keyboard.press('Escape');assert.equal(await page.locator('#language-menu').isHidden(),true);
+ console.log(`CU1c_${tag}_LANGUAGE_MENU PASS`);
  // 2 · tap-only: today's recorded dose is locked, two past days set by tapping, nothing saved before Save
  await page.locator('#med-update-open').click();
  await page.waitForSelector('#med-update-dialog[open]');

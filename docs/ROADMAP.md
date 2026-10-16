@@ -96,7 +96,7 @@ When schedule pressure appears, preserve in order: (1) safety boundaries, (2) de
 ## After the hackathon
 
 - **Singapore's four official languages for patients** (English, 中文, Bahasa Melayu, தமிழ்). The demo
-  shows the Language card with English active and the other three marked as coming; design in
+  shows a header Language menu with English active and the other three marked as coming; design in
   [architecture document §15.1](submission/ARCHITECTURE_DOCUMENT.md): per-language safety validation first,
   reviewed interface translations, AI text checked in English then translated with a back-translation
   check, clinician side in English.

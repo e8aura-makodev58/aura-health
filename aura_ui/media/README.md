@@ -11,7 +11,7 @@ Flat folder for static UI art and fonts, served at `/assets/media/<name>`.
   `<style>`/`style=""`; reference media from `styles.css` or `<img src="/assets/media/...">`.
 - `aura-zh.woff2` and `aura-ta.woff2` are tiny subsets (about 1 KB each) of Noto Sans SC and
   Noto Sans Tamil, regular weight, containing only the characters of the language names
-  "中文" and "தமிழ்" shown in the Language card, so they render even where no Chinese or Tamil
+  "中文" / "即将推出" and "தமிழ்" / "விரைவில்" shown in the header language menu, so they render even where no Chinese or Tamil
   system font is installed. Rebuild with fontTools (`varLib.instancer` wght=400, then
   `pyftsubset --text=… --layout-features='*' --flavor=woff2`) if those labels change.
 - Illustrations (`welcome-hero`, `home-hero`, `breathing-circle`, `empty-clinician`,

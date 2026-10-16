@@ -355,4 +355,27 @@ async function checkAgent() {
 checkAgent();
 setInterval(checkAgent, 30000);
 document.addEventListener("aura-settings-updated", checkAgent);
+/* ---- Language menu in the header: English now; Chinese, Malay and Tamil are coming ---- */
+const languageButton = byId("language-button"), languageMenu = byId("language-menu");
+function closeLanguage(focus) { languageMenu.hidden = true; languageButton.setAttribute("aria-expanded", "false"); if (focus) languageButton.focus(); }
+languageButton.addEventListener("click", event => {
+  event.stopPropagation();
+  const open = languageMenu.hidden;
+  languageMenu.hidden = !open; languageButton.setAttribute("aria-expanded", String(open));
+  if (open) {
+    // Anchor under the button but always inside the screen (12 px margins).
+    const button = languageButton.getBoundingClientRect(), width = languageMenu.offsetWidth;
+    languageMenu.style.top = `${Math.round(button.bottom + 6)}px`;
+    languageMenu.style.left = `${Math.round(Math.max(12, Math.min(button.right - width, innerWidth - width - 12)))}px`;
+    languageMenu.querySelector('[aria-checked="true"]').focus();
+  }
+});
+languageMenu.addEventListener("click", event => {
+  event.stopPropagation();
+  const item = event.target.closest("[data-lang]");
+  if (item && item.getAttribute("aria-disabled") !== "true") closeLanguage(true);  // English stays selected
+});
+document.addEventListener("click", () => { if (!languageMenu.hidden) closeLanguage(false); });
+document.addEventListener("keydown", event => { if (event.key === "Escape" && !languageMenu.hidden) closeLanguage(true); });
+for (const type of ["resize", "scroll"]) window.addEventListener(type, () => { if (!languageMenu.hidden) closeLanguage(false); }, {passive: true});
 })();

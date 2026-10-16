@@ -33,7 +33,7 @@
 }
 @font-face {
   font-family:"Aura Han"; font-style:normal; font-weight:400; font-display:swap;
-  src:url("/assets/media/aura-zh.woff2") format("woff2"); unicode-range:U+4E2D, U+6587;
+  src:url("/assets/media/aura-zh.woff2") format("woff2"); unicode-range:U+4E2D, U+6587, U+5373, U+5C06, U+63A8, U+51FA;
 }
 @font-face {
   font-family:"Aura Tamil"; font-style:normal; font-weight:400; font-display:swap;
@@ -651,21 +651,29 @@ body[data-role="patient"] .clinician-calendar-link, body[data-role="patient"] #r
 #settings-dialog label {display:block;margin-top:14px}
 #settings-dialog input + button, #settings-dialog select + button, #settings-dialog datalist + button, #settings-dialog form > button {margin-top:12px}
 #settings-dialog form .fine {margin-top:12px}
-@media (max-width:380px) {
+@media (max-width:400px) {
   /* Very narrow phones: the light alone; the status stays in its label and tooltip. */
   .agent-short {display:none}
   .agent-live {padding:6px;margin-left:4px}
 }
 
-/* Language (Singapore's four official languages; English only for now) */
-.language-card {margin-top:12px}
-.language-card h2 {font-size:1.05rem;margin:0 0 8px}
-.language-options {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:0;margin:0;padding:0}
-.language-option [lang="zh-Hans"] {font-family:"Aura Han","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
-.language-option [lang="ta"] {font-family:"Aura Tamil","Noto Sans Tamil","Tamil MN","Nirmala UI",sans-serif}
-.language-option {display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 14px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white);font-size:1rem;cursor:pointer}
-.language-option:has(input:checked) {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.language-option[aria-disabled="true"] {background:var(--surface-soft);color:var(--muted);cursor:not-allowed}
-.language-option input {width:auto;margin:0;accent-color:var(--accent)}
-#language-note {margin:10px 0 0}
 .visually-hidden {position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Language picker in the header (Singapore's four languages; English only for now) */
+.language-picker {position:relative}
+#language-button {display:flex;align-items:center;gap:4px;min-height:44px;padding:8px;border:0;background:transparent;box-shadow:none;font-size:.78rem;font-weight:700;color:var(--ink-soft)}
+.language-menu {position:fixed;z-index:30;width:250px;max-width:calc(100vw - 24px);padding:8px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white);box-shadow:var(--shadow-lg)}
+.language-menu button {display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 12px;border:0;border-radius:var(--radius-sm);background:transparent;box-shadow:none;font-size:.95rem;color:var(--ink);text-align:left}
+.language-menu button[aria-checked="true"] {background:var(--surface-soft);font-weight:700}
+.language-menu button[aria-disabled="true"] {color:var(--muted);cursor:not-allowed}
+.language-tick {color:var(--accent)}
+.language-soon {font-size:.75rem;color:var(--muted)}
+.language-note {margin:6px 4px 2px;font-size:.75rem;color:var(--ink-soft);line-height:1.4}
+[lang="zh-Hans"] {font-family:"Aura Han","Nunito","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+[lang="ta"] {font-family:"Aura Tamil","Nunito","Noto Sans Tamil","Tamil MN","Nirmala UI",sans-serif}
+@media (max-width:420px) {
+  /* Phones: the disclaimer link becomes an "i" icon (its accessible name is unchanged). */
+  .info-link {font-size:0;padding:8px 6px}
+  .info-link::before {content:"i";display:grid;place-items:center;width:20px;height:20px;border:1.6px solid currentColor;border-radius:50%;
+    font-size:.8rem;font-weight:800;font-family:Georgia,"Times New Roman",serif;line-height:1}
+}

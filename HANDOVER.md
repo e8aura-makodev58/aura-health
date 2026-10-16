@@ -310,6 +310,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-16 — Claude — Language moved to a header menu (user request)
+- The home Language card is replaced by a globe "EN" button in the header (`#language-button` / `#language-menu`, in `aura_ui/catchup.js`): English ticked; 中文, Bahasa Melayu, தமிழ் greyed, each with "coming soon" in its own language (即将推出 / Akan datang / விரைவில்), plus the future-release note. Menu is placed under the button but clamped on-screen; closes on outside click, Escape, scroll or resize.
+- Header fit on phones: at ≤420 px "Disclaimer" becomes a drawn "i" icon (accessible name unchanged); the agent light is dot-only at ≤400 px. Font subsets rebuilt to include the "coming soon" words (~1.5–2 KB each, renamed Aura Han / Aura Tamil). Docs (§15.1, roadmap) updated to "header menu".
+- Verified: no horizontal scroll at 320/360/390/414/1280; catchup_calendar 18 (CU1c language menu; one earlier partial run stopped at 10 checks without an error, not reproduced in 3 later full runs), settings, welcome, landing, tour, companion, dual_view PASS; ui_media OK.
+
 ### 2026-10-16 — Claude — Language card (Singapore's four languages, English only for now) + multilingual design
 - User: show multi-language support for Singapore, greyed out, English default. Patient home `#language-card`: English (selected), 中文, Bahasa Melayu, தமிழ் (disabled, own scripts), note "Chinese, Malay and Tamil are coming in a future release. Each will be safety-tested before it is switched on." No behaviour change; nothing else translated.
 - Fonts: `aura_ui/media/aura-zh.woff2` / `aura-ta.woff2` (~1 KB subsets of Noto Sans SC / Noto Sans Tamil, regular, renamed Aura Han / Aura Tamil; SIL OFL licences beside them; rebuild notes in `aura_ui/media/README.md`) so the names render without system CJK/Tamil fonts.

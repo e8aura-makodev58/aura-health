@@ -678,9 +678,9 @@ standing intended-use boundary or grants the model ownership of safety/treatment
 
 ### 15.1 Multilingual support for Singapore (planned; 2026-10-16)
 
-**In the demo today:** the patient home has a **Language** card listing English, 中文, Bahasa Melayu
-and தமிழ் in their own scripts. English is selected; the other three are visible but disabled, with
-the note "Chinese, Malay and Tamil are coming in a future release. Each will be safety-tested before
+**In the demo today:** a globe "EN" button in the app header opens a **Language** menu listing English,
+中文, Bahasa Melayu and தமிழ் in their own scripts. English is selected; the other three are visible but
+disabled, each marked "coming soon" in its own language (即将推出, Akan datang, விரைவில்), with the note "Chinese, Malay and Tamil are coming in a future release. Each will be safety-tested before
 it is switched on." Tiny self-hosted font subsets (Noto Sans SC / Noto Sans Tamil, SIL OFL, about
 1 KB each) make the names render on any device. Nothing else is translated yet.
 
