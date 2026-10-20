@@ -312,6 +312,11 @@ AURA_DEMO_DB=aura-m6-demo.sqlite3 .venv/bin/python -m uvicorn aura_app.demo:crea
 
 ## Log
 
+### 2026-10-20 — Claude — Operations checks after the lock (no code changes)
+- Green host rebooted 2026-10-18 04:26 (cause unknown); containers came back on their own. `switch.sh status`: blue live, green standby, both healthy with AI live.
+- Visit analytics: none in the app (no tracker; `--no-access-log` in `Dockerfile`). Only signal on blue is workspace files: 1 session since the 10-16 app restart (2026-10-20 04:15 UTC), and earlier expired ones are swept. Real numbers: Cloudflare dashboard → Analytics → Traffic. Cloudflare Web Analytics would add a script to the live pages, so it was not turned on (lock). 87 orphaned pre-restart workspace files (~800 MB) on blue are never cleaned automatically; not removed.
+- User reported the Disclaimer link doing nothing. Not reproduced: public (blue) and green, 390/1280, patient and clinician views, Demo tag, repeat click all open it. Possible gap: before a person loads, every view is hidden (`aura_ui/app.js:120`), so the link shows nothing then. **User decision (2026-10-20): leave it as it is.**
+
 ### 2026-10-16 — Claude — LOCK: final-demo-day
 - User approved the lock after their testing. Final state verified: 396 Python tests OK; 16 hosted browser suites PASS (final_dash 5/5 after the test fix); live on blue 5/5 full guided stories plus past-days update, safety reset, language menu and agent light; green standby full story OK; both servers healthy, AI live, one connector (blue), 10/10 public answers from blue.
 - Tagged `final-demo-day` and pushed. Untracked local files left out on purpose (Tencent ADP guide must never be committed; cover/Miora reference images not requested).
